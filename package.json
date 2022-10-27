@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@patternfly/pfe-readtime": "^1.12.3"
+  }
+}
