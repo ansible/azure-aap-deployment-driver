@@ -23,6 +23,8 @@ import {
   ListItem,
   Icon,
   TextVariants,
+  Tooltip,
+  Spinner,
 } from '@patternfly/react-core';
 // import './Alignment.css'
 import CheckCircleIcon from '@patternfly/react-icons/dist/esm/icons/check-circle-icon';
@@ -45,14 +47,16 @@ const options = {
 }
 const Dashboard: React.FunctionComponent = () => 
 {
-  const [data, setData] = useState([]);
+  const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  var [percentage, setPercentage] = useState(0);
   const service = "sampleone"
   const flag = true
   const deploymentList = [['networkingAAPDeploy','52 seconds', true] ,['dnsAAPDeploy', '2 minutes 35 seconds', true], ['databaseAAPDeploy', '45 seconds', true], ['storageAAPDeploy', '1 minute 4 seconds', false], ['kubernetesAAPDeploy', '49 seconds', true],['operatorsAAPDeploy', '3 minutes 5 seconds', true]]
   const lenghtofdep = deploymentList.length;
-  const percent = 0
+  var progress = 0
+  var percent = 30
 
   useEffect(() => {
     fetch('http://localhost:9090/step', {
@@ -64,7 +68,6 @@ const Dashboard: React.FunctionComponent = () =>
     })
     .then(data => {
       setData(data);
-      console.log(data)
     })
     .catch(error => {
       console.error("Error fetching deployment details", error);
@@ -75,12 +78,20 @@ const Dashboard: React.FunctionComponent = () =>
     })
   }, []);
 
+  function handleClick(id) {
+    fetch('http://127.0.0.1:9090/execution/3/restart', {
+      method: 'POST', 
+      mode: 'cors', 
+      body: JSON.stringify(jsonData)
+    })
+   }
+  
   return (
   <>
     <PageSection variant={PageSectionVariants.light}>
       <TextContent>
         <Text component="h1">Ansible Automation Platform Installer</Text>
-        <Text component="p">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</Text>
+        {/* <Text component="p">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</Text> */}
       </TextContent>
     </PageSection>
     <PageSection>
@@ -115,18 +126,28 @@ const Dashboard: React.FunctionComponent = () =>
      */}
 
         <List isPlain isBordered >
-        {deploymentList.map(deploymentList => (
+        {data.map(data => (
           <ListItem className='service-list'>
-          <Text style={{'marginRight':'auto'}}>{deploymentList[0]}</Text>
-          <div className='deployment-info'>
-            {deploymentList[2] ? <Text className='timeTaken' component={TextVariants.h5}>{deploymentList[1]}</Text> : <></>}
-            {deploymentList[2] ? <Icon className='icon1' status="success">
+          <Text style={{'marginRight':'auto'}}>{data['name']}</Text>
+          {data['executions'].length ? <div className='deployment-info'>
+            {data['executions'][data['executions'].length-1]['provisioningState'] === 'Succeeded' ? <Text className='timeTaken' component={TextVariants.h5}>({data['executions'][0]['duration']})</Text> : <></>}
+            {data['executions'][data['executions'].length-1]['provisioningState'] === 'Succeeded' ? <Tooltip
+      content={
+        <div>Success</div>
+      }
+    ><Icon className='icon1' status="success">
               <CheckCircleIcon/>
-            </Icon> : <Icon className='icon1' status="warning">
+            </Icon></Tooltip>: <Tooltip
+      content={
+        <div>{data['executions'][data['executions'].length-1]['message']}</div>
+      }
+    ><Icon className='icon1' status="warning">
                 <ExclamationCircleIcon/>
-              </Icon>}
-            {!deploymentList[2] ? <Button variant="primary">Retry step</Button>: <></>}
-          </div>
+              </Icon></Tooltip>}
+            {data['executions'][data['executions'].length-1]['provisioningState'] === 'Failed' ? <Text className='attempt' component={TextVariants.h5}>({data['executions'].length} attempts)</Text> : <></>}
+            {data['executions'][data['executions'].length-1]['provisioningState'] === 'Failed' ? <Button variant="primary" onClick={handleClick}>Retry step</Button>: <></>}
+          </div>: <></>}
+          {/* {data['executions'].length && data['executions'][data['executions'].length-1]['provisioningState'] != 'Failed' ? <></> : <Spinner isSVG size="md" aria-label="loading.." />} */}
         </ListItem>
         ))}
           {/* <ListItem className='service-list'>
@@ -190,7 +211,9 @@ const Dashboard: React.FunctionComponent = () =>
         <div>
         <Card isHoverable isCompact style={{width:"203%"}}>
           <CardTitle>
-                <Progress value={33} title="Overall progress" />         
+                <Progress value={percent} title="Overall progress" />
+                <br></br>
+                <Button className='cancleButton' variant="secondary" onClick={handleClick}>Cancel Deployment</Button>       
           </CardTitle>
           <CardBody>
             {/* <span>
@@ -287,3 +310,7 @@ const Dashboard: React.FunctionComponent = () =>
 )};
 
 export { Dashboard };
+  function jsonData(jsonData: any): BodyInit | null | undefined {
+    throw new Error('Function not implemented.');
+  }
+

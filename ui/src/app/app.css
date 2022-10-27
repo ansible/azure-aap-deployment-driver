@@ -79,3 +79,7 @@ html, body, #root {
   display:inline-block !important;
   padding: 0;
   } */
+
+  .cancleButton {
+    margin: 10px 10px 10px 370px;
+}
