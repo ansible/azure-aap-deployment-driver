@@ -1,20 +1,12 @@
 import * as React from 'react';
 import {
-  Bullseye,
   Button,
   Card,
   CardBody,
-  CardFooter,
   CardTitle,
-  Divider,
   Gallery,
   PageSection,
   PageSectionVariants,
-  Split,
-  SplitItem,
-  ToggleGroup,
-  ToggleGroupItem,
-  ToggleGroupItemProps,
   Progress,
   Text,
   TextContent,
@@ -24,12 +16,10 @@ import {
   Icon,
   TextVariants,
   Tooltip,
-  Spinner,
 } from '@patternfly/react-core';
 // import './Alignment.css'
 import CheckCircleIcon from '@patternfly/react-icons/dist/esm/icons/check-circle-icon';
 import ExclamationCircleIcon from '@patternfly/react-icons/dist/esm/icons/exclamation-circle-icon';
-import { ArrowRightIcon, ExternalLinkSquareAltIcon } from '@patternfly/react-icons';
 import { useEffect, useState } from 'react';
 
 interface Repository {
@@ -45,7 +35,7 @@ const options = {
     'Content-Type' : 'application/json'
   }
 }
-const Dashboard: React.FunctionComponent = () => 
+const Installer: React.FunctionComponent = () =>
 {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -80,12 +70,12 @@ const Dashboard: React.FunctionComponent = () =>
 
   function handleClick(id) {
     fetch('http://127.0.0.1:9090/execution/3/restart', {
-      method: 'POST', 
-      mode: 'cors', 
+      method: 'POST',
+      mode: 'cors',
       body: JSON.stringify(jsonData)
     })
    }
-  
+
   return (
   <>
     <PageSection variant={PageSectionVariants.light}>
@@ -119,7 +109,7 @@ const Dashboard: React.FunctionComponent = () =>
           </MDBCol>
         </MDBRow> */}
 
-        {/* 
+        {/*
             width: auto;
             height: 100px;
             overflow: scroll;
@@ -151,7 +141,7 @@ const Dashboard: React.FunctionComponent = () =>
         </ListItem>
         ))}
           {/* <ListItem className='service-list'>
-            <Text style={{'marginRight':'auto'}}>{service}</Text> 
+            <Text style={{'marginRight':'auto'}}>{service}</Text>
             <div className='deployment-info'>
               <Text className='timeTaken' component={TextVariants.h5}>(51 seconds)</Text>
               {flag ? <Icon className='icon1' status="success">
@@ -159,8 +149,8 @@ const Dashboard: React.FunctionComponent = () =>
               </Icon> : <></>}
             </div>
           </ListItem>
-          <ListItem className='service-list'> 
-            <Text style={{'marginRight':'auto'}}>Second</Text> 
+          <ListItem className='service-list'>
+            <Text style={{'marginRight':'auto'}}>Second</Text>
             <div className='deployment-info'>
               <Icon className='icon1' status="warning">
                 <ExclamationCircleIcon/>
@@ -213,7 +203,7 @@ const Dashboard: React.FunctionComponent = () =>
           <CardTitle>
                 <Progress value={percent} title="Overall progress" />
                 <br></br>
-                <Button className='cancleButton' variant="secondary" onClick={handleClick}>Cancel Deployment</Button>       
+                <Button className='cancleButton' variant="secondary" onClick={handleClick}>Cancel Deployment</Button>
           </CardTitle>
           <CardBody>
             {/* <span>
@@ -309,7 +299,7 @@ const Dashboard: React.FunctionComponent = () =>
   </>
 )};
 
-export { Dashboard };
+export { Installer };
   function jsonData(jsonData: any): BodyInit | null | undefined {
     throw new Error('Function not implemented.');
   }

@@ -2,6 +2,19 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Install dependencies
+
+### NodeJS
+
+1. Install nvm from <https://github.com/nvm-sh/nvm>
+2. Install required NodeJS with command: `nvm install` (run the command from the /ui folder)
+3. Use the required NodeJS: `nvm use`
+
+### NPM modules
+
+Run command `npm i` to install all dependencies required by this project.\
+Some will be reported as deprecated and some will report vulnerabilities. This is normal as they are all from development dependencies.
+
 ## Available Scripts
 
 In the project directory, you can run:
@@ -9,7 +22,7 @@ In the project directory, you can run:
 ### `npm start`
 
 Runs the app in the development mode.\
-Open [http://localhost:3000/aap-dashboard/](http://localhost:3000/aap-dashboard) to view it in the browser.
+It should open <http://localhost:9999/> in the default browser. If that does not work, try <http://127.0.0.1:9999/> instead.
 
 The page will reload if you make edits.\
 You will also see any lint errors in the console.

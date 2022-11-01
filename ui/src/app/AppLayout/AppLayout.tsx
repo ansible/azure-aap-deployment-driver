@@ -34,7 +34,7 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
   function LogoImg() {
     const navigate = useNavigate();
     function handleClick() {
-      navigate('/aap-dashboard');
+      navigate('/');
     }
     return (
       <img src={logo} onClick={handleClick} alt="PatternFly Logo" />

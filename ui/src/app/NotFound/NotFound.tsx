@@ -14,7 +14,7 @@ const NotFound: React.FunctionComponent = () => {
   function GoHomeBtn() {
     const navigate = useNavigate();
     function handleClick() {
-      navigate('/aap-dashboard');
+      navigate('/');
     }
     return (
       <Button onClick={handleClick}>Take me home</Button>

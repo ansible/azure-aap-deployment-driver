@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Dashboard } from './Dashboard/Dashboard';
+import { Installer } from './Installer/Installer';
 import { Support } from './Support/Support';
 import { GeneralSettings } from './Settings/General/GeneralSettings';
 import { ProfileSettings } from './Settings/Profile/ProfileSettings';
@@ -25,14 +25,14 @@ export type AppRouteConfig = IAppRoute | IAppRouteGroup;
 
 const routesConfig : AppRouteConfig[] = [
   {
-    component: Dashboard,
-    path: '/aap-dashboard',
-    label: 'Dashboard',
-    title: 'Dashboard'
+    component: Installer,
+    path: '/',
+    label: 'Installer',
+    title: 'Installer'
   },
   {
     component: Support,
-    path: '/aap-dashboard/support',
+    path: '/support',
     label: 'Support',
     title: 'Support'
   },
@@ -41,13 +41,13 @@ const routesConfig : AppRouteConfig[] = [
     routes: [
       {
         component: GeneralSettings,
-        path: '/aap-dashboard/settings/general',
+        path: '/settings/general',
         label: 'General',
         title: 'General settings'
       },
       {
         component: ProfileSettings,
-        path: '/aap-dashboard/settings/profile',
+        path: '/settings/profile',
         label: 'Profile',
         title: 'Profile settings'
       },
