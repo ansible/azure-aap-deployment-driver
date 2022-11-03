@@ -1,0 +1,42 @@
+### VisualStudioCode ###
+.vscode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Local History for Visual Studio Code
+.history/
+
+.powershell
+.stestr/
+*.zip
+
+# Sonarqube
+.scannerwork/
+.sonarqube/
+
+.DS_Store
+mainTemplate.json
+__pycache__
+/build
+/dist
+.tox/
+.pylintrc
+
+# From nightly file creation script
+template.json
+
+# Installer server binary and other files
+server/main
+installerstore
+installer.template.json
+templates
+server/server
+server/coverage.txt
+server/.env
+
+# Pyenv file
+.python-version
