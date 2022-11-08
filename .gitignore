@@ -33,7 +33,7 @@ template.json
 server/main
 installerstore
 installer.template.json
-templates
+/templates
 server/server
 server/coverage.txt
 server/.env
