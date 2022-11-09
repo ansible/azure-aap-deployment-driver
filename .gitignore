@@ -35,8 +35,8 @@ installerstore
 installer.template.json
 /templates
 server/server
-server/coverage.txt
-server/.env
+coverage.txt
+.env
 
 # Pyenv file
 .python-version
