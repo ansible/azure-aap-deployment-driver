@@ -16,13 +16,14 @@ func main() {
 	db := persistence.NewPersistentDB(config.GetEnvironment().DB_PATH)
 	// TODO store first start up in DB so we can determine max allowed run time for installer
 
-	// Instantiate Azure client/session
-	azure.EnsureAzureLogin()
+	// Instantiate Azure clients and session
+	azure.EnsureAzureLogin(nil)
+	deploymentsClient := azure.NewDeploymentsClient(nil)
 
 	// Graceful exit handler
 	exit := controllers.NewExitController()
 
-	engine := engine.NewEngine(exit.Context(), db)
+	engine := engine.NewEngine(exit.Context(), db, deploymentsClient)
 
 	app := api.NewApp(db)
 

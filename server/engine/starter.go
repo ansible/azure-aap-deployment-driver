@@ -9,16 +9,18 @@ import (
 	"server/persistence"
 	"server/templates"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	log "github.com/sirupsen/logrus"
 )
 
-func NewEngine(ctx context.Context, db *persistence.Database) *Engine {
+func NewEngine(ctx context.Context, db *persistence.Database, client *armresources.DeploymentsClient) *Engine {
 	engine := &Engine{
 		context:              ctx,
 		database:             db,
 		resolver:             NewResolver(config.GetEnvironment().SUBSCRIPTION, config.GetEnvironment().RESOURCE_GROUP_NAME),
 		done:                 make(chan struct{}),
 		maxExecutionRestarts: config.GetEnvironment().EXECUTION_MAX_RETRY,
+		deploymentsClient:    client,
 	}
 	engine.initialize()
 	return engine

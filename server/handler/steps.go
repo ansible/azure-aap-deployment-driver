@@ -17,7 +17,6 @@ func GetAllSteps(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 
 func GetStep(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-
 	id := vars["id"]
 	step := getStepOr404(db, id, w, r)
 	if step == nil {

@@ -217,7 +217,7 @@ func (engine *Engine) runStep(step model.Step, execution *model.Execution, waitG
 	engine.resolver.ResolveReferencesToOutputs(step.Parameters, outputValues)
 
 	// Create the deployment
-	deployment, err := azure.StartDeployARMTemplate(engine.context, step.Name, step.Template, step.Parameters, resumeToken)
+	deployment, err := azure.StartDeployARMTemplate(engine.context, engine.deploymentsClient, step.Name, step.Template, step.Parameters, resumeToken)
 	if err != nil {
 		if err == context.Canceled {
 			log.Printf("Starting of step [%s] deployment interrupted by shutdown.", step.Name)
@@ -248,7 +248,7 @@ func (engine *Engine) runStep(step model.Step, execution *model.Execution, waitG
 			return
 		}
 		log.Printf("Deployment of step [%s] failed: %v", step.Name, err)
-		failedDeploymentResponse, getDeploymentErr := azure.GetDeployment(engine.context, step.Name)
+		failedDeploymentResponse, getDeploymentErr := azure.GetDeployment(engine.context, engine.deploymentsClient, step.Name)
 		if getDeploymentErr != nil {
 			log.Tracef("Unable to get failed deployment details: %v", getDeploymentErr)
 		}

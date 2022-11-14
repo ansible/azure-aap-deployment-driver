@@ -3,9 +3,10 @@ package engine
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"testing"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var parameters map[string]interface{}         // this will contain the parameters to test

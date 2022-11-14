@@ -36,6 +36,10 @@ func (a *Installer) initialize() {
 	a.setRouters()
 }
 
+func (a *Installer) GetRouter() *mux.Router {
+	return a.router
+}
+
 func (a *Installer) setRouters() {
 	a.Get("/status", a.Status)
 	a.Get("/step", handler.BasicAuth(a.GetAllSteps))
