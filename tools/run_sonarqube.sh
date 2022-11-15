@@ -7,6 +7,7 @@ SCANNER_PATH="${WORKDIR}/sonar-scanner-${SONAR_SCANNER_VER}-linux"
 mkdir -p ${WORKDIR}
 
 if [ ! -d "$SCANNER_PATH" ]; then
+  echo "Scanner not found, will install it now..."
   "tools/install_sonarqube.sh" "${WORKDIR}" "${SONAR_SCANNER_VER}"
 fi
 
@@ -18,6 +19,7 @@ cd ..
 if [ -z "${SONAR_PROJECT_TOKEN}" ]; then
   echo "Environment variable SONAR_PROJECT_TOKEN not set, will attempt to load from .env file if it exists."
   if [ -f "tools/.env" ]; then
+    echo "Loading tools/.env..."
     source ./tools/.env
   else
     echo "File tools/.env does not exist, exitting."
