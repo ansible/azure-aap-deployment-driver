@@ -12,7 +12,7 @@ fi
 
 # Execute unit tests with code coverage
 cd server
-go test ./... -coverprofile=../coverage.txt
+go test -cover -coverprofile=../coverage.txt -count=1 ./...
 cd ..
 
 if [ -z "${SONAR_PROJECT_TOKEN}" ]; then

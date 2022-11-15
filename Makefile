@@ -16,7 +16,7 @@ build: print-version
 	mkdir -p build && cd server && go build -o ../build/server .
 
 test: print-version
-	cd server && go test ./...
+	cd server && go test -cover -count=1 ./...
 
 analyze: print-version
 	tools/run_sonarqube.sh
