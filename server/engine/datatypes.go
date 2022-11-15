@@ -4,6 +4,8 @@ import (
 	"context"
 	"server/model"
 	"server/persistence"
+
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 )
 
 type Engine struct {
@@ -13,4 +15,5 @@ type Engine struct {
 	mainOutputs          *model.Output
 	done                 chan struct{}
 	maxExecutionRestarts int
+	deploymentsClient    *armresources.DeploymentsClient
 }

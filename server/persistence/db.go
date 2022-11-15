@@ -28,7 +28,6 @@ func NewInMemoryDB() *Database {
 }
 
 func newDB(dbPath string, migrationModels ...interface{}) (*Database, error) {
-	// TODO check if the models need to be passed as pointers or not
 	db, err := newSqliteDB(dbPath, &model.Step{}, &model.Execution{}, &model.Output{}, &model.Status{})
 	if err != nil {
 		return nil, err

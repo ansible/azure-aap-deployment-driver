@@ -42,7 +42,6 @@ type Execution struct {
 	ErrorDetails      string          `json:"errorDetails"`
 	Code              string          `json:"code"`
 	ProvisioningState string          `json:"provisioningState"`
-	Message           string          `json:"message"`
 	Details           string          `json:"details"`
 	Timestamp         time.Time       `json:"timestamp"`
 	Duration          string          `json:"duration"`

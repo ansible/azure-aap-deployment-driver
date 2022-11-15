@@ -8,6 +8,7 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/runtime"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
@@ -23,16 +24,33 @@ type azureDetails struct {
 
 var azureInfo azureDetails
 
-// Ensure Azure login/token with retry and exponential backoff
-func EnsureAzureLogin() {
-	client, err := armresources.NewResourceGroupsClient(getAzureInfo().Subscription, getAzureInfo().Credentials, nil)
+func NewDeploymentsClient(opts *arm.ClientOptions) *armresources.DeploymentsClient {
+	client, err := armresources.NewDeploymentsClient(getAzureInfo().Subscription, getAzureInfo().Credentials, opts)
 	if err != nil {
-		// Something is really wrong, give up
-		log.Fatalf("Unable to create Azure client: %v", err)
+		log.Fatalf("Failed to get deployments client: %v", err)
 	}
-	MAX_ATTEMPTS := 5
+	log.Trace("Got deployment client.")
+	return client
+}
+
+func NewResourceGroupsClient(opts *arm.ClientOptions) *armresources.ResourceGroupsClient {
+	client, err := armresources.NewResourceGroupsClient(getAzureInfo().Subscription, getAzureInfo().Credentials, opts)
+	if err != nil {
+		log.Fatalf("Failed to get resource groups client: %v", err)
+	}
+	log.Trace("Got resource groups client.")
+	return client
+}
+
+// Ensure Azure login/token with retry and exponential backoff
+func EnsureAzureLogin(client *armresources.ResourceGroupsClient) {
+	// Avoid needing to instantiate client in the main
+	if client == nil {
+		client = NewResourceGroupsClient(nil)
+	}
+	const MAX_ATTEMPTS = 5
 	for attempt := 1; true; attempt++ {
-		_, err = client.Get(context.Background(), config.GetEnvironment().RESOURCE_GROUP_NAME, nil)
+		_, err := client.Get(context.Background(), config.GetEnvironment().RESOURCE_GROUP_NAME, nil)
 		if err == nil {
 			// Successfully logged in and retrieved data
 			log.Debug("Initialized Azure connection.")
@@ -64,20 +82,15 @@ func getAzureInfo() azureDetails {
 
 // Returns a deployment poller, from which the caller can extract a resume token in case the deployment is interrupted
 // The poller should be passed to CompleteDeployARMTemplate next to await the deployment
-func StartDeployARMTemplate(ctx context.Context, name string, template map[string]interface{}, parameters map[string]interface{}, resumeToken string) (*runtime.Poller[armresources.DeploymentsClientCreateOrUpdateResponse], error) {
-	deploymentsClient, err := armresources.NewDeploymentsClient(getAzureInfo().Subscription, getAzureInfo().Credentials, nil)
-	if err != nil {
-		return nil, err
-	}
-	log.Trace("Got deployment client.")
+func StartDeployARMTemplate(ctx context.Context, client *armresources.DeploymentsClient, name string, template map[string]interface{}, parameters map[string]interface{}, resumeToken string) (*runtime.Poller[armresources.DeploymentsClientCreateOrUpdateResponse], error) {
+
 	opts := armresources.DeploymentsClientBeginCreateOrUpdateOptions{}
 
 	// Restart of interrupted deployment
 	if resumeToken != "" {
 		opts.ResumeToken = resumeToken
 	}
-
-	deploy, err := deploymentsClient.BeginCreateOrUpdate(
+	deploy, err := client.BeginCreateOrUpdate(
 		ctx,
 		config.GetEnvironment().RESOURCE_GROUP_NAME,
 		name,
@@ -100,9 +113,8 @@ func StartDeployARMTemplate(ctx context.Context, name string, template map[strin
 // Pass the deployment poller from StartDeployARMTemplate to await its completion and result
 // Returns model.DeploymentResult and error if any
 func WaitForDeployARMTemplate(ctx context.Context, name string, deployment *runtime.Poller[armresources.DeploymentsClientCreateOrUpdateResponse]) (*model.DeploymentResult, error) {
-	// TODO pull polling frequency from config
 	log.Tracef("Starting polling until deployment of [%s] is done...", name)
-	resp, err := deployment.PollUntilDone(ctx, &runtime.PollUntilDoneOptions{Frequency: 5 * time.Second}) // Poll every 5 seconds instead of default 30 seconds
+	resp, err := deployment.PollUntilDone(ctx, &runtime.PollUntilDoneOptions{Frequency: time.Duration(config.GetEnvironment().AZURE_POLLING_FREQ_SECONDS) * time.Second})
 	if err != nil {
 		return nil, err
 	}
@@ -110,15 +122,10 @@ func WaitForDeployARMTemplate(ctx context.Context, name string, deployment *runt
 	return model.NewDeploymentResult(resp.DeploymentExtended), nil
 }
 
-func GetDeployment(ctx context.Context, name string) (*model.DeploymentResult, error) {
-	deploymentsClient, err := armresources.NewDeploymentsClient(getAzureInfo().Subscription, getAzureInfo().Credentials, nil)
-	if err != nil {
-		return nil, err
-	}
-	log.Trace("Got deployment client.")
+func GetDeployment(ctx context.Context, client *armresources.DeploymentsClient, name string) (*model.DeploymentResult, error) {
 	opts := armresources.DeploymentsClientGetOptions{}
 
-	details, err := deploymentsClient.Get(
+	details, err := client.Get(
 		ctx,
 		config.GetEnvironment().RESOURCE_GROUP_NAME,
 		name,

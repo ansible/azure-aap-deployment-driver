@@ -9,18 +9,19 @@ import (
 )
 
 type envVars struct {
-	SUBSCRIPTION         string
-	RESOURCE_GROUP_NAME  string
-	CONTAINER_GROUP_NAME string
-	STORAGE_ACCOUNT_NAME string
-	PASSWORD             string
-	DB_PATH              string
-	TEMPLATE_PATH        string
-	MAIN_OUTPUTS         string
-	ENGINE_END_WAIT      int64
-	ENGINE_MAX_RUNTIME   int64
-	ENGINE_RETRY_WAIT    int64
-	EXECUTION_MAX_RETRY  int
+	SUBSCRIPTION               string
+	RESOURCE_GROUP_NAME        string
+	CONTAINER_GROUP_NAME       string
+	STORAGE_ACCOUNT_NAME       string
+	PASSWORD                   string
+	DB_PATH                    string
+	TEMPLATE_PATH              string
+	MAIN_OUTPUTS               string
+	ENGINE_END_WAIT            int64
+	ENGINE_MAX_RUNTIME         int64
+	ENGINE_RETRY_WAIT          int64
+	EXECUTION_MAX_RETRY        int
+	AZURE_POLLING_FREQ_SECONDS int
 }
 
 var environment envVars
@@ -37,6 +38,7 @@ func GetEnvironment() envVars {
 	environment.EXECUTION_MAX_RETRY = 3
 	environment.DB_PATH = "/installerstore/installer.db"
 	environment.TEMPLATE_PATH = "./templates"
+	environment.AZURE_POLLING_FREQ_SECONDS = 5
 
 	env := envs.EnvConfig{}
 	env.ReadEnvs()
@@ -108,6 +110,13 @@ func GetEnvironment() envVars {
 		log.Warnf("EXECUTION_MAX_RETRY environment variable is not a number, will use default of %d", environment.EXECUTION_MAX_RETRY)
 	} else {
 		environment.EXECUTION_MAX_RETRY = int(executionMaxRetry)
+	}
+
+	azurePollingFreq, err := strconv.ParseInt(env.Get("AZURE_POLLING_FREQ_SECONDS", "0"), 10, 32)
+	if err != nil {
+		log.Warnf("AZURE_POLLING_FREQ_SECONDS environment variable is not a number, will use default of %d", environment.AZURE_POLLING_FREQ_SECONDS)
+	} else if azurePollingFreq > 1 {
+		environment.AZURE_POLLING_FREQ_SECONDS = int(azurePollingFreq)
 	}
 
 	return environment

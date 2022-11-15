@@ -111,7 +111,7 @@ func NewDeploymentResult(response armresources.DeploymentExtended) *DeploymentRe
 	if *response.Properties.ProvisioningState == armresources.ProvisioningStateSucceeded {
 		status = Succeeded
 	} else {
-		// TODO not sure if this is really correct, watch to make sure no other terminal statuses are OK
+		// Assume anything but Succeeded is failed
 		status = Failed
 	}
 	// make sure response outputs are always there, even if empty
@@ -121,16 +121,25 @@ func NewDeploymentResult(response armresources.DeploymentExtended) *DeploymentRe
 	} else {
 		responseOutputs = make(map[string]interface{})
 	}
-
-	return &DeploymentResult{
-		ID:                *response.ID,
-		CorrelationID:     *response.Properties.CorrelationID,
-		Duration:          *response.Properties.Duration,
-		ProvisioningState: string(*response.Properties.ProvisioningState),
-		Outputs:           responseOutputs,
-		Status:            status,
-		Timestamp:         *response.Properties.Timestamp,
+	res := DeploymentResult{}
+	if response.Properties.ProvisioningState != nil {
+		res.ProvisioningState = string(*response.Properties.ProvisioningState)
 	}
+	if response.ID != nil {
+		res.ID = *response.ID
+	}
+	if response.Properties.CorrelationID != nil {
+		res.CorrelationID = *response.Properties.CorrelationID
+	}
+	if response.Properties.Duration != nil {
+		res.Duration = *response.Properties.Duration
+	}
+	if response.Properties.Timestamp != nil {
+		res.Timestamp = *response.Properties.Timestamp
+	}
+	res.Status = status
+	res.Outputs = responseOutputs
+	return &res
 }
 
 func GetAzureErrorJSONString(err error) string {
