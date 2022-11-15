@@ -35,7 +35,7 @@ func TestLogging(t *testing.T) {
 	log.Info("hello")
 	assert.Contains(t, buf.String(), "hello")
 	assert.Contains(t, buf.String(), "config_test")
-	assert.Contains(t, buf.String(), time.Now().Format("2006-01-02"))
+	assert.Contains(t, buf.String(), time.Now().UTC().Format("2006-01-02"))
 }
 
 // TestMain wraps the tests.  Setup is done before the call to m.Run() and any
