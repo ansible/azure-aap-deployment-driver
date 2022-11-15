@@ -5,7 +5,7 @@ $(error "No go in $(PATH), can't go anywhere...")
 endif
 GOVERSION := $(shell go version)
 
-.PHONY: build test print-version
+.PHONY: build test print-version analyze
 
 all: test build
 
@@ -16,4 +16,7 @@ build: print-version
 	mkdir -p build && cd server && go build -o ../build/server .
 
 test: print-version
-	cd server && go test ./...
+	cd server && go test -cover -count=1 ./...
+
+analyze: print-version
+	tools/run_sonarqube.sh
