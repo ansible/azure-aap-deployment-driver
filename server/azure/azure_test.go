@@ -1,33 +1,15 @@
 package azure_test
 
 import (
-	"bytes"
 	"context"
-	"os"
 	"server/azure"
 	"server/test"
 	"testing"
-
-	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/arm"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/stretchr/testify/assert"
 )
-
-func TestEnsureAzureLogin(t *testing.T) {
-	opts := azure.GetClientOptionsWithLogging()
-	// Capture logging
-	var buf bytes.Buffer
-	log.SetOutput(&buf)
-	defer func() {
-		log.SetOutput(os.Stdout)
-	}()
-	opts.Transport = test.MockGetResourceGroupFailThenPass()
-	client := azure.NewResourceGroupsClient(opts)
-	azure.EnsureAzureLogin(client)
-	assert.Contains(t, buf.String(), "ResourceGroupNotFound")
-}
 
 func TestClientSuccess(t *testing.T) {
 	opts := arm.ClientOptions{}
