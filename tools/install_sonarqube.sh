@@ -8,10 +8,10 @@ SONAR_SCANNER_URL="https://binaries.sonarsource.com/Distribution/sonar-scanner-c
 SONAR_SERVER_URL="https://sonarcloud.io"
 
 # Fetch scanner
-wget -O "$WORKDIR/scanner.zip" "$SONAR_SCANNER_URL"
+wget -qO "$WORKDIR/scanner.zip" "$SONAR_SCANNER_URL"
 
 # Unpack scanner
-unzip "$WORKDIR/scanner.zip" -d "$WORKDIR"
+unzip -q "$WORKDIR/scanner.zip" -d "$WORKDIR"
 
 # Inject URI for sonarqube host to config file
 echo "sonar.host.url=${SONAR_SERVER_URL}" >> "${WORKDIR}/sonar-scanner-${SONAR_SCANNER_VER}-linux/conf/sonar-scanner.properties"
