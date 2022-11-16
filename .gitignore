@@ -21,8 +21,8 @@
 .DS_Store
 mainTemplate.json
 __pycache__
-/build
-/dist
+build/
+dist/
 .tox/
 .pylintrc
 
@@ -40,3 +40,7 @@ coverage.txt
 
 # Pyenv file
 .python-version
+
+**/node_modules
+
+npm-debug.log*

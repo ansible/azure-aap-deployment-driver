@@ -1,3 +1,9 @@
-prepare-install-templates.sh
-build-image.sh
+/.github/
+/.scannerwork/
+/.sonarqube/
+/aap-azurerm/
 /installerstore
+/tools/
+/server/
+/ui/
+README.md

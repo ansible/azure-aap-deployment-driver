@@ -9,9 +9,9 @@ RUN yum -y install socat && \
   curl -o acme.installer.sh https://get.acme.sh && chmod +x acme.installer.sh
 
 ADD ["nginx", "/etc/nginx/"]
-ADD ["start.sh", "server/server", "./"]
-ADD ["templates/", "./templates/"]
-ADD ["public", "/var/www/aapinstaller/public"]
+ADD ["start.sh", "build/server", "./"]
+ADD ["build/templates/", "./templates/"]
+ADD ["build/public", "/var/www/aapinstaller/public"]
 
 RUN chmod +x ./server && chmod +x ./start.sh
 

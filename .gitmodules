@@ -1,0 +1,4 @@
+[submodule "aap-azurerm"]
+	path = aap-azurerm
+	url = ../aap-azurerm.git
+	branch = main

@@ -1,0 +1,21 @@
+name: Build and test of UI code
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'ui/**' # Only applicable if any UI code was changed
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'ui/**' # Only applicable if any UI code was changed
+jobs:
+  Build-and-Test-UI:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run make in ui directory
+        run: |
+          cd ui
+          make
