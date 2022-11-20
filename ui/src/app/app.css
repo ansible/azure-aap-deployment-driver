@@ -14,37 +14,16 @@ html, body, #root {
   font-size: 1rem !important;
 }
 
-.icon1{
-  /* display: flex; */
-  /* display: inline-block;
-  padding-left: 26rem !important; */
-}
-
-/* .button1 {
-  padding-left: 1rem !important;
-} */
-
-/* .listitem {
-  display: inline-block !important;
-} */
-
-
 .service-list {
-  /* list-style-type: none; */
   margin-left:0px;
   padding-left:0px;
   display: flex;
   flex-direction: row;
-  /* justify-content: space-between; */
-  /* display: inline-block; */
   }
 
 .deployment-info {
   display: flex;
   flex-direction: row;
-  /* margin-left: auto;
-  margin-right: 5px;
-  min-width: 120px; */
   justify-content:flex-end;
 }
 
@@ -52,34 +31,19 @@ html, body, #root {
   margin-right: 10px;
 }
 
-/* .ws-core-u-alignment .pf-u-text-align-left,
-.ws-core-u-alignment .pf-u-text-align-center,
-.ws-core-u-alignment .pf-u-text-align-right,
-.ws-core-u-alignment .pf-u-text-align-justify {
-  padding: .5rem !important;
-  border: 2px dashed #393f44;
-} */
-
 .ws-core-u-alignment .pf-u-text-align-left {
   padding: .5rem !important;
-  /* border: 2px dashed #393f44; */
 }
 
 .ws-core-u-alignment .pf-u-text-align-right {
   padding: .5rem !important;
 }
 
-  /* .service-list Icon
-  {
-  float:left;
-  }
-   */
-  /* .service-list Text {
-  text-align: right; 
-  display:inline-block !important;
-  padding: 0;
-  } */
-
-  .cancelButton {
+.cancelButton {
     margin: 10px 10px 10px 370px;
+}
+
+
+.SuccessMessage {
+  margin: 5px 10px 5px 240px;
 }

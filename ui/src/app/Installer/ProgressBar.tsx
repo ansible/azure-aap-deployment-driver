@@ -5,22 +5,12 @@ import {
     Card,
     CardBody,
     CardTitle,
-    Progress
+    Progress,
+    Text
   } from '@patternfly/react-core';
-
-import { useState } from 'react';
-
-  const options = {
-    method : 'POST',
-    headers : {
-      'Content-Type' : 'application/json'
-    }
-  }
 
   export const ProgressBar = (props) =>
   {
-  var percent = 30
-  console.log(props)
 
   function handleClick(id) {
     fetch(`http://127.0.0.1:9090/execution/${id}/restart`, {
@@ -32,15 +22,16 @@ import { useState } from 'react';
 
   return (
     <>
-
-          <Card isHoverable isCompact style={{width:"203%"}}>
+<Card isHoverable isCompact style={{width:"203%"}}>
             <CardTitle>
                   <Progress value={props.data1} title="Overall progress" />
                   <br></br>
-                  <Button className='cancleButton' variant="secondary" onClick={() => handleClick(props.data['ID'])}>Cancle Deployment</Button>
+                  <div>
+        {props.data1 === 100 ? <Text className="SuccessMessage" >Your Ansible Automation Platform deployment is now complete.</Text>: <Button className='cancelButton' variant="secondary" onClick={() => handleClick(props.data['ID'])}>Cancel Deployment</Button>}
+        </div>
             </CardTitle>
             <CardBody>
-              <br />
+              <br/>
             </CardBody>
           </Card>
     </>
