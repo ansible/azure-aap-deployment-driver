@@ -19,7 +19,6 @@
 .sonarqube/
 
 .DS_Store
-mainTemplate.json
 __pycache__
 build/
 dist/

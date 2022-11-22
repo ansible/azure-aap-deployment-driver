@@ -11,6 +11,11 @@ if [ -z ${INSTALLER_DOMAIN_NAME} ]; then
   exit 1
 fi
 
+if [ -z ${INSTALLER_TEMPLATE_URL} ]; then
+  echo "Environment variable INSTALLER_TEMPLATE_URL missing."
+  exit 1
+fi
+
 function log {
   echo "[$(date -u)] $1"
 }
@@ -30,6 +35,24 @@ stop() {
 }
 
 trap stop EXIT
+
+log "Fetching installer templates"
+mkdir -p /installerstore/templates
+curl --fail-with-body ${INSTALLER_TEMPLATE_URL} -o /installerstore/templates.zip 
+
+RC=$?
+if [ ${RC} -ne 0 ]; then
+  log "Failed to fetch templates zip file from ${INSTALLER_TEMPLATE_URL}, aborting."
+  exit ${RC}
+fi
+
+unzip -o -d /installerstore/templates -q /installerstore/templates.zip
+
+RC=$?
+if [ ${RC} -ne 0 ]; then
+  log "Failed to unzip templates zip file, aborting."
+  exit ${RC}
+fi
 
 log "Creating required directories and links..."
 # Create folders for nginx and certs files. These might exist already in case of container restart

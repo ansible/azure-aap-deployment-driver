@@ -37,7 +37,7 @@ func GetEnvironment() envVars {
 	environment.ENGINE_MAX_RUNTIME = 7200 // 2 hours max run time for everything (including restarts)
 	environment.EXECUTION_MAX_RETRY = 3
 	environment.DB_PATH = "/installerstore/installer.db"
-	environment.TEMPLATE_PATH = "./templates"
+	environment.TEMPLATE_PATH = "/installerstore/templates"
 	environment.AZURE_POLLING_FREQ_SECONDS = 5
 
 	env := envs.EnvConfig{}

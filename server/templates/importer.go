@@ -16,7 +16,7 @@ func DiscoverTemplateOrder(templateBasePath string) ([][]string, error) {
 		// expecting only directories
 		if entry.IsDir() {
 			name := entry.Name()
-			dependencyFileName := filepath.Join(".", templateBasePath, name, name+".dependencies.json")
+			dependencyFileName := filepath.Join(templateBasePath, name, name+".dependencies.json")
 			// read dependencies file
 			fileContent, err := readDependencyJSON(dependencyFileName)
 			if err != nil {

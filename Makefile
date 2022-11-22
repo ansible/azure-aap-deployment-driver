@@ -1,14 +1,13 @@
 export SHELL := /usr/bin/bash
 
 BUILD_DIR := build
-INSTALLER_AZURERM_DIR := aap-azurerm
 INSTALLER_SERVER_DIR := server
 INSTALLER_WEBUI_DIR := ui
 DOCKER_IMAGE_REGISTRY ?= quay.io/aoc
 DOCKER_IMAGE_NAME ?= installer
 DOCKER_IMAGE_TAG ?= latest
 
-.PHONY: clean assemble prepare-templates build-server build-web-ui
+.PHONY: clean assemble build-server build-web-ui
 
 all: assemble
 
@@ -17,7 +16,7 @@ clean:
 	mkdir -p build/public
 
 .ONESHELL:
-assemble: clean prepare-templates build-server build-web-ui
+assemble: clean build-server build-web-ui
 	@echo "Building docker image: ${DOCKER_IMAGE_REGISTRY}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}"
 	docker rmi ${DOCKER_IMAGE_REGISTRY}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG}
 	docker build -t ${DOCKER_IMAGE_REGISTRY}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} .
@@ -25,10 +24,6 @@ assemble: clean prepare-templates build-server build-web-ui
 save-image: assemble
 	@echo "Saving docker image: ${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} to tar.gz archive..."
 	docker image save ${DOCKER_IMAGE_REGISTRY}/${DOCKER_IMAGE_NAME}:${DOCKER_IMAGE_TAG} | gzip --best --stdout > build/${DOCKER_IMAGE_NAME}_${DOCKER_IMAGE_TAG}.tar.gz
-
-prepare-templates:
-	@echo "Preparing installer ARM templates"
-	./tools/prepare-install-templates.sh ${INSTALLER_AZURERM_DIR} ${BUILD_DIR}
 
 .ONESHELL:
 build-server:

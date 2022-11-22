@@ -10,7 +10,6 @@ RUN yum -y --repo ubi-9-appstream-rpms install socat && \
 
 ADD ["nginx", "/etc/nginx/"]
 ADD ["start.sh", "build/server", "./"]
-ADD ["build/templates/", "./templates/"]
 ADD ["build/public", "/var/www/aapinstaller/public"]
 
 RUN chmod +x ./server && chmod +x ./start.sh

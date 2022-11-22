@@ -12,7 +12,7 @@ const (
 	KEYVAULTID_REGEXP = `\[extensionResourceId\(format\('/subscriptions/\{0\}/resourceGroups/\{1\}', subscription\(\)\.subscriptionId, resourceGroup\(\)\.name\), 'Microsoft\.KeyVault/vaults', parameters\('(\w+)'\)\)\]`
 	// Another possible value for keyvault id reference regexp: `\[resourceId\('Microsoft\.KeyVault/vaults', parameters\('(\w+)'\)\)\]`
 	KEYVAULTID_REPLACEMENT = "/subscriptions/%s/resourcegroups/%s/providers/Microsoft.KeyVault/vaults/%s"
-	OUTPUTS_REGEXP         = `\[reference\(resourceId\('Microsoft\.Resources/deployments', '(\w+)'\)\)\.outputs\.(\w+)\.value\]`
+	OUTPUTS_REGEXP         = `\[reference\(resourceId\('Microsoft\.Resources/deployments', '(\w+)'\).*\)\.outputs\.(\w+)\.value\]`
 )
 
 type Resolver struct {

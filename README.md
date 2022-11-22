@@ -6,7 +6,6 @@ This repository contains the Ansible on Clouds managed application installer.
 
 Installer consists of following components:
 
-- Azure ARM templates declaring Azure resource making up Ansible Automation Platform deployment on Azure (the templates are in repository `ansible/aap-azurerm`)
 - Installer engine driving deployments of the ARM templates
 - Installer web UI providing user way of interacting with installer
 - Nginx web server and reverse proxy serving the installer web UI and proxy-ing API requests to installer engine
