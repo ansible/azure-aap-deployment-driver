@@ -12,7 +12,7 @@ import { ProgressBar } from './ProgressBar';
 export const DeploymentSteps = () => {
 {
     const deploymentSteps = useSelector((state: RootState) => state.allProducts.products);
-    const error = useSelector((state: RootState) => state).allProducts.err;
+    const error = useSelector((state: RootState) => state.allProducts.err);
     var [percent, setPercent] = React.useState(0)
     var dataLength = 0
     if(deploymentSteps) {
