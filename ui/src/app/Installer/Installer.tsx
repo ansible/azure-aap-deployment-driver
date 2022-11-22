@@ -8,20 +8,30 @@ import { DeploymentSteps } from './DeploymentStep';
 export const Installer: React.FunctionComponent = () =>
 {
   const dispatch = useDispatch();
-  const fetchProducts = async () => {
+  var [error, seterr] = React.useState(null)
+  const fetchDeploymentSteps = async () => {
     const response = await axios
     .get("http://localhost:9090/step")
     .catch((err) => {
+      seterr(err)
     });
-    dispatch(setDeploymentSteps(response))
+    if (response) {
+      seterr(null)
+      dispatch(setDeploymentSteps(response,error))
+    }
+    else {
+      dispatch(setDeploymentSteps([],error))
+    }
   };
 
   useEffect(() => {
-    fetchProducts();
-  },[])
+    const id = setInterval(fetchDeploymentSteps, 600);
+    return () => clearInterval(id);
+ });
 
-  return (
-  <>
-    <DeploymentSteps></DeploymentSteps>
-  </>
-)};
+    return (
+      <>
+        <DeploymentSteps></DeploymentSteps>
+      </>
+  )}
+  

@@ -11,11 +11,12 @@ import { ProgressBar } from './ProgressBar';
 
 export const DeploymentSteps = () => {
 {
-    const products = useSelector((state: RootState) => state.allProducts.products);
+    const deploymentSteps = useSelector((state: RootState) => state.allProducts.products);
+    const error = useSelector((state: RootState) => state).allProducts.err;
     var [percent, setPercent] = React.useState(0)
     var dataLength = 0
-    if(products.data) {
-      dataLength = products.data.length
+    if(deploymentSteps) {
+      dataLength = deploymentSteps.length
     }
     const ProgressChangeHandler = (data) => {
         percent = percent + 100/dataLength;
@@ -45,7 +46,8 @@ export const DeploymentSteps = () => {
           </CardTitle>
           <CardBody className="cardbody">
         <List isPlain isBordered >
-        {products.data?.map(data => (
+        {error != null? <Text component="h1">Unable to reach servers</Text> : <>
+        {deploymentSteps?.map(data => (
           <ListItem className='service-list'>
           <Text style={{'marginRight':'auto'}}>{data['name']}</Text>
           {data['executions'].length ? <div className='deployment-info'>
@@ -67,13 +69,13 @@ export const DeploymentSteps = () => {
             <RestartDeployment data = {data}></RestartDeployment>          
           </div>: <></>}
         </ListItem>
-        ))}
+        ))} </> }
         </List>
           </CardBody>
         </Card>
         </div>
         <br></br>
-        <ProgressBar data = {products} data1 = {percent}></ProgressBar>
+        <ProgressBar data = {deploymentSteps} data1 = {percent}></ProgressBar>
       </Gallery>
     </PageSection>
     <PageSection>
