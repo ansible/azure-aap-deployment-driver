@@ -7,7 +7,7 @@ const initialState = {
 export const deploymentReducer = (state = initialState, {type, payload, error}) => {
     switch(type) {
         case ActionTypes.DEPLOYMENT_STEPS:
-                return {...state, products: payload, err: error};
+            return {...state, products: payload, err: error};
         default:
             return state; 
     }
