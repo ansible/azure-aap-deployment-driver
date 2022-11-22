@@ -25,7 +25,7 @@ export const Installer: React.FunctionComponent = () =>
   };
 
   useEffect(() => {
-    const id = setInterval(fetchDeploymentSteps, 600);
+    const id = setInterval(fetchDeploymentSteps, 4000);
     return () => clearInterval(id);
  });
 

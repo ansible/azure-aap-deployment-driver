@@ -49,9 +49,8 @@
     ]
   },
   "jest": {
-    "transformIgnorePatterns": [
-      "/node_modules/(?!@patternfly/react-icons).+\\.js$"
-    ]
+    "preset": "@vue/cli-plugin-unit-jest",
+    "transformIgnorePatterns": ["node_modules\/(?!axios)"]
   },
   "homepage": "/"
 }
