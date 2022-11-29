@@ -30,16 +30,16 @@ export const DeploymentSteps = () => {
           </TextContent>
         </PageSection>
         <PageSection>
-          <Gallery
+          <Gallery className='gallery'
             hasGutter
             maxWidths={{
               sm: '100%',
               lg: '49%',
             }}>
         <div>
-        <Card isHoverable isCompact style={{width:"203%"}}>
+        <Card isHoverable isCompact className='card'>
           <CardTitle>
-            <Title headingLevel="h2" size="md">
+            <Title headingLevel="h2">
               Deployment Steps
             </Title>
           </CardTitle>
@@ -48,7 +48,7 @@ export const DeploymentSteps = () => {
         {error != null? <Text component="h1">Unable to reach servers</Text> : <>
         {deploymentSteps?.map(data => (
           <ListItem className='service-list'>
-          <Text style={{'marginRight':'auto'}}>{data['name']}</Text>
+          <Text className='textView'>{data['name']}</Text>
           {data['executions'].length ? <div className='deployment-info'>
             {data['executions'][data['executions'].length-1]['provisioningState'] === 'Succeeded' ? ProgressChangeHandler(data): <></>}
             {data['executions'][data['executions'].length-1]['provisioningState'] === 'Succeeded' ? <Tooltip

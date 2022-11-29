@@ -22,7 +22,7 @@ import {
 
   return (
     <>
-<Card isHoverable isCompact style={{width:"203%"}}>
+<Card className='progress' isHoverable isCompact>
             <CardTitle>
                   <Progress value={props.data1} title="Overall progress" />
                   <br></br>

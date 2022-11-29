@@ -47,3 +47,15 @@ html, body, #root {
 .SuccessMessage {
   margin: 5px 10px 5px 240px;
 }
+
+.card {
+  width: 203%
+}
+
+.progress {
+  width: 203%;
+}
+
+.textView {
+  margin-right: auto;
+}
