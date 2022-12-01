@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useEffect } from 'react';
 import { useDispatch } from "react-redux";
-import { setDeploymentSteps } from '../redux/actions/deploymentActions';
+import { setDeploymentSteps } from '../store/actions/deploymentActions';
 import { DeploymentSteps } from './DeploymentStep';
 
 export const Installer: React.FunctionComponent = () =>

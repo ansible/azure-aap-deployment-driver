@@ -6,12 +6,12 @@ import { RestartDeployment } from './RestartDeployment';
 import CheckCircleIcon from '@patternfly/react-icons/dist/esm/icons/check-circle-icon';
 import ExclamationCircleIcon from '@patternfly/react-icons/dist/esm/icons/exclamation-circle-icon';
 import { useSelector } from 'react-redux';
-import { RootState } from '@app/redux/reducers';
+import { RootState } from '@app/store/reducers';
 import { ProgressBar } from './ProgressBar';
 
 export const DeploymentSteps = () => {
-    const deploymentSteps = useSelector((state: RootState) => state.allProducts.products);
-    const error = useSelector((state: RootState) => state.allProducts.err);
+    const deploymentSteps = useSelector((state: RootState) => state.deployment.deploymentSteps);
+    const error = useSelector((state: RootState) => state.deployment.err);
     var percent = 0
     var dataLength = 0
     if(deploymentSteps) {

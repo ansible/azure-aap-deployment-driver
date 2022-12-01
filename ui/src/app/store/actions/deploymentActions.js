@@ -1,9 +1,9 @@
 import { ActionTypes } from "../contants/action-types";
-export const setDeploymentSteps = (products, error) => {
-    if (products !== undefined) {
+export const setDeploymentSteps = (deploymentSteps, error) => {
+    if (deploymentSteps !== undefined) {
     return  {
         type: ActionTypes.DEPLOYMENT_STEPS,
-        payload: products,
+        payload: deploymentSteps,
         error: null
     };
 }
