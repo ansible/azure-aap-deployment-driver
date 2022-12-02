@@ -3,7 +3,8 @@ export SHELL := /usr/bin/bash
 BUILD_DIR := build
 INSTALLER_SERVER_DIR := server
 INSTALLER_WEBUI_DIR := ui
-CONTAINER_REGISTRY ?= quay.io/aoc
+CONTAINER_REGISTRY_DEFAULT_SERVER ?= aocinstallerdev.azurecr.io
+CONTAINER_REGISTRY_DEFAULT_NAMESPACE ?= aoc-${USER}
 IMAGE_NAME ?= installer
 IMAGE_TAG ?= latest
 
@@ -23,8 +24,16 @@ ifndef CONTAINER_REGISTRY_PASSWORD
 	$(error Environment variable CONTAINER_REGISTRY_PASSWORD is not set)
 endif
 
+resolve-registry:
+ifndef CONTAINER_REGISTRY_NAMESPACE
+CONTAINER_REGISTRY_NAMESPACE := ${CONTAINER_REGISTRY_DEFAULT_NAMESPACE}
+endif
+ifndef CONTAINER_REGISTRY
+CONTAINER_REGISTRY := ${CONTAINER_REGISTRY_DEFAULT_SERVER}/${CONTAINER_REGISTRY_NAMESPACE}
+endif
+
 .ONESHELL:
-assemble: clean build-server build-web-ui
+assemble: clean resolve-registry build-server build-web-ui
 	@echo "Building docker image: ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
 	docker rmi ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
 	docker build -t ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} .
@@ -34,12 +43,19 @@ save-image: assemble
 	@echo "Saving docker image: ${IMAGE_NAME}:${IMAGE_TAG} to tar.gz archive..."
 	docker image save ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} | gzip --best --stdout > build/${IMAGE_NAME}_${IMAGE_TAG}.tar.gz
 
-.ONESHELL:
-push-image: check-credentials assemble
-	@echo "Pushing image to registry: ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+push-authenticated: check-credentials login-to-registry push-image logout-from-registry
+
+login-to-registry:
+	@echo "Logging in to container registry: ${CONTAINER_REGISTRY}"
 	echo $${CONTAINER_REGISTRY_PASSWORD} | docker login --username ${CONTAINER_REGISTRY_USERNAME} --password-stdin ${CONTAINER_REGISTRY}
-	docker push --all-tags ${CONTAINER_REGISTRY}/${IMAGE_NAME}
+
+logout-from-registry:
 	docker logout ${CONTAINER_REGISTRY}
+
+.ONESHELL:
+push-image: assemble
+	@echo "Pushing image to registry: ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
+	docker push --all-tags ${CONTAINER_REGISTRY}/${IMAGE_NAME}
 
 .ONESHELL:
 build-server:

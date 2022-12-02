@@ -8,11 +8,11 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository == 'ansible/aoc-azure-aap-installer'
     env:
-      CONTAINER_REGISTRY: 'aapregistrydev.azurecr.io/aoc'
       IMAGE_NAME: installer
       IMAGE_TAG: ${{ github.ref_name }}
       CONTAINER_REGISTRY_USERNAME: ${{ secrets.AAP_CONTAINER_REGISTRY_USERNAME }}
       CONTAINER_REGISTRY_PASSWORD: ${{ secrets.AAP_CONTAINER_REGISTRY_PASSWORD }}
+      CONTAINER_REGISTRY: ${{ secrets.AAP_CONTAINER_REGISTRY }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -21,4 +21,4 @@ jobs:
         with:
           go-version: '^1.19.2' # The Go version to download (if necessary) and use.
       - name: Push container image to registry
-        run: make push-image
+        run: make push-authenticated
