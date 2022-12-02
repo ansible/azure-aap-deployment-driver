@@ -1,4 +1,4 @@
-import { ActionTypes } from "../contants/action-types";
+import { ActionTypes } from "../constants/action-types";
 
 const initialState = {
     deploymentSteps: [],
