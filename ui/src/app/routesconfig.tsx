@@ -1,8 +1,6 @@
 import * as React from 'react';
 import { Installer } from './Installer/Installer';
-import { Support } from './Support/Support';
-import { GeneralSettings } from './Settings/General/GeneralSettings';
-import { ProfileSettings } from './Settings/Profile/ProfileSettings';
+import { Documentation } from './Documentation/Documentation';
 
 export interface IAppRoute {
   label?: string; // Excluding the label will exclude the route from the nav sidebar in AppLayout
@@ -31,27 +29,10 @@ const routesConfig : AppRouteConfig[] = [
     title: 'Installer'
   },
   {
-    component: Support,
-    path: '/support',
-    label: 'Support',
-    title: 'Support'
-  },
-  {
-    label: 'Settings',
-    routes: [
-      {
-        component: GeneralSettings,
-        path: '/settings/general',
-        label: 'General',
-        title: 'General settings'
-      },
-      {
-        component: ProfileSettings,
-        path: '/settings/profile',
-        label: 'Profile',
-        title: 'Profile settings'
-      },
-    ],
+    component: Documentation,
+    path: '/documentation',
+    label: 'Documentation',
+    title: 'Documentation'
   }
 ];
 
