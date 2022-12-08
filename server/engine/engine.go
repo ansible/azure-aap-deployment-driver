@@ -172,6 +172,8 @@ func (engine *Engine) waitForStepRestart(execution *model.Execution, waitGroup *
 	defer waitTimer.Stop()
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
+	autoRestartTimer := time.NewTimer(time.Duration(config.GetEnvironment().AUTO_RETRY_DELAY) * time.Second)
+	defer autoRestartTimer.Stop()
 	log.Tracef("Engine will wait %s for deployment step(s) to be restarted...", waitTime)
 	for keepChecking := true; keepChecking; {
 		select {
@@ -188,6 +190,14 @@ func (engine *Engine) waitForStepRestart(execution *model.Execution, waitGroup *
 			engine.database.Instance.Last(&storedExecution, model.Execution{StepID: execution.StepID})
 			if storedExecution.Status == model.Restart {
 				log.Trace("Ending wait because execution has been marked for restart.")
+				keepChecking = false
+			}
+		case <-autoRestartTimer.C:
+			if config.GetEnvironment().AUTO_RETRY {
+				storedExecution := model.Execution{}
+				engine.database.Instance.Last(&storedExecution, model.Execution{StepID: execution.StepID})
+				storedExecution.Status = model.Restart
+				log.Trace("Ending wait because auto-restart enabled, restarting execution.")
 				keepChecking = false
 			}
 		}

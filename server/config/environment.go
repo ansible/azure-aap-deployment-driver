@@ -22,6 +22,8 @@ type envVars struct {
 	ENGINE_RETRY_WAIT          int64
 	EXECUTION_MAX_RETRY        int
 	AZURE_POLLING_FREQ_SECONDS int
+	AUTO_RETRY                 bool
+	AUTO_RETRY_DELAY           int
 }
 
 var environment envVars
@@ -39,6 +41,8 @@ func GetEnvironment() envVars {
 	environment.DB_PATH = "/installerstore/installer.db"
 	environment.TEMPLATE_PATH = "/installerstore/templates"
 	environment.AZURE_POLLING_FREQ_SECONDS = 5
+	environment.AUTO_RETRY = false
+	environment.AUTO_RETRY_DELAY = 60 // Retry after 60 seconds if AUTO_RETRY set
 
 	env := envs.EnvConfig{}
 	env.ReadEnvs()
@@ -117,6 +121,20 @@ func GetEnvironment() envVars {
 		log.Warnf("AZURE_POLLING_FREQ_SECONDS environment variable is not a number, will use default of %d", environment.AZURE_POLLING_FREQ_SECONDS)
 	} else if azurePollingFreq > 1 {
 		environment.AZURE_POLLING_FREQ_SECONDS = int(azurePollingFreq)
+	}
+
+	autoRetry, err := strconv.ParseBool(env.Get("AUTO_RETRY", "false"))
+	if err != nil {
+		log.Warnf("AUTO_RETRY has unrecognized value, please set to true or false.  Using default: %t", environment.AUTO_RETRY)
+	} else {
+		environment.AUTO_RETRY = autoRetry
+	}
+
+	autoRetryDelay, err := strconv.ParseInt(env.Get("AUTO_RETRY_DELAY", "0"), 10, 32)
+	if err != nil {
+		log.Warnf("AUTO_RETRY_DELAY environment variable is not a number, will use default of %d", environment.AUTO_RETRY_DELAY)
+	} else if autoRetryDelay > 1 {
+		environment.AUTO_RETRY_DELAY = int(autoRetryDelay)
 	}
 
 	return environment
