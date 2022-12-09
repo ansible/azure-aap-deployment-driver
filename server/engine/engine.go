@@ -197,6 +197,7 @@ func (engine *Engine) waitForStepRestart(execution *model.Execution, waitGroup *
 				storedExecution := model.Execution{}
 				engine.database.Instance.Last(&storedExecution, model.Execution{StepID: execution.StepID})
 				storedExecution.Status = model.Restart
+				engine.database.Instance.Save(&storedExecution)
 				log.Trace("Ending wait because auto-restart enabled, restarting execution.")
 				keepChecking = false
 			}
