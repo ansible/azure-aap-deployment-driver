@@ -134,7 +134,13 @@ func GetEnvironment() envVars {
 	if err != nil {
 		log.Warnf("AUTO_RETRY_DELAY environment variable is not a number, will use default of %d", environment.AUTO_RETRY_DELAY)
 	} else if autoRetryDelay > 1 {
-		environment.AUTO_RETRY_DELAY = int(autoRetryDelay)
+		if autoRetryDelay > int64(environment.ENGINE_RETRY_WAIT) {
+			maxAutoRetryDelay := environment.ENGINE_RETRY_WAIT / 2
+			log.Warnf("AUTO_RETRY_DELAY cannot exceed ENGINE_RETRY_WAIT, setting to %d", maxAutoRetryDelay)
+			environment.AUTO_RETRY_DELAY = int(maxAutoRetryDelay)
+		} else {
+			environment.AUTO_RETRY_DELAY = int(autoRetryDelay)
+		}
 	}
 
 	return environment

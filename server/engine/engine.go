@@ -163,6 +163,20 @@ func (engine *Engine) startWaitingForRestart(execution *model.Execution, waitGro
 	go engine.waitForStepRestart(execution, waitGroup)
 }
 
+func (engine *Engine) restartStepAfterDelay(delay time.Duration, execution *model.Execution) *time.Timer {
+	if config.GetEnvironment().AUTO_RETRY {
+		log.Tracef("Starting a timer to automatically restart step after: %s", delay)
+		return time.AfterFunc(delay, func() {
+			storedExecution := model.Execution{}
+			engine.database.Instance.Last(&storedExecution, model.Execution{StepID: execution.StepID})
+			storedExecution.Status = model.Restart
+			engine.database.Instance.Save(&storedExecution)
+			log.Trace("Automatically marked execution for restart.")
+		})
+	}
+	return nil
+}
+
 func (engine *Engine) waitForStepRestart(execution *model.Execution, waitGroup *sync.WaitGroup) {
 	defer waitGroup.Done()
 
@@ -172,8 +186,12 @@ func (engine *Engine) waitForStepRestart(execution *model.Execution, waitGroup *
 	defer waitTimer.Stop()
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
-	autoRestartTimer := time.NewTimer(time.Duration(config.GetEnvironment().AUTO_RETRY_DELAY) * time.Second)
-	defer autoRestartTimer.Stop()
+	autoRestartTimer := engine.restartStepAfterDelay(time.Duration(config.GetEnvironment().AUTO_RETRY_DELAY)*time.Second, execution)
+	defer func() {
+		if autoRestartTimer != nil {
+			autoRestartTimer.Stop()
+		}
+	}()
 	log.Tracef("Engine will wait %s for deployment step(s) to be restarted...", waitTime)
 	for keepChecking := true; keepChecking; {
 		select {
@@ -190,15 +208,6 @@ func (engine *Engine) waitForStepRestart(execution *model.Execution, waitGroup *
 			engine.database.Instance.Last(&storedExecution, model.Execution{StepID: execution.StepID})
 			if storedExecution.Status == model.Restart {
 				log.Trace("Ending wait because execution has been marked for restart.")
-				keepChecking = false
-			}
-		case <-autoRestartTimer.C:
-			if config.GetEnvironment().AUTO_RETRY {
-				storedExecution := model.Execution{}
-				engine.database.Instance.Last(&storedExecution, model.Execution{StepID: execution.StepID})
-				storedExecution.Status = model.Restart
-				engine.database.Instance.Save(&storedExecution)
-				log.Trace("Ending wait because auto-restart enabled, restarting execution.")
 				keepChecking = false
 			}
 		}
