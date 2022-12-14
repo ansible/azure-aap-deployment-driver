@@ -10,7 +10,7 @@ GOVERSION := $(shell go version)
 all: test build
 
 print-version:
-	@echo "Using go version $(GOVERSION)"
+	@echo "Using $(GOVERSION)"
 
 build: print-version
 	mkdir -p build && go build -o build/server .
