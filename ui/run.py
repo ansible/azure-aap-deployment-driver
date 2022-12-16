@@ -8,7 +8,7 @@ steps = """
 [
     {
         "ID": 1,
-        "name": "networkingAAPDeploy",
+        "name": "VNET__and_Subnets",
         "order": 0,
         "executions": [
             {
@@ -30,7 +30,7 @@ steps = """
     },
     {
         "ID": 2,
-        "name": "dnsDeploy",
+        "name": "Private__DNS",
         "order": 1,
         "executions": [
             {
@@ -52,7 +52,7 @@ steps = """
     },
     {
         "ID": 3,
-        "name": "storageAAPDeploy",
+        "name": "AAP__Repository",
         "order": 2,
         "executions": [
             {
@@ -89,38 +89,44 @@ steps = """
     },
     {
         "ID": 4,
-        "name": "databaseAAPDeploy",
+        "name": "Database__Server__and__Databases",
         "order": 2,
         "executions": []
     },
     {
         "ID": 5,
-        "name": "kubernetesAAPDeploy",
+        "name": "AKS__Cluster",
         "order": 3,
         "executions": []
     },
     {
         "ID": 6,
-        "name": "operatorsAAPDeploy",
+        "name": "AAP__Operators",
         "order": 4,
         "executions": []
     },
     {
         "ID": 7,
-        "name": "applicationsAAPDeploy",
+        "name": "AAP_Applications",
         "order": 5,
         "executions": []
     },
     {
         "ID": 8,
-        "name": "seededContentDeploy",
+        "name": "Application__Ingress",
         "order": 6,
         "executions": []
     },
     {
         "ID": 9,
-        "name": "appGatewayAAPDeploy",
-        "order": 6,
+        "name": "Seeded__Content",
+        "order": 7,
+        "executions": []
+    },
+    {
+        "ID": 10,
+        "name": "Billing",
+        "order": 7,
         "executions": []
     }
 ]
