@@ -9,7 +9,7 @@ export const Installer: React.FunctionComponent = () =>
   const dispatch = useDispatch();
   var [error, seterr] = React.useState(null)
 
-  const fetchDeploymentSteps = async() => { const response = await fetch('http://localhost:9090/step', {
+  const fetchDeploymentSteps = async() => { const response = await fetch('/api/step', {
   }).then(response => {
     if(response.ok) {
       return response.json()

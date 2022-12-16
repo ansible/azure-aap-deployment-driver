@@ -13,7 +13,7 @@ import {
   {
 
   function handleClick(id) {
-    fetch(`http://127.0.0.1:9090/execution/${id}/restart`, {
+    fetch(`/api/execution/${id}/restart`, {
       method: 'POST',
       mode: 'cors',
       body: JSON.stringify(jsonData)
