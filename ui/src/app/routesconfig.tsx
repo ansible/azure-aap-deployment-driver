@@ -21,7 +21,7 @@ export interface IAppRouteGroup {
 
 export type AppRouteConfig = IAppRoute | IAppRouteGroup;
 
-const routesConfig : AppRouteConfig[] = [
+const routesConfig: AppRouteConfig[] = [
   {
     component: Installer,
     path: '/',

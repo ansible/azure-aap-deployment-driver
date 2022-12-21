@@ -11,7 +11,7 @@ import {
   SkipToContent
 } from '@patternfly/react-core';
 import { routesConfig, IAppRoute, IAppRouteGroup } from '../routesconfig';
-import logo from '../bgimages/Patternfly-Logo.svg';
+import logo from '../bgimages/Ansible.svg';
 
 interface IAppLayout {
   children: React.ReactNode;
@@ -37,7 +37,7 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
       navigate('/');
     }
     return (
-      <img src={logo} onClick={handleClick} alt="PatternFly Logo" />
+      <img src={logo} onClick={handleClick} alt="Ansible Logo" />
     );
   }
 

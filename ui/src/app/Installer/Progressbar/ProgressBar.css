@@ -1,0 +1,10 @@
+.progress {
+  border-style: solid;
+  border-width: 1px;
+  background-color: white;
+  padding: 5px 5px 5px 5px;
+}
+
+.cancelButton {
+  margin-left: 37.5%;
+}

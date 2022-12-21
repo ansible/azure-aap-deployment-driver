@@ -8,7 +8,7 @@ import './app.css'
 const App: React.FunctionComponent = () => (
   <BrowserRouter>
     <AppLayout>
-      <AppRoutes/>
+      <AppRoutes />
     </AppLayout>
   </BrowserRouter>
 );
