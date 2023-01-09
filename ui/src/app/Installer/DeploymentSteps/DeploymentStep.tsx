@@ -5,22 +5,33 @@ import {
 import { RestartDeployment } from '../RestartDeployment/RestartDeployment';
 import CheckCircleIcon from '@patternfly/react-icons/dist/esm/icons/check-circle-icon';
 import ExclamationCircleIcon from '@patternfly/react-icons/dist/esm/icons/exclamation-circle-icon';
-import { useSelector } from 'react-redux';
-import { RootState } from '@app/store/reducers';
 import { ProgressBar } from '../Progressbar/ProgressBar';
 import './DeploymentStep.css'
+import { ApiService } from 'src/Services/apiService';
 
 export const DeploymentSteps = () => {
-  const deploymentSteps = useSelector((state: RootState) => state.deployment.deploymentSteps);
-  const error = useSelector((state: RootState) => state.deployment.err);
   var percent = 0
   var dataLength = 0
-  if (deploymentSteps) {
-    dataLength = deploymentSteps.length
-  }
-  const ProgressChangeHandler = (data) => {
+  const apiService = new ApiService();
+  const [deploymentSteps, setList] = React.useState([] as any);
+  React.useEffect(() => {
+    let mounted = true;
+    apiService.getSteps()
+      .then(items => {
+        if (mounted) {
+          setList(items)
+        }
+      })
+    return () => {
+      mounted = false;
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  dataLength = deploymentSteps.length;
+  const ProgressChangeHandler = (items) => {
     percent = percent + 100 / dataLength;
-    return <Text className='timeTaken' component={TextVariants.h5}>({data['executions'][0]['duration']})</Text>
+    return <Text className='timeTaken' component={TextVariants.h5}>({items['executions'][0]['duration']})</Text>
   };
 
   return (
@@ -39,13 +50,13 @@ export const DeploymentSteps = () => {
               </Title>
               <div className='deploy-step pf-u-box-shadow-md'>
                 <List isPlain isBordered >
-                  {error != null ? <Text component="h1">Unable to reach servers</Text> : <>
-                    {deploymentSteps?.map(data => (
-                      <ListItem className='service-list pf-u-box-shadow-md'>
-                        <Flex className='step-name'>{data['name']}
-                          {data['executions'].length ? <FlexItem align={{ default: 'alignRight' }} className='deployment-info'>
-                            {data['executions'][data['executions'].length - 1]['provisioningState'] === 'Succeeded' ? ProgressChangeHandler(data) : <></>}
-                            {data['executions'][data['executions'].length - 1]['provisioningState'] === 'Succeeded' ? <Tooltip
+                  {deploymentSteps == null ? <Text component="h1">Unable to reach servers</Text> : <>
+                    {deploymentSteps?.map(items => (
+                      <ListItem className='service-list pf-u-box-shadow-md' key={items['ID'].toString()}>
+                        <Flex className='step-name'>{items['name']}
+                          {items['executions'].length ? <FlexItem align={{ default: 'alignRight' }} className='deployment-info'>
+                            {items['executions'][items['executions'].length - 1]['provisioningState'] === 'Succeeded' ? ProgressChangeHandler(items) : <></>}
+                            {items['executions'][items['executions'].length - 1]['provisioningState'] === 'Succeeded' ? <Tooltip
                               content={
                                 <div>Success</div>
                               }
@@ -53,13 +64,13 @@ export const DeploymentSteps = () => {
                                 <CheckCircleIcon />
                               </Icon></Tooltip> : <Tooltip
                                 content={
-                                  <div>{data['executions'][data['executions'].length - 1]['message']}</div>
+                                  <div>{items['executions'][items['executions'].length - 1]['message']}</div>
                                 }
                               ><Icon className='icon1' status="warning">
                                 <ExclamationCircleIcon />
                               </Icon></Tooltip>}
-                            {data['executions'][data['executions'].length - 1]['provisioningState'] === 'Failed' ? <Text className='attempt' component={TextVariants.h5}>({data['executions'].length} attempts)</Text> : <></>}
-                            <RestartDeployment data={data}></RestartDeployment>
+                            {items['executions'][items['executions'].length - 1]['provisioningState'] === 'Failed' ? <Text className='attempt' component={TextVariants.h5}>({items['executions'].length} attempts)</Text> : <></>}
+                            <RestartDeployment data={items}></RestartDeployment>
                           </FlexItem> : <></>}
                         </Flex>
                       </ListItem>
@@ -70,8 +81,6 @@ export const DeploymentSteps = () => {
             <ProgressBar data={deploymentSteps} data1={percent}></ProgressBar>
           </Stack>
         </Bullseye>
-      </PageSection>
-      <PageSection>
       </PageSection>
     </>
   )

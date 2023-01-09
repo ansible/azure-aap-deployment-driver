@@ -1,22 +1,24 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import * as React from 'react';
 import {
-  Button,
-  StackItem,
-  Progress,
-  Text
-} from '@patternfly/react-core';
-import "./ProgressBar.css"
+    Button,
+    Card,
+    CardBody,
+    CardTitle,
+    Progress,
+    StackItem,
+    Text
+  } from '@patternfly/react-core';
+import { ApiService } from 'src/Services/apiService';
+import './ProgressBar.css'
 
-export const ProgressBar = (props) => {
+  const apiService = new ApiService();
 
-  function handleClick(id) {
-    fetch(`http://127.0.0.1:8080/execution/${id}/restart`, {
-      method: 'POST',
-      mode: 'cors',
-      body: JSON.stringify(jsonData)
-    })
-  }
+  export const ProgressBar = (props) =>
+  {
+    function handleClick() {
+      apiService.cancelDeployment();
+   }
 
   return (
     <>
@@ -25,13 +27,8 @@ export const ProgressBar = (props) => {
         <br></br>
         <div>
           {props.data1 === 100 ? <Text className="SuccessMessage" >Your Ansible Automation Platform deployment is now complete.</Text> :
-            <Button className='cancelButton' variant="secondary" onClick={() => handleClick(props.data['ID'])}>Cancel Deployment</Button>}
+            <Button className='cancelButton' variant="secondary" onClick={() => handleClick()}>Cancel Deployment</Button>}
         </div>
       </StackItem>
     </>
-  )
-};
-
-function jsonData(jsonData: any): BodyInit | null | undefined {
-  throw new Error('Function not implemented.');
-}
+  )};
