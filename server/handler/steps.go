@@ -5,7 +5,7 @@ import (
 
 	"server/model"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
 	"gorm.io/gorm"
 )
 
@@ -16,8 +16,7 @@ func GetAllSteps(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 }
 
 func GetStep(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	id := vars["id"]
+	id := chi.URLParam(r, "id")
 	step := getStepOr404(db, id, w, r)
 	if step == nil {
 		return

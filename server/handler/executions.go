@@ -5,7 +5,7 @@ import (
 
 	"server/model"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
 	"gorm.io/gorm"
 )
 
@@ -21,9 +21,7 @@ func GetAllExecutions(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 }
 
 func GetExecution(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-
-	id := vars["id"]
+	id := chi.URLParam(r, "id")
 	execution := getExecutionOr404(db, id, w, r)
 	if execution == nil {
 		return
@@ -41,9 +39,7 @@ func getExecutionOr404(db *gorm.DB, id string, w http.ResponseWriter, r *http.Re
 }
 
 func Restart(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-
-	id := vars["id"]
+	id := chi.URLParam(r, "id")
 	execution := getExecutionOr404(db, id, w, r)
 	if execution == nil {
 		return

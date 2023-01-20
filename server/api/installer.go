@@ -12,12 +12,12 @@ import (
 	"server/handler"
 	"server/persistence"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
 	"gorm.io/gorm"
 )
 
 type Installer struct {
-	router     *mux.Router
+	router     chi.Router
 	db         *gorm.DB
 	httpServer *http.Server
 }
@@ -32,11 +32,11 @@ func NewApp(database *persistence.Database) *Installer {
 
 func (a *Installer) initialize() {
 
-	a.router = mux.NewRouter()
+	a.router = chi.NewRouter()
 	a.setRouters()
 }
 
-func (a *Installer) GetRouter() *mux.Router {
+func (a *Installer) GetRouter() chi.Router {
 	return a.router
 }
 
@@ -56,11 +56,11 @@ func (a *Installer) Status(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *Installer) Get(path string, f func(w http.ResponseWriter, r *http.Request)) {
-	a.router.HandleFunc(path, f).Methods("GET")
+	a.router.Get(path, f)
 }
 
 func (a *Installer) Post(path string, f func(w http.ResponseWriter, r *http.Request)) {
-	a.router.HandleFunc(path, f).Methods("POST")
+	a.router.Post(path, f)
 }
 
 func (a *Installer) GetAllSteps(w http.ResponseWriter, r *http.Request) {
