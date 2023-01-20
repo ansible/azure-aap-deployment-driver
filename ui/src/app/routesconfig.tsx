@@ -1,6 +1,7 @@
 import * as React from 'react';
-import { Installer } from './Installer/Installer';
-import { Documentation } from './Documentation/Documentation';
+// import { Installer } from './Installer/Installer';
+// import { Documentation } from './Documentation/Documentation';
+import { NotAvailableYet } from './NotAvailableYet/NotAvailableYet';
 
 export interface IAppRoute {
   label?: string; // Excluding the label will exclude the route from the nav sidebar in AppLayout
@@ -22,6 +23,7 @@ export interface IAppRouteGroup {
 export type AppRouteConfig = IAppRoute | IAppRouteGroup;
 
 const routesConfig: AppRouteConfig[] = [
+  /*
   {
     component: Installer,
     path: '/',
@@ -33,7 +35,14 @@ const routesConfig: AppRouteConfig[] = [
     path: '/documentation',
     label: 'Documentation',
     title: 'Documentation'
-  }
+  },
+  */
+  {
+    component: NotAvailableYet,
+    path: '/',
+    label: 'Deployment',
+    title: 'Deployment'
+  },
 ];
 
 export { routesConfig };
