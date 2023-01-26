@@ -52,7 +52,7 @@ func (a *Installer) setRouters() {
 }
 
 func (a *Installer) Status(w http.ResponseWriter, r *http.Request) {
-	handler.RespondOk(w)
+	handler.Status(a.db, w, r)
 }
 
 func (a *Installer) Get(path string, f func(w http.ResponseWriter, r *http.Request)) {
