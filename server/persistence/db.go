@@ -28,7 +28,7 @@ func NewInMemoryDB() *Database {
 }
 
 func newDB(dbPath string, migrationModels ...interface{}) (*Database, error) {
-	db, err := newSqliteDB(dbPath, &model.Step{}, &model.Execution{}, &model.Output{}, &model.Status{})
+	db, err := newSqliteDB(dbPath, &model.Step{}, &model.Execution{}, &model.Output{}, &model.Status{}, &model.SessionConfig{})
 	if err != nil {
 		return nil, err
 	}

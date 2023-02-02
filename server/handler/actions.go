@@ -30,7 +30,7 @@ func DeleteContainer(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		log.Printf(msg)
 		respondError(w, http.StatusInternalServerError, msg)
 	}
-	RespondOk(w)
+	respondOk(w)
 }
 
 func Terminate(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
@@ -40,6 +40,6 @@ func Terminate(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	log.Printf("Terminating execution due to API request.  Bye!")
-	RespondOk(w)
+	respondOk(w)
 	controllers.NewExitController().Stop()
 }

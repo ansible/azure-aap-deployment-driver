@@ -24,6 +24,11 @@ type envVars struct {
 	AZURE_POLLING_FREQ_SECONDS int
 	AUTO_RETRY                 bool
 	AUTO_RETRY_DELAY           int
+	SESSION_COOKIE_NAME        string
+	SESSION_COOKIE_PATH        string
+	SESSION_COOKIE_DOMAIN      string
+	SESSION_COOKIE_SECURE      bool
+	SESSION_COOKIE_MAX_AGE     int
 }
 
 var environment envVars
@@ -43,6 +48,11 @@ func GetEnvironment() envVars {
 	environment.AZURE_POLLING_FREQ_SECONDS = 5
 	environment.AUTO_RETRY = false
 	environment.AUTO_RETRY_DELAY = 60 // Retry after 60 seconds if AUTO_RETRY set
+	environment.SESSION_COOKIE_NAME = "madd_session"
+	environment.SESSION_COOKIE_PATH = "/"
+	environment.SESSION_COOKIE_DOMAIN = ""
+	environment.SESSION_COOKIE_SECURE = true
+	environment.SESSION_COOKIE_MAX_AGE = 0 // 0 to make it a session cookie
 
 	env := envs.EnvConfig{}
 	env.ReadEnvs()
@@ -77,6 +87,35 @@ func GetEnvironment() envVars {
 		log.Fatal("MAIN_OUTPUTS environment variable must be set.")
 	}
 	environment.MAIN_OUTPUTS = mainOutputsString
+
+	sessionCookieName := env.Get("SESSION_COOKIE_NAME")
+	if sessionCookieName != "" {
+		environment.SESSION_COOKIE_NAME = sessionCookieName
+	}
+
+	sessionCookiePath := env.Get("SESSION_COOKIE_PATH")
+	if sessionCookiePath != "" {
+		environment.SESSION_COOKIE_PATH = sessionCookiePath
+	}
+
+	sessionCookieDomain := env.Get("SESSION_COOKIE_DOMAIN")
+	if sessionCookieDomain != "" {
+		environment.SESSION_COOKIE_DOMAIN = sessionCookieDomain
+	}
+
+	sessionCookieSecure, err := strconv.ParseBool(env.Get("SESSION_COOKIE_SECURE", "true"))
+	if err != nil {
+		log.Warnf("SESSION_COOKIE_SECURE has unrecognized value, please set to true or false.  Using default: %t", environment.SESSION_COOKIE_SECURE)
+	} else {
+		environment.SESSION_COOKIE_SECURE = sessionCookieSecure
+	}
+
+	sessionCookieMaxAge, err := strconv.ParseInt(env.Get("SESSION_COOKIE_MAX_AGE", "0"), 10, 32)
+	if err != nil {
+		log.Warnf("SESSION_COOKIE_MAX_AGE environment variable is not a number, will use default of %d", environment.SESSION_COOKIE_MAX_AGE)
+	} else if sessionCookieMaxAge != 0 {
+		environment.SESSION_COOKIE_MAX_AGE = int(sessionCookieMaxAge)
+	}
 
 	dbPath := env.Get("DB_PATH")
 	if len(dbPath) > 0 {

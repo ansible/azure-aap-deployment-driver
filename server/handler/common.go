@@ -5,7 +5,10 @@ import (
 	"net/http"
 
 	log "github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
+
+type HandleFuncWithDB func(db *gorm.DB, w http.ResponseWriter, r *http.Request)
 
 func respondJSON(w http.ResponseWriter, status int, payload interface{}) {
 	response, err := json.Marshal(payload)
@@ -29,6 +32,6 @@ func respondError(w http.ResponseWriter, code int, message string) {
 	respondJSON(w, code, map[string]string{"error": message})
 }
 
-func RespondOk(w http.ResponseWriter) {
+func respondOk(w http.ResponseWriter) {
 	w.WriteHeader(http.StatusOK)
 }

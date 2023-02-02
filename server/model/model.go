@@ -57,6 +57,11 @@ type Status struct {
 	FirstStart        time.Time
 }
 
+type SessionConfig struct {
+	BaseModel
+	SessionAuthKey []byte
+}
+
 func UpdateExecution(execution *Execution, result *DeploymentResult, errJson string) {
 	execution.ExecutionCount++
 	execution.ResumeToken = ""

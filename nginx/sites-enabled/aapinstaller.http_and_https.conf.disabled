@@ -23,7 +23,34 @@ server {
         include    nginxconfig.io/proxy.conf;
     }
 
-    location /status { return 200 'OK'; }
+    location /status {
+        default_type text/plain;
+        return 200 'OK';
+    }
+
+    # location specific to login, does not check for session cookie
+    location = /login {
+        index  index.html;
+        try_files /index.html =404;
+    }
+
+    # location specific to application files, no check for session
+    location ~* \.(json|ico|png|jpg|jpeg|svg|txt|js|map|css|html)$ {
+        # serve what ever was requests, or index.html or 404 error
+        try_files $uri =404;
+    }
+
+    # main location for any remaining URI, checks for session cookie
+    location / {
+
+        # if madd_session cookie is not set, redirect to login
+        if ($cookie_madd_session = "") {
+            return 302 /login;
+        }
+
+        # serve what ever was requested, or index.html or 404 error
+        try_files $uri $uri/ /index.html =404;
+    }
 
     # additional config
     include nginxconfig.io/general.conf;

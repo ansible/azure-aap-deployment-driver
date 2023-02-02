@@ -50,5 +50,5 @@ func Restart(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	}
 	execution.Status = model.Restart
 	db.Save(execution)
-	RespondOk(w)
+	respondOk(w)
 }

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"server/api"
-	"server/config"
+	"server/handler"
 	"server/model"
 	"server/persistence"
 	"server/test"
@@ -122,24 +122,12 @@ func TestStatus(t *testing.T) {
 	assert.Equal(t, 200, rec.Code)
 }
 
-func TestMissingBasicAuth(t *testing.T) {
-	req, err := http.NewRequest("GET", "/step", nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	rec := httptest.NewRecorder()
-
-	installer := api.NewApp(database)
-	installer.GetRouter().ServeHTTP(rec, req)
-	assert.Equal(t, 401, rec.Code)
-}
-
 func testHttpRoute(t *testing.T, method string, path string, body io.Reader) *httptest.ResponseRecorder {
 	req, err := http.NewRequest(method, path, body)
 	if err != nil {
 		t.Fatal(err)
 	}
-	req.SetBasicAuth("installer", config.GetEnvironment().PASSWORD)
+	handler.ConfigureAuthenticationForTesting(true)
 	rec := httptest.NewRecorder()
 
 	installer := api.NewApp(database)

@@ -10,6 +10,7 @@ import (
 	"server/config"
 	"server/controllers"
 	"server/handler"
+	"server/model"
 	"server/persistence"
 
 	"github.com/gorilla/mux"
@@ -33,6 +34,7 @@ func NewApp(database *persistence.Database) *Installer {
 func (a *Installer) initialize() {
 
 	a.router = mux.NewRouter()
+	a.configureSessionHelper()
 	a.setRouters()
 }
 
@@ -40,19 +42,41 @@ func (a *Installer) GetRouter() *mux.Router {
 	return a.router
 }
 
-func (a *Installer) setRouters() {
-	a.Get("/status", a.Status)
-	a.Get("/step", handler.BasicAuth(a.GetAllSteps))
-	a.Get("/step/{id}", handler.BasicAuth(a.GetStep))
-	a.Get("/execution", handler.BasicAuth(a.GetAllExecutions))
-	a.Get("/execution/{id}", handler.BasicAuth(a.GetExecution))
-	a.Post("/execution/{id}/restart", handler.BasicAuth(a.Restart))
-	a.Post("/deleteContainer", handler.BasicAuth(a.DeleteContainer))
-	a.Post("/terminate", handler.BasicAuth(a.Terminate))
+func (a *Installer) configureSessionHelper() {
+	sessionConfig := model.SessionConfig{}
+	a.db.Find(&sessionConfig)
+
+	// session auth key is not setup yet, generate one and store it
+	if sessionConfig.SessionAuthKey == nil {
+		b, err := handler.GenerateSessionAuthKey()
+		if err != nil {
+			log.Fatalf("Could not generate session key. %v", err)
+		}
+		sessionConfig.SessionAuthKey = b
+		a.db.Save(&sessionConfig)
+	}
+
+	handler.ConfigureSessionHelper(handler.SessionHelperConfiguration{
+		AuthKey:      sessionConfig.SessionAuthKey,
+		CookieDomain: config.GetEnvironment().SESSION_COOKIE_DOMAIN,
+		CookieName:   config.GetEnvironment().SESSION_COOKIE_NAME,
+		CookiePath:   config.GetEnvironment().SESSION_COOKIE_PATH,
+		Secure:       config.GetEnvironment().SESSION_COOKIE_SECURE,
+		MaxAge:       config.GetEnvironment().SESSION_COOKIE_MAX_AGE,
+	})
 }
 
-func (a *Installer) Status(w http.ResponseWriter, r *http.Request) {
-	handler.Status(a.db, w, r)
+func (a *Installer) setRouters() {
+	a.Get("/status", a.WrapHandler(handler.Status))
+	a.Post("/login", handler.GetLoginHandler("installer", config.GetEnvironment().PASSWORD))
+	a.Post("/logout", handler.EnsureAuthenticated(handler.Logout))
+	a.Get("/step", handler.EnsureAuthenticated(a.WrapHandler(handler.GetAllSteps)))
+	a.Get("/step/{id}", handler.EnsureAuthenticated(a.WrapHandler(handler.GetStep)))
+	a.Get("/execution", handler.EnsureAuthenticated(a.WrapHandler(handler.GetAllExecutions)))
+	a.Get("/execution/{id}", handler.EnsureAuthenticated(a.WrapHandler(handler.GetExecution)))
+	a.Post("/execution/{id}/restart", handler.EnsureAuthenticated(a.WrapHandler(handler.Restart)))
+	a.Post("/deleteContainer", handler.EnsureAuthenticated(a.WrapHandler(handler.DeleteContainer)))
+	a.Post("/terminate", handler.EnsureAuthenticated(a.WrapHandler(handler.Terminate)))
 }
 
 func (a *Installer) Get(path string, f func(w http.ResponseWriter, r *http.Request)) {
@@ -63,32 +87,11 @@ func (a *Installer) Post(path string, f func(w http.ResponseWriter, r *http.Requ
 	a.router.HandleFunc(path, f).Methods("POST")
 }
 
-func (a *Installer) GetAllSteps(w http.ResponseWriter, r *http.Request) {
-	handler.GetAllSteps(a.db, w, r)
-}
-
-func (a *Installer) GetStep(w http.ResponseWriter, r *http.Request) {
-	handler.GetStep(a.db, w, r)
-}
-
-func (a *Installer) GetAllExecutions(w http.ResponseWriter, r *http.Request) {
-	handler.GetAllExecutions(a.db, w, r)
-}
-
-func (a *Installer) GetExecution(w http.ResponseWriter, r *http.Request) {
-	handler.GetExecution(a.db, w, r)
-}
-
-func (a *Installer) Restart(w http.ResponseWriter, r *http.Request) {
-	handler.Restart(a.db, w, r)
-}
-
-func (a *Installer) DeleteContainer(w http.ResponseWriter, r *http.Request) {
-	handler.DeleteContainer(a.db, w, r)
-}
-
-func (a *Installer) Terminate(w http.ResponseWriter, r *http.Request) {
-	handler.Terminate(a.db, w, r)
+// WrapHandler returns an HTTP HandlerFunc for invoking handlers that need DB as first argument
+func (a *Installer) WrapHandler(fn handler.HandleFuncWithDB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		fn(a.db, w, r)
+	}
 }
 
 func (a *Installer) Run() {

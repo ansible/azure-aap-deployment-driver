@@ -38,7 +38,7 @@ trap stop EXIT
 
 log "Fetching installer templates"
 mkdir -p /installerstore/templates
-curl --fail-with-body ${INSTALLER_TEMPLATE_URL} -o /installerstore/templates.zip 
+curl --fail-with-body ${INSTALLER_TEMPLATE_URL} -o /installerstore/templates.zip
 
 RC=$?
 if [ ${RC} -ne 0 ]; then
@@ -174,6 +174,9 @@ if [ ! -f /etc/nginx/sites-enabled/.aapinstaller.https.enabled. ]; then
 else
   log "Nginx already configured for HTTPS."
 fi
+
+# configure session domain to match installer domain
+export SESSION_COOKIE_DOMAIN=${INSTALLER_DOMAIN_NAME}
 
 ./server &
 
