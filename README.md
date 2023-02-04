@@ -1,22 +1,31 @@
-# aoc-azure-aap-installer
+# azure-aap-deployment-driver
 
 ## Overview
 
-This repository contains the Ansible on Clouds managed application installer.
+This repository contains the Ansible on Clouds managed application Deployment
+Driver.
 
-Installer consists of following components:
+The Deployment Driver consists of following components:
 
-- Installer engine driving deployments of the ARM templates
-- Installer web UI providing user way of interacting with installer
+- The engine driving deployments of the ARM templates
+- The web UI providing the user a way to interact with the deployment engine/server
 - Nginx web server and reverse proxy serving the installer web UI and proxy-ing API requests to installer engine
+
+## Development Team
+
+This component is primarily developed by the Ansible Automation Platform on Azure team in Red Hat.
+
+[Github Issues](https://github.com/ansible/azure-aap-deployment-driver/issues) can be used to file tickets for help, bugs, vulnerabilities or other security issues.
+
+Contributions and suggestions are welcome!  Please see below for getting started.
 
 ## Development flow
 
-**NOTE:** Following sections are just outlines, more information needs to be added.
+**NOTE:** The following sections are just outlines, more information needs to be added.
 
-### Running engine locally
+### Running the engine locally
 
-In this flow the main (starting) part of the installation is done by creating and deploying managed application from aap-azurerm repo and rest of the deployment is done locally (with code in this repo).
+In this flow the main (starting) part of the installation is done by creating and deploying a managed application from aap-azurerm repo and rest of the deployment is done locally (with code in this repo).
 
 First, you will need to create a modified container:
 
@@ -29,7 +38,7 @@ Next, the code in the `aap-azurerm` repo needs to be pointed to the modified con
 2. In the file `modules/containerInstance.bicep` modify parameter `image:` to point to your container.
 3. Run the `create.sh` script to create managed app definition and deploy it.
 
-Finally, run deployment engine locally:
+Finally, run the deployment engine locally:
 
 1. Generate templates in the `app-azurerm` repo. After running `./create.sh ...` they will be in `build` and `dist` folders
 2. Copy the `templates` folder into folder `installerstore` in the root of this project
@@ -38,5 +47,10 @@ Finally, run deployment engine locally:
 
 ### Logging into Azure Container registry
 
-- login to Azure (make sure to pick the right tenant with `--tenant ...` parameter)
-- login to ACR: `az acr login --name REGISTRY_NAME`  (use only the registry name, not its URL)
+- log in to Azure (make sure to pick the right tenant with `--tenant ...` parameter)
+- log in to ACR: `az acr login --name REGISTRY_NAME`  (use only the registry name, not its URL)
+
+## SonarQube
+
+Sonar analysis is performed by Github Actions on the code repository for this
+project.  Results available at [sonarcloud.io](https://sonarcloud.io/project/overview?id=aoc-aap-test-installer)
