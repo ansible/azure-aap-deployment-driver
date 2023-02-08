@@ -91,7 +91,23 @@ steps = """
         "ID": 4,
         "name": "Database__Server__and__Databases",
         "order": 2,
-        "executions": []
+        "executions": [
+            {
+                "ID": 5,
+                "status": "Started",
+                "stepId": 4,
+                "error": "",
+                "errorDetails": "",
+                "code": "",
+                "provisioningState": "",
+                "message": "",
+                "details": "",
+                "timestamp": "2022-10-11T16:07:21.2750564Z",
+                "duration": "17.75 seconds",
+                "correlationId": "1a979ebb-9395-459a-9a5b-9309fe2791fd",
+                "executionCount": 1
+            }
+        ]
     },
     {
         "ID": 5,

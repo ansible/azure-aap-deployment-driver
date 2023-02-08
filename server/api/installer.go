@@ -68,7 +68,7 @@ func (a *Installer) configureSessionHelper() {
 
 func (a *Installer) setRouters() {
 	a.Get("/status", a.WrapHandler(handler.Status))
-	a.Post("/login", handler.GetLoginHandler("installer", config.GetEnvironment().PASSWORD))
+	a.Post("/login", handler.GetLoginHandler("admin", config.GetEnvironment().PASSWORD))
 	a.Post("/logout", handler.EnsureAuthenticated(handler.Logout))
 	a.Get("/step", handler.EnsureAuthenticated(a.WrapHandler(handler.GetAllSteps)))
 	a.Get("/step/{id}", handler.EnsureAuthenticated(a.WrapHandler(handler.GetStep)))

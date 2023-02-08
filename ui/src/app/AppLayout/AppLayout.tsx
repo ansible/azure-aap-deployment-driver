@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   Nav,
   NavList,
@@ -8,19 +8,35 @@ import {
   Page,
   PageHeader,
   PageSidebar,
-  SkipToContent
+  SkipToContent,
+  Modal, ModalVariant, Button
 } from '@patternfly/react-core';
-import { routesConfig, IAppRoute, IAppRouteGroup } from '../routesconfig';
 import logo from '../bgimages/Ansible.svg';
+import { logout } from "../apis/auth";
 
 interface IAppLayout {
-  children: React.ReactNode;
+  navigation: any[]
+}
+interface LoadingPropsType {
+  spinnerAriaValueText: string;
+  spinnerAriaLabelledBy?: string;
+  spinnerAriaLabel?: string;
+  isLoading: boolean;
 }
 
-const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
+
+const AppLayout = ({ navigation }: IAppLayout) => {
   const [isNavOpen, setIsNavOpen] = React.useState(true);
   const [isMobileView, setIsMobileView] = React.useState(true);
   const [isNavOpenMobile, setIsNavOpenMobile] = React.useState(false);
+  const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [isPrimaryLoading, setIsPrimaryLoading] = React.useState<boolean>(false);
+
+  const primaryLoadingProps = {} as LoadingPropsType;
+  primaryLoadingProps.spinnerAriaValueText = 'Loading';
+  primaryLoadingProps.spinnerAriaLabelledBy = 'primary-loading-button';
+  primaryLoadingProps.isLoading = isPrimaryLoading;
+  const navigate = useNavigate();
   const onNavToggleMobile = () => {
     setIsNavOpenMobile(!isNavOpenMobile);
   };
@@ -30,6 +46,20 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
   const onPageResize = (props: { mobileView: boolean; windowSize: number }) => {
     setIsMobileView(props.mobileView);
   };
+
+  const handleModalToggle = () => {
+    setIsModalOpen(!isModalOpen);
+  };
+
+  async function submitHandler(event) {
+    event.preventDefault();
+    setIsPrimaryLoading(!isPrimaryLoading);
+    await logout();
+    setTimeout(() => {
+      setIsModalOpen(!isModalOpen);
+      navigate("/login")
+    }, 3000)
+  }
 
   function LogoImg() {
     const navigate = useNavigate();
@@ -52,15 +82,24 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
 
   const location = useLocation();
 
-  const renderNavItem = (route: IAppRoute, index: number) => (
-    <NavItem key={`${route.label}-${index}`} id={`${route.label}-${index}`} isActive={route.path === location.pathname}>
-      <NavLink to={route.path}>
-        {route.label}
-      </NavLink>
-    </NavItem>
-  );
+  const renderNavItem = (route: any, index: number) => {
+    if (route.label !== "Logout") {
+      return (
+        <NavItem key={`${route.label}-${index}`} id={`${route.label}-${index}`} isActive={route.path === location.pathname} to={route.path}>
+          {route.label}
+        </NavItem>
+      )
+    }
+    else {
+      return (
+        <NavItem key={`${route.label}-${index}`} id={`${route.label}-${index}`} isActive={route.path === location.pathname} onClick={handleModalToggle}>
+          {route.label}
+        </NavItem>
+      )
+    }
+  };
 
-  const renderNavGroup = (group: IAppRouteGroup, groupIndex: number) => (
+  const renderNavGroup = (group: any, groupIndex: number) => (
     <NavExpandable
       key={`${group.label}-${groupIndex}`}
       id={`${group.label}-${groupIndex}`}
@@ -74,7 +113,7 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
   const Navigation = (
     <Nav id="nav-primary-simple" theme="dark">
       <NavList id="nav-list-simple">
-        {routesConfig.map(
+        {navigation.map(
           (route, idx) => route.label && (!route.routes ? renderNavItem(route, idx) : renderNavGroup(route, idx))
         )}
       </NavList>
@@ -99,6 +138,7 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
       Skip to Content
     </SkipToContent>
   );
+
   return (
     <Page
       mainContainerId={pageId}
@@ -106,9 +146,24 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
       sidebar={Sidebar}
       onPageResize={onPageResize}
       skipToContent={PageSkipToContent}
-      className="pf-m-full-height"
+      className="pf-m-full-height" >
+      <Outlet />
+      <Modal
+        variant={ModalVariant.small}
+        title="Logout"
+        isOpen={isModalOpen}
+        onClose={handleModalToggle}
+        actions={[
+          <Button key="Logout" id='primary-loading-button' variant="primary" onClick={submitHandler} {...primaryLoadingProps}>
+            {isPrimaryLoading ? 'Logging Out' : 'Confirm'}
+          </Button>,
+          <Button key="cancel" variant="link" onClick={handleModalToggle}>
+            Cancel
+          </Button>
+        ]}
       >
-      {children}
+        Are you sure you want Logout?
+      </Modal>
     </Page>
   );
 };
