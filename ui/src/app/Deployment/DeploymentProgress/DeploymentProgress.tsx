@@ -2,7 +2,7 @@ import React from 'react';
 import { RestartStep } from './RestartStep';
 import { ProgressBar } from './ProgressBar';
 import { CancelDeployment } from './CancelDeployment';
-import { DeploymentProgressData, DeploymentStepData} from '../../apis/types';
+import { DeploymentProgressData} from '../../apis/types';
 import './DeploymentProgress.css'
 import { PageSection, Bullseye, Stack } from '@patternfly/react-core';
 
