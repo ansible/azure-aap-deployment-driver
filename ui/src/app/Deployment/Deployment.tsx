@@ -33,7 +33,7 @@ export const Deployment = () => {
     <>
       {/* TODO Add some place holder for case when data is not available */}
       {stepsData && <DeploymentSteps stepsData={stepsData}></DeploymentSteps>}
-      {progressData && stepsData && <DeploymentProgress progressData={progressData} stepsData={stepsData}></DeploymentProgress>}
+      {progressData && <DeploymentProgress progressData={progressData}></DeploymentProgress>}
     </>
   )
 }

@@ -33,6 +33,7 @@ export const RestartStep = ({ stepExId, stepName }: IRestartDeploymentProps) => 
       console.log(error)
     }
     setTimeout(()=>{
+      setIsPrimaryLoading(false)
     }, 10000)
   }
 

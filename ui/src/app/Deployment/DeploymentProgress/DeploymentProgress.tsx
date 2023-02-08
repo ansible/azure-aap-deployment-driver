@@ -8,11 +8,10 @@ import { PageSection, Bullseye, Stack } from '@patternfly/react-core';
 
 interface IDeploymentProgressProps {
   progressData: DeploymentProgressData
-  stepsData: DeploymentStepData[]
 }
 
 
-export const DeploymentProgress = ({ progressData, stepsData }: IDeploymentProgressProps) => {
+export const DeploymentProgress = ({ progressData}: IDeploymentProgressProps) => {
 
   // render restart for the first failed step
   const restartStep = (progressData.failedStepIds.length > 0 ?
@@ -21,7 +20,7 @@ export const DeploymentProgress = ({ progressData, stepsData }: IDeploymentProgr
   )
 
   // render progress bar only if no failed steps
-  const progressBar = (progressData.failedStepIds.length < 0 ?
+  const progressBar = (progressData.failedStepIds.length <= 0 ?
     <ProgressBar progressPercent={progressData.progress} isComplete={progressData.isComplete}></ProgressBar> :
     <></>
   )
