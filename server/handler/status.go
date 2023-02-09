@@ -13,6 +13,7 @@ type InstallationStatus string
 
 const (
 	Deploying InstallationStatus = "DEPLOYING"
+	Canceled  InstallationStatus = "CANCELED"
 	Failed    InstallationStatus = "FAILED"
 	Done      InstallationStatus = "DONE"
 )
@@ -29,6 +30,10 @@ func Status(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		latestExecution := getLatestExecution(db, step)
 		if latestExecution.Status == model.PermanentlyFailed {
 			status = Failed
+			break
+		} else if latestExecution.Status == model.Canceled {
+			status = Canceled
+			break
 		} else if latestExecution.Status != model.Succeeded {
 			status = Deploying
 		}

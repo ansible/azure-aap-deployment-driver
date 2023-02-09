@@ -25,7 +25,7 @@ func main() {
 
 	engine := engine.NewEngine(exit.Context(), db, deploymentsClient)
 
-	app := api.NewApp(db)
+	app := api.NewApp(db, engine)
 
 	// Start listening for shutdown signal
 	exit.Start()
