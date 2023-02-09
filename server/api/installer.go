@@ -9,6 +9,7 @@ import (
 
 	"server/config"
 	"server/controllers"
+	"server/engine"
 	"server/handler"
 	"server/model"
 	"server/persistence"
@@ -20,12 +21,15 @@ import (
 type Installer struct {
 	router     *mux.Router
 	db         *gorm.DB
+	engine     *engine.Engine
 	httpServer *http.Server
 }
 
-func NewApp(database *persistence.Database) *Installer {
+// func NewApp(database *persistence.Database) *Installer {
+func NewApp(database *persistence.Database, engine *engine.Engine) *Installer {
 	app := &Installer{
-		db: database.Instance,
+		db:     database.Instance,
+		engine: engine,
 	}
 	app.initialize()
 	return app
@@ -67,16 +71,17 @@ func (a *Installer) configureSessionHelper() {
 }
 
 func (a *Installer) setRouters() {
-	a.Get("/status", a.WrapHandler(handler.Status))
+	a.Get("/status", a.WrapHandlerWithDB(handler.Status))
 	a.Post("/login", handler.GetLoginHandler("admin", config.GetEnvironment().PASSWORD))
 	a.Post("/logout", handler.EnsureAuthenticated(handler.Logout))
-	a.Get("/step", handler.EnsureAuthenticated(a.WrapHandler(handler.GetAllSteps)))
-	a.Get("/step/{id}", handler.EnsureAuthenticated(a.WrapHandler(handler.GetStep)))
-	a.Get("/execution", handler.EnsureAuthenticated(a.WrapHandler(handler.GetAllExecutions)))
-	a.Get("/execution/{id}", handler.EnsureAuthenticated(a.WrapHandler(handler.GetExecution)))
-	a.Post("/execution/{id}/restart", handler.EnsureAuthenticated(a.WrapHandler(handler.Restart)))
-	a.Post("/deleteContainer", handler.EnsureAuthenticated(a.WrapHandler(handler.DeleteContainer)))
-	a.Post("/terminate", handler.EnsureAuthenticated(a.WrapHandler(handler.Terminate)))
+	a.Get("/step", handler.EnsureAuthenticated(a.WrapHandlerWithDB(handler.GetAllSteps)))
+	a.Get("/step/{id}", handler.EnsureAuthenticated(a.WrapHandlerWithDB(handler.GetStep)))
+	a.Get("/execution", handler.EnsureAuthenticated(a.WrapHandlerWithDB(handler.GetAllExecutions)))
+	a.Get("/execution/{id}", handler.EnsureAuthenticated(a.WrapHandlerWithDB(handler.GetExecution)))
+	a.Post("/execution/{id}/restart", handler.EnsureAuthenticated(a.WrapHandlerWithDB(handler.Restart)))
+	a.Post("/cancelAllSteps", handler.EnsureAuthenticated(a.WrapHandlerWithDBAndEngine(handler.CancelAllSteps)))
+	a.Post("/deleteContainer", handler.EnsureAuthenticated(a.WrapHandlerWithDB(handler.DeleteContainer)))
+	a.Post("/terminate", handler.EnsureAuthenticated(a.WrapHandlerWithDB(handler.Terminate)))
 }
 
 func (a *Installer) Get(path string, f func(w http.ResponseWriter, r *http.Request)) {
@@ -87,10 +92,16 @@ func (a *Installer) Post(path string, f func(w http.ResponseWriter, r *http.Requ
 	a.router.HandleFunc(path, f).Methods("POST")
 }
 
-// WrapHandler returns an HTTP HandlerFunc for invoking handlers that need DB as first argument
-func (a *Installer) WrapHandler(fn handler.HandleFuncWithDB) http.HandlerFunc {
+// WrapHandlerWithDB returns an HTTP HandlerFunc for invoking handlers that need DB as first argument
+func (a *Installer) WrapHandlerWithDB(fn handler.HandleFuncWithDB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		fn(a.db, w, r)
+	}
+}
+
+func (a *Installer) WrapHandlerWithDBAndEngine(fn handler.HandleFuncWithDBAndEngine) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		fn(a.db, a.engine, w, r)
 	}
 }
 

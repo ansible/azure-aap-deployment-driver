@@ -52,7 +52,7 @@ func (engine *Engine) Run() {
 				engine.database.Instance.Save(&latestExecution)
 
 				engine.startExecution(step, &model.Execution{}, &executionWaitGroup)
-			case model.Succeeded:
+			case model.Succeeded, model.Canceled:
 				continue
 			}
 			currentExecutions[stepIndex] = &latestExecution
@@ -66,24 +66,30 @@ func (engine *Engine) Run() {
 		if engine.context.Err() == nil {
 			log.Info("Checking execution status of completed steps...")
 			// first check all executions for those that can't be restarted anymore
-			foundPermanentlyFailedExecution := false
+			terminateMainLoop := false
 			for _, execution := range currentExecutions {
-				if execution != nil && execution.Status != model.Succeeded && execution.ExecutionCount == engine.maxExecutionRestarts {
+				if execution != nil && execution.Status == model.Canceled {
+					// cancelled execution means the whole process will be cancelled
+					log.Warn("Found cancelled execution.")
+					terminateMainLoop = true
+					break
+				}
+				if execution != nil && execution.Status != model.Succeeded && execution.Status != model.Canceled && execution.ExecutionCount == engine.maxExecutionRestarts {
 					log.Error("Found failed deployment step that can not be restarted again.")
-					foundPermanentlyFailedExecution = true
+					terminateMainLoop = true
 					execution.Status = model.PermanentlyFailed
 					engine.database.Instance.Save(execution)
 					break
 				}
 			}
-			if foundPermanentlyFailedExecution {
-				log.Info("Will terminate main loop because at least one deployment step can not be restarted.")
+			if terminateMainLoop {
+				log.Info("Will terminate main loop because steps can't be restarted or deployment is being cancelled.")
 				break
 			}
 			// check all executions for those can be restarted
 			for _, execution := range currentExecutions {
 				// check if step can be restarted
-				if execution != nil && execution.Status != model.Succeeded {
+				if execution != nil && execution.Status != model.Succeeded && execution.Status != model.Canceled {
 					restartRequired = true
 					engine.startWaitingForRestart(execution, &executionWaitGroup)
 				}
@@ -283,4 +289,11 @@ func (engine *Engine) runStep(step model.Step, execution *model.Execution, waitG
 	// store execution
 	model.UpdateExecution(execution, deployResponse, "")
 	engine.database.Instance.Save(&execution)
+}
+
+func (engine *Engine) CancelStep(step model.Step) {
+	err := azure.CancelDeployment(engine.context, engine.deploymentsClient, step.Name)
+	if err != nil {
+		log.Errorf("Couldn't cancel deployment: %v", err)
+	}
 }
