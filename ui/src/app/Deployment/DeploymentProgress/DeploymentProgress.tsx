@@ -20,7 +20,7 @@ export const DeploymentProgress = ({ progressData}: IDeploymentProgressProps) =>
   )
 
   // render progress bar only if no failed steps
-  const progressBar = (progressData.failedStepIds.length <= 0 ?
+  const progressBar = (progressData.failedStepIds.length == 0 ?
     <ProgressBar progressPercent={progressData.progress} isComplete={progressData.isComplete}></ProgressBar> :
     <></>
   )
