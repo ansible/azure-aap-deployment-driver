@@ -29,7 +29,7 @@ export const StepStatus = ({ stepStatusData }: IStepStatusProps) => {
   const statusTooltip = (stepStatusData.status === StepStatuses.SUCCEEDED ?
     <Tooltip content={<div>Success</div>}><Icon className='icon1' status="success"><CheckCircleIcon /></Icon></Tooltip> :
     stepStatusData.status === StepStatuses.FAILED ?
-      <Tooltip content={<div>{stepStatusData.message}</div>}><Icon className='icon1' status="warning"><ExclamationCircleIcon /></Icon></Tooltip> :
+      <Tooltip content={<div>{stepStatusData.error}</div>}><Icon className='icon1' status="warning"><ExclamationCircleIcon /></Icon></Tooltip> :
       <></>
   )
 
