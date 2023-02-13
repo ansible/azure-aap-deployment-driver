@@ -6,11 +6,14 @@ export function login(loginData: ILoginData) :Promise<IAuthResponse>  {
 		body: JSON.stringify(loginData),
 		headers: {
 			"Content-Type": "application/json"
-		}
+		},
 	}).then((resp) => {
 		// both 200 and 401 should come back with JSON
-		if (resp.ok || resp.status === 401) {
+		if (resp.ok) {
 			return resp.json()
+		}
+		else if (resp.status === 401){
+			return ({status:"", error:`Incorrect Password`} as IAuthResponse);
 		}
 		return ({status:"", error:`Unexpected response with status code: ${resp.status}`} as IAuthResponse);
 	}).catch((err) =>{

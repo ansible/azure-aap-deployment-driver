@@ -13,7 +13,21 @@ module.exports = function(app) {
   }
   app.use('/api/login', (req, res, next)=>{
     res.cookie(cookieName, cookieValue,cookieOptions)
-    res.json({status: "success"})
+    res.json({
+      error: [
+       {
+        "error": "error",
+        "domain": "global",
+        "reason": "required",
+        "message": "Login Required",
+        "locationType": "header",
+        "location": "Authorization"
+       }
+      ],
+      "code": 401,
+      "message": "Login Required",
+      "status": 401
+      })
   })
   app.use('/api/logout', (req, res, next)=>{
     res.clearCookie(cookieName)
