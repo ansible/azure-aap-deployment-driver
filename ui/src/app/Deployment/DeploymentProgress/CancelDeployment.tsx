@@ -2,7 +2,7 @@ import React from 'react';
 import { Bullseye, Button, Modal, ModalVariant, StackItem } from '@patternfly/react-core';
 import { cancelDeployment } from '../../apis/deployment';
 
-export const CancelDeployment = () => {
+export const CancelDeployment = ({setCancelled}) => {
 
   const [isModalOpen, setIsModalOpen] = React.useState(false);
 
@@ -14,7 +14,11 @@ export const CancelDeployment = () => {
     try {
       const cancelled = await cancelDeployment()
       // TODO add visual confirmation that deployment was cancelled
-      console.log(`Deployment was cancelled: ${cancelled}`)
+      console.log(`Deployment was cancelled: ${cancelled}`);
+      setCancelled(true);
+      document.getElementsByClassName("cancelButton")[0].remove();
+      document.getElementsByClassName("retryButton")[0].remove();
+      document.getElementsByClassName("restartText")[0].innerHTML = "Deployment Has Been Cancelled";
       setIsModalOpen(!isModalOpen);
     } catch (error) {
       console.log(error)

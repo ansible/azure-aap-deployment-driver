@@ -6,9 +6,11 @@ import { DeploymentStepStatusData, StepStatuses } from '../../apis/types';
 
 interface IStepStatusProps {
   stepStatusData: DeploymentStepStatusData
+  isCancelled:boolean
 }
 
-export const StepStatus = ({ stepStatusData }: IStepStatusProps) => {
+export const StepStatus = ({ stepStatusData, isCancelled}: IStepStatusProps) => {
+
 
   const startState = (stepStatusData.status === StepStatuses.STARTED ?
     <Icon className='icon1' isInProgress={true}><CheckCircleIcon /></Icon> :
@@ -29,15 +31,18 @@ export const StepStatus = ({ stepStatusData }: IStepStatusProps) => {
   const statusTooltip = (stepStatusData.status === StepStatuses.SUCCEEDED ?
     <Tooltip content={<div>Success</div>}><Icon className='icon1' status="success"><CheckCircleIcon /></Icon></Tooltip> :
     stepStatusData.status === StepStatuses.FAILED ?
-      <Tooltip content={<div>{stepStatusData.error}</div>}><Icon className='icon1' status="warning"><ExclamationCircleIcon /></Icon></Tooltip> :
+      <Tooltip content={<div>{stepStatusData.error}</div>}><Icon className='icon1' status="danger"><ExclamationCircleIcon /></Icon></Tooltip> :
       <></>
   )
+
+  const cancelledState = (isCancelled===true ? <Tooltip content={<div>{"Cancelled"}</div>}><Icon className='icon1' status="warning"><ExclamationCircleIcon /></Icon></Tooltip> :<></>)
 
   return (
     <Flex align={{ default: 'alignRight' }} className='deployment-info'>
       <FlexItem>{stepDuration}</FlexItem>
       <FlexItem>{attemptsText}</FlexItem>
-      <FlexItem className="statusTooltip" align={{ default: 'alignRight' }} >{statusTooltip}{startState}</FlexItem>
+      {isCancelled ? <FlexItem className="statusTooltip" align={{ default: 'alignRight' }} >{cancelledState}</FlexItem>:
+      <FlexItem className="statusTooltip" align={{ default: 'alignRight' }} >{statusTooltip}{startState}</FlexItem>}
     </Flex>
   )
 };

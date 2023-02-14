@@ -7,10 +7,11 @@ import './Steps.css'
 
 interface IDeploymentStepsProps {
   stepsData: DeploymentStepData[]
+  isCancelled:boolean
 }
 
 
-export const DeploymentSteps = ({ stepsData }: IDeploymentStepsProps) => {
+export const DeploymentSteps = ({ stepsData, isCancelled }: IDeploymentStepsProps, ) => {
   return (
     <>
       <PageSection variant={PageSectionVariants.light}>
@@ -27,7 +28,7 @@ export const DeploymentSteps = ({ stepsData }: IDeploymentStepsProps) => {
               </Title>
               <div className='deploy-step pf-u-box-shadow-md'>
                 <List isPlain isBordered >
-                  {stepsData?.map(stepData => (<DeploymentStep key={stepData.id} stepData={stepData}></DeploymentStep>))}
+                  {stepsData?.map(stepData => (<DeploymentStep key={stepData.id} stepData={stepData} isCancelled={isCancelled}></DeploymentStep>))}
                 </List>
               </div>
             </StackItem>

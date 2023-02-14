@@ -17,7 +17,6 @@ interface LoadingPropsType {
 export const RestartStep = ({ stepExId, stepName }: IRestartDeploymentProps) => {
 
   const [isPrimaryLoading, setIsPrimaryLoading] = React.useState<boolean>(false);
-
   const primaryLoadingProps = {} as LoadingPropsType;
   primaryLoadingProps.spinnerAriaValueText = 'Loading';
   primaryLoadingProps.spinnerAriaLabelledBy = 'primary-loading-button';
@@ -40,7 +39,7 @@ export const RestartStep = ({ stepExId, stepName }: IRestartDeploymentProps) => 
   return (
     <><StackItem>
       <Bullseye>
-        <h3> Deployment step "{stepName}" failed. Press a button below to restart it.</h3>
+        <h2 className='restartText'> Deployment step "{stepName}" failed. Press a button below to restart it.</h2>
       </Bullseye>
     </StackItem>
       <StackItem>
