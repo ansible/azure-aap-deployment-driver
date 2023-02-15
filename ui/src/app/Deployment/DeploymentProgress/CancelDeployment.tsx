@@ -17,8 +17,8 @@ export const CancelDeployment = ({setCancelled}) => {
       console.log(`Deployment was cancelled: ${cancelled}`);
       setCancelled(true);
       document.getElementsByClassName("cancelButton")[0].remove();
-      document.getElementsByClassName("retryButton")[0].remove();
-      document.getElementsByClassName("restartText")[0].innerHTML = "Deployment Has Been Cancelled";
+      document.getElementsByClassName("retryButton")[0]?.remove();
+      if(document.getElementsByClassName("infoText")){document.getElementsByClassName("infoText")[0].innerHTML = "Deployment Has Been Cancelled"}
       setIsModalOpen(!isModalOpen);
     } catch (error) {
       console.log(error)
@@ -39,10 +39,10 @@ export const CancelDeployment = ({setCancelled}) => {
               Confirm
             </Button>,
             <Button key="cancel" variant="link" onClick={handleModalToggle}>
-              Cancel
+              No
             </Button>
           ]}>
-          Are you sure you want to cancel your deployment? If so, click the 'Confirm' Button or press the 'Cancel' Button to return to your Deployment.
+          Are you sure you want to cancel your deployment? If so, click the 'Confirm' Button or press the 'No' Button to return to your Deployment.
         </Modal>
       </Bullseye>
     </StackItem>

@@ -39,7 +39,7 @@ export const RestartStep = ({ stepExId, stepName }: IRestartDeploymentProps) => 
   return (
     <><StackItem>
       <Bullseye>
-        <h2 className='restartText'> Deployment step "{stepName}" failed. Press a button below to restart it.</h2>
+        <h2 className='infoText'> Deployment step "{stepName}" failed. Press the Restart button below to restart it.</h2>
       </Bullseye>
     </StackItem>
       <StackItem>
