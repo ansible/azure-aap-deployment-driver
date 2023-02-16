@@ -4,7 +4,7 @@ all: test build
 
 # this will print a message if nvm is not installed
 ${NVM_SCRIPT}:
-	@echo NVM was not found! You can provide NVM_SCRIPT to make with the path..
+	@echo NVM was not found, please provide the location of the script via env variable NVM_SCRIPT.
 	false
 
 .PHONY: nvm

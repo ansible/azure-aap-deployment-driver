@@ -60,6 +60,5 @@ build-server:
 
 build-web-ui:
 	@echo "Building installer web UI"
-	cd ${INSTALLER_WEBUI_DIR}
 	make build -C ${INSTALLER_WEBUI_DIR}
 	cp -ap ${INSTALLER_WEBUI_DIR}/build/. ${BUILD_DIR}/public
