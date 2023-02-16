@@ -12,9 +12,9 @@ module.exports = function(app) {
     path: '/',
     httpOnly: true
   }
-
+  // this allows access to parsed request body
   app.use(express.json())
-  
+
   app.use('/api/login', (req, res, next)=>{
     res.cookie(cookieName, cookieValue,cookieOptions)
     const {uid,pwd} = req.body

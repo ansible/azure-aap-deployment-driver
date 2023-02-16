@@ -14,7 +14,6 @@ export const CancelDeployment = ({setCancelled}) => {
     try {
       const cancelled = await cancelDeployment()
       // TODO add visual confirmation that deployment was cancelled
-      console.log(`Deployment was cancelled: ${cancelled}`);
       setCancelled(true);
       document.getElementsByClassName("cancelButton")[0].remove();
       document.getElementsByClassName("retryButton")[0]?.remove();

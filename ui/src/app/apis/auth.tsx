@@ -6,7 +6,7 @@ export function login(loginData: ILoginData) :Promise<IAuthResponse>  {
 		body: JSON.stringify(loginData),
 		headers: {
 			"Content-Type": "application/json"
-		},
+		}
 	}).then((resp) => {
 		// both 200 and 401 should come back with JSON
 		if (resp.ok) {
