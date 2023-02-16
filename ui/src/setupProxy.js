@@ -1,6 +1,7 @@
 // THIS IS DEVELOPMENT HELPER FILE! NOT PART OF THE WEB UI APP!
+const express = require('express')
+const { createProxyMiddleware, fixRequestBody} = require('http-proxy-middleware');
 
-const { createProxyMiddleware } = require('http-proxy-middleware');
 
 module.exports = function(app) {
   const appFilesRegexp = /\.(json|ico|png|jpg|jpeg|svg|txt|js|map|css|html|woff|woff2)$/i;
@@ -11,9 +12,19 @@ module.exports = function(app) {
     path: '/',
     httpOnly: true
   }
+  // this allows access to parsed request body
+  app.use(express.json())
+
   app.use('/api/login', (req, res, next)=>{
     res.cookie(cookieName, cookieValue,cookieOptions)
-    res.json({status: "success"})
+    const {uid,pwd} = req.body
+    const response = ((uid && uid === 'admin') && (pwd && typeof pwd === 'string' && pwd.length >= 12 )) ?
+      {status: "success"} :
+      {
+        error: "Login Required",
+        "status": 401
+      }
+    res.json(response)
   })
   app.use('/api/logout', (req, res, next)=>{
     res.clearCookie(cookieName)
@@ -24,6 +35,7 @@ module.exports = function(app) {
     createProxyMiddleware({
       target: 'http://127.0.0.1:55080',
       changeOrigin: true,
+      onProxyReq: fixRequestBody,
 			pathRewrite: {
 				'^/api/': '/' // rewrite path
 			}

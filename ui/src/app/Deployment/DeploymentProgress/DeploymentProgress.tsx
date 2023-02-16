@@ -1,18 +1,18 @@
-import React from 'react';
+import React, { Dispatch, SetStateAction } from 'react';
 import { RestartStep } from './RestartStep';
 import { ProgressBar } from './ProgressBar';
 import { CancelDeployment } from './CancelDeployment';
-import { DeploymentProgressData, DeploymentStepData} from '../../apis/types';
+import { DeploymentProgressData} from '../../apis/types';
 import './DeploymentProgress.css'
 import { PageSection, Bullseye, Stack } from '@patternfly/react-core';
 
 interface IDeploymentProgressProps {
   progressData: DeploymentProgressData
-  stepsData: DeploymentStepData[]
+  setCancelled: Dispatch<SetStateAction<boolean>>
 }
 
 
-export const DeploymentProgress = ({ progressData, stepsData }: IDeploymentProgressProps) => {
+export const DeploymentProgress = ({ progressData, setCancelled}: IDeploymentProgressProps ) => {
 
   // render restart for the first failed step
   const restartStep = (progressData.failedStepIds.length > 0 ?
@@ -21,7 +21,7 @@ export const DeploymentProgress = ({ progressData, stepsData }: IDeploymentProgr
   )
 
   // render progress bar only if no failed steps
-  const progressBar = (progressData.failedStepIds.length < 0 ?
+  const progressBar = (progressData.failedStepIds.length === 0 ?
     <ProgressBar progressPercent={progressData.progress} isComplete={progressData.isComplete}></ProgressBar> :
     <></>
   )
@@ -34,7 +34,7 @@ export const DeploymentProgress = ({ progressData, stepsData }: IDeploymentProgr
           <Stack hasGutter className='deployProgress'>
             {restartStep}
             {progressBar}
-            <CancelDeployment />
+            <CancelDeployment setCancelled={setCancelled}/>
           </Stack>
         </Bullseye>
       </PageSection>

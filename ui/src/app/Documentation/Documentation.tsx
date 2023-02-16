@@ -21,7 +21,7 @@ export const Documentation = () => {
         <EmptyStateBody>
           Documentation links below:
         </EmptyStateBody>
-        <Button component="a" href="https://docs.google.com/document/d/1jdr3QHJa8sMYzmYD2itliYtlhswjryhR2ZhaAZVBVOw/edit#heading=h.dzey4iizy1h" target="_blank" variant="primary">
+        <Button component="a" href="https://access.redhat.com/documentation/en-us/ansible_on_clouds/2.x/html/red_hat_ansible_automation_platform_on_microsoft_azure_guide/index" target="_blank" variant="primary">
           Link to core docs</Button>{' '}
       </EmptyState>
     </PageSection>

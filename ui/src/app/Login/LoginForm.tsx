@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { login } from "../apis/auth";
 import { LoginForm } from '@patternfly/react-core';
 import ExclamationCircleIcon from '@patternfly/react-icons/dist/esm/icons/exclamation-circle-icon';
-
+import './LoginForm.css'
 
 export function FormLogin() {
 	const [loginMessage, setLoginMessage] = useState("Please use the administrative credentials for Red Hat Ansible Automation Platform on Microsoft Azure.")
@@ -14,7 +14,8 @@ export function FormLogin() {
 		try {
 			const response = await login({ uid: uid, pwd: pwd })
 			if ("error" in response && response.error) {
-				setLoginMessage(response.error)
+				setLoginMessage("Incorrect Password")
+				setShowHelperText(true);
 			} else {
 				navigate("/")
 			}
@@ -42,8 +43,7 @@ export function FormLogin() {
 		setShowHelperText(!'admin' || !password);
 		loginHandler('admin', password);
 	};
-
-
+ 
 	return (
 		<LoginForm
 			showHelperText={showHelperText}
@@ -57,6 +57,8 @@ export function FormLogin() {
 			isValidPassword={isValidPassword}
 			onLoginButtonClick={onLoginButtonClick}
 			loginButtonLabel="Log in"
+		
 		/>
+			
 	);
 }
