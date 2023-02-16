@@ -1,5 +1,3 @@
-export SHELL := /usr/bin/bash
-
 BUILD_DIR := build
 INSTALLER_SERVER_DIR := server
 INSTALLER_WEBUI_DIR := ui
@@ -32,7 +30,6 @@ ifndef CONTAINER_REGISTRY
 CONTAINER_REGISTRY := ${CONTAINER_REGISTRY_DEFAULT_SERVER}/${CONTAINER_REGISTRY_NAMESPACE}
 endif
 
-.ONESHELL:
 assemble: clean resolve-registry build-server build-web-ui
 	@echo "Building docker image: ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
 	docker rmi ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
@@ -52,23 +49,17 @@ login-to-registry:
 logout-from-registry:
 	docker logout ${CONTAINER_REGISTRY}
 
-.ONESHELL:
 push-image: assemble
 	@echo "Pushing image to registry: ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
 	docker push --all-tags ${CONTAINER_REGISTRY}/${IMAGE_NAME}
 
-.ONESHELL:
 build-server:
 	@echo "Building installer server"
-	cd ${INSTALLER_SERVER_DIR}
-	make build
-	cd ..
+	make build -C ${INSTALLER_SERVER_DIR}
 	cp ${INSTALLER_SERVER_DIR}/build/server ${BUILD_DIR}
 
-.ONESHELL:
 build-web-ui:
 	@echo "Building installer web UI"
 	cd ${INSTALLER_WEBUI_DIR}
-	make build
-	cd ..
+	make build -C ${INSTALLER_WEBUI_DIR}
 	cp -ap ${INSTALLER_WEBUI_DIR}/build/. ${BUILD_DIR}/public
