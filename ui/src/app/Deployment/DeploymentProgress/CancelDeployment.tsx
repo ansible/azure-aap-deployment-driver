@@ -14,10 +14,14 @@ export const CancelDeployment = ({setCancelled}) => {
     try {
       const cancelled = await cancelDeployment()
       // TODO add visual confirmation that deployment was cancelled
+      console.log(`Deployment was cancelled: ${cancelled}`);
       setCancelled(true);
       document.getElementsByClassName("cancelButton")[0].remove();
       document.getElementsByClassName("retryButton")[0]?.remove();
-      if(document.getElementsByClassName("infoText")){document.getElementsByClassName("infoText")[0].innerHTML = "Deployment Has Been Cancelled"}
+      if(document.getElementsByClassName("infoText")){document.getElementsByClassName("infoText")[0].innerHTML = 
+      "Your Ansible on Azure deployment is cancelled. You still need to delete the managed application from your Azure subscription."+
+        "In the Azure Portal, navigate to 'Resource Groups', and then to the resource group where you deployed the instance of the managed application. "+
+        "Select the managed application from the list of resources and then click 'Delete' to remove all resources associated with the managed application"}
       setIsModalOpen(!isModalOpen);
     } catch (error) {
       console.log(error)
