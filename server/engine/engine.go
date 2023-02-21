@@ -37,7 +37,7 @@ func (engine *Engine) Run() {
 		currentExecutions := make([]*model.Execution, len(stepsToRun))
 
 		for stepIndex, step := range stepsToRun {
-			latestExecution := engine.getLatestExecution(step)
+			latestExecution := engine.GetLatestExecution(step)
 
 			switch latestExecution.Status {
 			case model.Started:
@@ -151,7 +151,7 @@ func (engine *Engine) Done() <-chan struct{} {
 	return engine.done
 }
 
-func (engine *Engine) getLatestExecution(step model.Step) model.Execution {
+func (engine *Engine) GetLatestExecution(step model.Step) model.Execution {
 	latestExecution := model.Execution{}
 	// Avoid GORM error from Last() if no executions yet
 	var count int64

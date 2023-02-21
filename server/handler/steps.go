@@ -41,7 +41,7 @@ func CancelAllSteps(db *gorm.DB, engine *engine.Engine, w http.ResponseWriter, r
 	// find currently running steps and cancel them
 	for _, aStep := range steps {
 		// check status of last one, there should not be any steps with no executions
-		if aStep.Executions[len(aStep.Executions)-1].Status == model.Started {
+		if engine.GetLatestExecution(aStep).Status == model.Started {
 			engine.CancelStep(aStep)
 		}
 	}
