@@ -26,6 +26,8 @@ export const DeploymentProgress = ({ progressData, setCancelled}: IDeploymentPro
     <></>
   )
 
+  const cancelButton = (!progressData.isComplete ? <CancelDeployment setCancelled={setCancelled}/> : <></>)
+
   return (
 
     <div >
@@ -34,7 +36,7 @@ export const DeploymentProgress = ({ progressData, setCancelled}: IDeploymentPro
           <Stack hasGutter className='deployProgress'>
             {restartStep}
             {progressBar}
-            <CancelDeployment setCancelled={setCancelled}/>
+            {cancelButton}
           </Stack>
         </Bullseye>
       </PageSection>
