@@ -29,6 +29,7 @@ type envVars struct {
 	SESSION_COOKIE_DOMAIN      string
 	SESSION_COOKIE_SECURE      bool
 	SESSION_COOKIE_MAX_AGE     int
+	SAVE_CONTAINER             bool
 }
 
 var environment envVars
@@ -53,6 +54,7 @@ func GetEnvironment() envVars {
 	environment.SESSION_COOKIE_DOMAIN = ""
 	environment.SESSION_COOKIE_SECURE = true
 	environment.SESSION_COOKIE_MAX_AGE = 0 // 0 to make it a session cookie
+	environment.SAVE_CONTAINER = false
 
 	env := envs.EnvConfig{}
 	env.ReadEnvs()
@@ -180,6 +182,13 @@ func GetEnvironment() envVars {
 		} else {
 			environment.AUTO_RETRY_DELAY = int(autoRetryDelay)
 		}
+	}
+
+	saveContainer, err := strconv.ParseBool(env.Get("SAVE_CONTAINER", "false"))
+	if err != nil {
+		log.Warnf("SAVE_CONTAINER has unrecognized value, please set to true or false.  Using default: %t", environment.SAVE_CONTAINER)
+	} else {
+		environment.SAVE_CONTAINER = saveContainer
 	}
 
 	return environment

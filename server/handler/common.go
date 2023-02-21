@@ -21,7 +21,10 @@ func respondJSON(w http.ResponseWriter, status int, payload interface{}) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
+	if status != http.StatusOK {
+		// Avoids log message about setting header superfluously
+		w.WriteHeader(status)
+	}
 	_, err = w.Write([]byte(response))
 	if err != nil {
 		log.Printf("Error: Unable to write response to http output stream: %v", err)

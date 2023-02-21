@@ -129,6 +129,14 @@ func (engine *Engine) waitBeforeEnding() {
 		case <-engine.context.Done():
 		}
 	}
+	// Start the process to delete ourself
+	if !config.GetEnvironment().SAVE_CONTAINER {
+		log.Info("Engine starting storage account and container deletion and terminating...")
+		azure.DeleteStorageAccount(config.GetEnvironment().RESOURCE_GROUP_NAME, config.GetEnvironment().STORAGE_ACCOUNT_NAME)
+		azure.DeleteContainer(config.GetEnvironment().RESOURCE_GROUP_NAME, config.GetEnvironment().CONTAINER_GROUP_NAME)
+	} else {
+		log.Info("Engine terminating...")
+	}
 	// at this point its safe to close the "done" channel
 	close(engine.done)
 }
