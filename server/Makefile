@@ -1,4 +1,3 @@
-export SHELL := /usr/bin/bash
 # checking for go on this line
 ifeq (, $(shell which go))
 $(error "No go in $(PATH), can't go anywhere...")
