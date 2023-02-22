@@ -4,8 +4,6 @@ import { restartStep } from '../../apis/deployment';
 
 interface IRestartDeploymentProps {
   stepExId: number
-  stepName: string
-
 }
 interface LoadingPropsType {
   spinnerAriaValueText: string;
@@ -14,7 +12,7 @@ interface LoadingPropsType {
   isLoading: boolean;
 }
 
-export const RestartStep = ({ stepExId, stepName }: IRestartDeploymentProps) => {
+export const RestartStep = ({ stepExId }: IRestartDeploymentProps) => {
 
   const [isPrimaryLoading, setIsPrimaryLoading] = React.useState<boolean>(false);
   const primaryLoadingProps = {} as LoadingPropsType;
@@ -26,8 +24,7 @@ export const RestartStep = ({ stepExId, stepName }: IRestartDeploymentProps) => 
     event.preventDefault();
     try {
       setIsPrimaryLoading(!isPrimaryLoading)
-      const restarted = await restartStep(stepExId);
-      console.log(`Step ${stepExId} restarted: ${restarted}`)  
+      await restartStep(stepExId);
     } catch (error) {
       console.log(error)
     }
@@ -37,16 +34,11 @@ export const RestartStep = ({ stepExId, stepName }: IRestartDeploymentProps) => 
   }
 
   return (
-    <><StackItem>
+    <StackItem>
       <Bullseye>
-        <h2 className='infoText'> Deployment step "{stepName}" failed. Press the Restart button below to restart it.</h2>
+        <Button className='retryButton' id="primary-loading-button" variant="primary" onClick={handleRestart} {...primaryLoadingProps}>
+          {isPrimaryLoading ? 'Restarting Step' : 'Restart Step'}</Button>
       </Bullseye>
     </StackItem>
-      <StackItem>
-        <Bullseye>
-          <Button className='retryButton' id="primary-loading-button" variant="primary" onClick={handleRestart} {...primaryLoadingProps}>
-            {isPrimaryLoading ? 'Restarting Step' : 'Restart Step'}</Button>
-        </Bullseye>
-      </StackItem></>
   );
 };

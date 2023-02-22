@@ -8,7 +8,6 @@ export const Deployment = () => {
 
   const [stepsData, setStepsData] = useState<DeploymentStepData[]>()
   const [progressData, setProgressData] = useState<DeploymentProgressData>()
-  const [isCancelled, setCancelled] = useState(false)
 
   const fetchData = async () => {
     try {
@@ -33,8 +32,8 @@ export const Deployment = () => {
   return (
     <>
       {/* TODO Add some place holder for case when data is not available */}
-      {stepsData &&<DeploymentSteps stepsData={stepsData} isCancelled={isCancelled}></DeploymentSteps>}
-      {progressData  && <DeploymentProgress progressData={progressData} setCancelled={setCancelled}></DeploymentProgress>}
+      {stepsData &&<DeploymentSteps stepsData={stepsData}></DeploymentSteps>}
+      {progressData  && <DeploymentProgress progressData={progressData}></DeploymentProgress>}
     </>
   )
 }
