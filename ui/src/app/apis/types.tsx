@@ -2,7 +2,8 @@ export enum StepStatuses {
 	PENDING,
 	STARTED,
 	SUCCEEDED,
-	FAILED
+	FAILED,
+	CANCELED
 }
 
 export class DeploymentStepStatusData {
@@ -25,15 +26,6 @@ export class DeploymentStepStatusData {
 			const stepExecution = executions[executions.length -1]
 			this.lastExecutionId = stepExecution.ID
 			// map fields from the API payload into this class fields
-			/* server uses following statuses:
-				"Started"
-				"Failed"
-				"PermanentlyFailed"
-				"Succeeded"
-				"Restart"
-				"Restarted"
-				"RestartTimedOut"
-			*/
 			switch (stepExecution.status) {
 				case "Started":
 				case "Restarted":
@@ -47,6 +39,9 @@ export class DeploymentStepStatusData {
 					break
 				case "Succeeded":
 					this.status = StepStatuses.SUCCEEDED
+					break
+				case "Canceled":
+					this.status = StepStatuses.CANCELED
 					break
 				default:
 					this.status = StepStatuses.PENDING
@@ -82,6 +77,7 @@ export class DeploymentProgressData {
 	failedStepNames: string[] = []
 	failedExId:number =-1
 	isComplete:boolean = false
+	isCanceled:boolean = false
 	constructor(steps?:DeploymentStepData[]) {
 		if (Array.isArray(steps) && steps.length > 0) {
 			const succeeded = steps.reduce(
@@ -95,6 +91,7 @@ export class DeploymentProgressData {
 			this.failedStepIds = failedSteps.map((failedStep)=>failedStep.id)
 			this.failedStepNames = failedSteps.map((failedStep)=>failedStep.name)
 			this.isComplete = this.progress === 100
+			this.isCanceled = steps.some((currentStep) => currentStep.status?.status === StepStatuses.CANCELED)
 			// TODO Fix this up and probably move somewhere else (not exactly progress related)
 			if(failedSteps[0] != null && failedSteps[0].status != null)
 			{

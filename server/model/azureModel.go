@@ -108,10 +108,12 @@ type DeploymentResult struct {
 
 func NewDeploymentResult(response armresources.DeploymentExtended) *DeploymentResult {
 	var status ExecutionStatus
-	if *response.Properties.ProvisioningState == armresources.ProvisioningStateSucceeded {
+	switch *response.Properties.ProvisioningState {
+	case armresources.ProvisioningStateSucceeded:
 		status = Succeeded
-	} else {
-		// Assume anything but Succeeded is failed
+	case armresources.ProvisioningStateCanceled:
+		status = Canceled
+	default:
 		status = Failed
 	}
 	// make sure response outputs are always there, even if empty

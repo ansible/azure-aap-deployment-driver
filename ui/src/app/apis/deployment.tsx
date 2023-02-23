@@ -26,7 +26,7 @@ export function restartStep(id: number): Promise<boolean> {
 }
 
 export function cancelDeployment(): Promise<boolean> {
-	return fetch(`${baseURI}/terminate?confirmation=yes`,
+	return fetch(`${baseURI}/cancelAllSteps`,
 		{
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' }

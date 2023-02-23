@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React from 'react';
 import { FlexItem, Icon, TextVariants, Text, Tooltip, Flex } from '@patternfly/react-core';
 import CheckCircleIcon from '@patternfly/react-icons/dist/esm/icons/check-circle-icon';
 import ExclamationCircleIcon from '@patternfly/react-icons/dist/esm/icons/exclamation-circle-icon';
@@ -6,43 +6,29 @@ import { DeploymentStepStatusData, StepStatuses } from '../../apis/types';
 
 interface IStepStatusProps {
   stepStatusData: DeploymentStepStatusData
-  isCancelled:boolean
 }
 
-export const StepStatus = ({ stepStatusData, isCancelled}: IStepStatusProps) => {
+export const StepStatus = ({ stepStatusData }: IStepStatusProps) => {
 
-
-  const startState = (stepStatusData.status === StepStatuses.STARTED ?
-    <Icon className='icon1' isInProgress={true}><CheckCircleIcon /></Icon> :
-    <></>
-  );
-
-  const stepDuration = ((stepStatusData.status === StepStatuses.SUCCEEDED || stepStatusData.status === StepStatuses.FAILED) ?
-    <Text className='timeTaken' component={TextVariants.h5}>({stepStatusData.duration})</Text> :
-    <></>
-  );
-
-
-  const attemptsText = (stepStatusData.status === StepStatuses.FAILED ?
-    <Text className='attempt' component={TextVariants.h5}>({stepStatusData.attempts} attempts)</Text> :
-    <></>
-  );
-
-  const statusTooltip = (stepStatusData.status === StepStatuses.SUCCEEDED ?
-    <Tooltip content={<div>Success</div>}><Icon className='icon1' status="success"><CheckCircleIcon /></Icon></Tooltip> :
-    stepStatusData.status === StepStatuses.FAILED ?
-      <Tooltip content={<div>{stepStatusData.error}</div>}><Icon className='icon1' status="danger"><ExclamationCircleIcon /></Icon></Tooltip> :
-      <></>
-  )
-
-  const cancelledState = (isCancelled===true ? <Tooltip content={<div>{"Cancelled"}</div>}><Icon className='icon1' status="warning"><ExclamationCircleIcon /></Icon></Tooltip> :<></>)
+  const hasStarted = (stepStatusData.status === StepStatuses.STARTED)
+  const hasSucceeded = (stepStatusData.status === StepStatuses.SUCCEEDED)
+  const hasFailed = (stepStatusData.status === StepStatuses.FAILED)
+  const hasBeenCanceled = (stepStatusData.status === StepStatuses.CANCELED)
 
   return (
     <Flex align={{ default: 'alignRight' }} className='deployment-info'>
-      <FlexItem>{stepDuration}</FlexItem>
-      <FlexItem>{attemptsText}</FlexItem>
-      {isCancelled ? <FlexItem className="statusTooltip" align={{ default: 'alignRight' }} >{cancelledState}</FlexItem>:
-      <FlexItem className="statusTooltip" align={{ default: 'alignRight' }} >{statusTooltip}{startState}</FlexItem>}
+      <FlexItem>
+        { (hasSucceeded || hasFailed) && <Text className='timeTaken' component={TextVariants.h5}>({stepStatusData.duration})</Text> }
+      </FlexItem>
+      <FlexItem>
+        { hasFailed && <Text className='attempt' component={TextVariants.h5}>({stepStatusData.attempts} attempts)</Text> }
+      </FlexItem>
+      <FlexItem className="statusTooltip" align={{ default: 'alignRight' }}>
+        { hasBeenCanceled && <Tooltip removeFindDomNode={true} content={<div>{"Cancelled"}</div>}><Icon className='icon1' status="warning"><ExclamationCircleIcon /></Icon></Tooltip> }
+        { hasSucceeded && <Tooltip removeFindDomNode={true} content={<div>Success</div>}><Icon className='icon1' status="success"><CheckCircleIcon /></Icon></Tooltip> }
+        { hasFailed && <Tooltip removeFindDomNode={true} content={stepStatusData.error}><Icon className='icon1' status="danger"><ExclamationCircleIcon /></Icon></Tooltip> }
+        { hasStarted && <Icon className='icon1' isInProgress={true}><CheckCircleIcon /></Icon> }
+      </FlexItem>
     </Flex>
   )
 };
