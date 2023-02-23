@@ -59,13 +59,14 @@ project.  Results available at [sonarcloud.io](https://sonarcloud.io/project/ove
 
 ### Prequisties
 
-- Linux or Mac OS
+- Linux or MacOS
 - [VS Code](https://code.visualstudio.com/download)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 - [NPM](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm)
 - [NVM](https://github.com/nvm-sh/nvm)
-- flask (`pip install flask` or `pip3 install flask`)
-- flask_cors (`pip install flask_cors` or `pip3 install flask_cors`)
+- [Python](https://www.python.org/downloads/)
+    - [flask](https://flask.palletsprojects.com/en/2.2.x/installation/#virtual-environments)
+    - [flask_cors](https://flask-cors.readthedocs.io/en/latest/)
 
 ### Setup
 
