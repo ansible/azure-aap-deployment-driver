@@ -17,7 +17,7 @@ build: ${NVM_SCRIPT}
 
 .PHONY: test
 test: ${NVM_SCRIPT}
-	make nvm CMD="npm run test"
+	make nvm CMD="npm run test -- --watchAll=false"
 
 .PHONY: audit-prod-only
 audit-prod-only: ${NVM_SCRIPT}
