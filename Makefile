@@ -32,7 +32,6 @@ endif
 
 assemble: clean resolve-registry build-server build-web-ui
 	@echo "Building docker image: ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
-	docker rmi ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
 	docker build -t ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} .
 	docker tag ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} ${CONTAINER_REGISTRY}/${IMAGE_NAME}:latest
 
