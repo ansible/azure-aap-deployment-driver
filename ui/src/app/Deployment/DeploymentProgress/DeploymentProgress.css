@@ -6,3 +6,7 @@
     background-color: white;
     width: 75%;
 }
+
+.deployProgress h1 {
+    text-align: center;
+}

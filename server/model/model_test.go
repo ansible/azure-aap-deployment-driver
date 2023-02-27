@@ -46,7 +46,7 @@ func TestExtendedDeployment(t *testing.T) {
 	state = armresources.ProvisioningStateCanceled
 	props.ProvisioningState = &state
 	depResult = model.NewDeploymentResult(dep)
-	assert.Equal(t, "Failed", string(depResult.Status))
+	assert.Equal(t, "Canceled", string(depResult.Status))
 
 	// Test no outputs
 	props.Outputs = nil

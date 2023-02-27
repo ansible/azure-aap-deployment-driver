@@ -12,6 +12,7 @@ const (
 	Restart           ExecutionStatus = "Restart"
 	Restarted         ExecutionStatus = "Restarted"
 	RestartTimedOut   ExecutionStatus = "RestartTimedOut"
+	Canceled          ExecutionStatus = "Canceled"
 )
 
 // Allow GORM to store the string value of ExecutionStatus

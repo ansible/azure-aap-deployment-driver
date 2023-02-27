@@ -137,6 +137,14 @@ func GetDeployment(ctx context.Context, client *armresources.DeploymentsClient, 
 	return model.NewDeploymentResult(details.DeploymentExtended), err
 }
 
+func CancelDeployment(ctx context.Context, client *armresources.DeploymentsClient, name string) error {
+	_, err := client.Cancel(ctx, config.GetEnvironment().RESOURCE_GROUP_NAME, name, &armresources.DeploymentsClientCancelOptions{})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Delete Azure storage account
 func DeleteStorageAccount(resourceGroupName string, storageAccountName string) error {
 	storageClient, err := armstorage.NewAccountsClient(getAzureInfo().Subscription, getAzureInfo().Credentials, nil)
