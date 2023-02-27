@@ -62,3 +62,13 @@ build-web-ui:
 	@echo "Building installer web UI"
 	make build -C ${INSTALLER_WEBUI_DIR}
 	cp -ap ${INSTALLER_WEBUI_DIR}/build/. ${BUILD_DIR}/public
+run:
+	@echo "\n*** Starting mock API service ***\n"
+	./ui/run.py &
+
+	@echo "\n*** Starting the server ***\n"
+	./build/server
+
+	@echo "\n*** Starting the UI and launching browser... ***\n"
+	cd /ui
+	npm start
