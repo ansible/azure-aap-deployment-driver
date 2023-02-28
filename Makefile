@@ -1,7 +1,6 @@
 BUILD_DIR := build
 INSTALLER_SERVER_DIR := server
 INSTALLER_WEBUI_DIR := ui
-CONTAINER_REGISTRY_DEFAULT_SERVER ?= aocinstallerdev.azurecr.io
 CONTAINER_REGISTRY_DEFAULT_NAMESPACE ?= aoc-${USER}
 IMAGE_NAME ?= installer
 IMAGE_TAG ?= latest
@@ -20,6 +19,9 @@ ifndef CONTAINER_REGISTRY_USERNAME
 endif
 ifndef CONTAINER_REGISTRY_PASSWORD
 	$(error Environment variable CONTAINER_REGISTRY_PASSWORD is not set)
+endif
+ifndef CONTAINER_REGISTRY_DEFAULT_SERVER
+	$(error Environment variable CONTAINER_REGISTRY_DEFAULT_SERVER is not set)
 endif
 
 resolve-registry:
