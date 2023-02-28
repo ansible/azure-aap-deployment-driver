@@ -50,8 +50,9 @@ func (engine *Engine) Run() {
 				// Step to restart, mark as seen and start
 				latestExecution.Status = model.Restarted
 				engine.database.Instance.Save(&latestExecution)
-
-				engine.startExecution(step, &model.Execution{}, &executionWaitGroup)
+				newExecution := &model.Execution{}
+				engine.startExecution(step, newExecution, &executionWaitGroup)
+				currentExecutions[stepIndex] = newExecution
 			case model.Succeeded, model.Canceled:
 				continue
 			}
