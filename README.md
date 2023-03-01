@@ -52,8 +52,12 @@ Finally, run the deployment engine locally:
 
 ### Running in VSCode Dev Container
 
-For [VS Code](https://code.visualstudio.com/) users, there is the ability to run your local development environment inside a development container.  This allows you to ensure that you have the needed prerequisites and avoid any portability issues. Working with VS Code development containers requires you to follow the installation instructions at [https://code.visualstudio.com/docs/devcontainers/containers#_installation](https://code.visualstudio.com/docs/devcontainers/containers#_installation).  Once you have completed the installation istructions, you can open
-this cloned repo's folder in VS Code, or clone the repo to a development container.  For more details on working with development containers, please see [https://code.visualstudio.com/docs/devcontainers/containers](https://code.visualstudio.com/docs/devcontainers/containers).
+For [VS Code](https://code.visualstudio.com/) users, there is the ability to run your local development environment inside a development container.  This allows you to ensure that you have the needed prerequisites and avoid any portability issues. 
+
+Working with VS Code development containers requires you to follow the installation instructions at [https://code.visualstudio.com/docs/devcontainers/containers#_installation](https://code.visualstudio.com/docs/devcontainers/containers#_installation).  Once you have completed the installation istructions, you can open
+this cloned repo's folder in VS Code, or clone the repo to a development container.  
+
+For more details on working with development containers, please see [https://code.visualstudio.com/docs/devcontainers/containers](https://code.visualstudio.com/docs/devcontainers/containers).
 
 ## SonarQube
 
