@@ -17,12 +17,15 @@ export function FormLogin() {
       const response = await login({ uid: uid, pwd: pwd });
       if ('error' in response && response.error) {
         setLoginMessage('Incorrect Password');
+        setIsValidPassword(false)
         setShowHelperText(true);
       } else {
+        setIsValidPassword(true)
         navigate('/');
       }
     } catch (err: any) {
       console.log('Got exception from logging in.', err);
+      setIsValidPassword(false)
       if ('message' in err && err.message) {
         setLoginMessage(err.message);
       } else {
@@ -41,7 +44,6 @@ export function FormLogin() {
 
   const onLoginButtonClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     event.preventDefault();
-    setIsValidPassword(!!password);
     setShowHelperText(!'admin' || !password);
     loginHandler('admin', password);
   };
