@@ -1,6 +1,6 @@
 import React from 'react';
 import { Popover, Icon, Tooltip } from '@patternfly/react-core';
-import { TableComposable, Tr, Th, Td, OuterScrollContainer } from '@patternfly/react-table'
+import { TableComposable, Tr, Th, Td } from '@patternfly/react-table'
 import ExclamationCircleIcon from '@patternfly/react-icons/dist/esm/icons/exclamation-circle-icon';
 import { DeploymentStepStatusData } from '@app/apis/types';
 
