@@ -12,7 +12,6 @@ interface IErrorInfoProps {
 
 export const ErrorInfoPopover = ({ stepStatusData }: IErrorInfoProps) => {
   const data = (
-    <>
       <TableComposable>
         <Tbody>
           <Tr>
@@ -31,11 +30,10 @@ export const ErrorInfoPopover = ({ stepStatusData }: IErrorInfoProps) => {
           </Tr>
         </Tbody>
       </TableComposable>
-    </>
   );
   return (
-    <Tooltip removeFindDomNode={true} content={<div>Click for error info</div>}>
-      <Popover removeFindDomNode={true} minWidth="40rem" bodyContent={<div>{data}</div>}>
+    <Tooltip content={"Click for error info"}>
+      <Popover minWidth="40rem" bodyContent={data}>
         <Icon className="icon1" status="danger">
           <ExclamationCircleIcon />
         </Icon>
