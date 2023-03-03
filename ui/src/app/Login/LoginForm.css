@@ -1,11 +1,7 @@
-#pf-login-username-id {
-    background-color: #AAAFB4;
+.pf-c-form__label-required {
+  display: none;
 }
 
-.pf-c-form__label-required{
-    display : none; 
-}
-
-.pf-c-form__helper-text{
-    color: rgb(190, 10, 10);
+.pf-c-form__helper-text {
+  color: rgb(190, 10, 10);
 }
