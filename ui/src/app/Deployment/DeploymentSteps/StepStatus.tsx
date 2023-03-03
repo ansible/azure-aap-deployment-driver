@@ -3,6 +3,7 @@ import { FlexItem, Icon, TextVariants, Text, Tooltip, Flex } from '@patternfly/r
 import CheckCircleIcon from '@patternfly/react-icons/dist/esm/icons/check-circle-icon';
 import ExclamationCircleIcon from '@patternfly/react-icons/dist/esm/icons/exclamation-circle-icon';
 import { DeploymentStepStatusData, StepStatuses } from '../../apis/types';
+import { ErrorInfoPopover } from '../../ErrorInfo/ErrorInfo';
 
 interface IStepStatusProps {
   stepStatusData: DeploymentStepStatusData
@@ -26,7 +27,7 @@ export const StepStatus = ({ stepStatusData }: IStepStatusProps) => {
       <FlexItem className="statusTooltip" align={{ default: 'alignRight' }}>
         { hasBeenCanceled && <Tooltip removeFindDomNode={true} content={<div>{"Cancelled"}</div>}><Icon className='icon1' status="warning"><ExclamationCircleIcon /></Icon></Tooltip> }
         { hasSucceeded && <Tooltip removeFindDomNode={true} content={<div>Success</div>}><Icon className='icon1' status="success"><CheckCircleIcon /></Icon></Tooltip> }
-        { hasFailed && <Tooltip removeFindDomNode={true} content={stepStatusData.error}><Icon className='icon1' status="danger"><ExclamationCircleIcon /></Icon></Tooltip> }
+        { hasFailed && <ErrorInfoPopover stepStatusData={stepStatusData}></ErrorInfoPopover> }
         { hasStarted && <Icon className='icon1' isInProgress={true}><CheckCircleIcon /></Icon> }
       </FlexItem>
     </Flex>
