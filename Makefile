@@ -70,5 +70,5 @@ run:
 	./build/server
 
 	@echo "\n*** Starting the UI and launching browser... ***\n"
-	cd /ui
+	cd ./ui
 	npm start
