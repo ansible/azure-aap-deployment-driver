@@ -34,7 +34,7 @@ endif
 
 assemble: clean resolve-registry build-server build-web-ui
 	@echo "Building docker image: ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
-	docker build -t ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} .
+	docker build --build-arg DRIVER_RELEASE_TAG=${IMAGE_TAG} -t ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} .
 	docker tag ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} ${CONTAINER_REGISTRY}/${IMAGE_NAME}:latest
 
 save-image: assemble

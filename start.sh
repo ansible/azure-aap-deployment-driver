@@ -92,7 +92,7 @@ fi
 if [ ! -f ~/.acme.sh/.acme.sh.installed. ]; then
   # Run the acme.sh installation step
   log "Installing acme.sh..."
-  ./acme.installer.sh email=${ACME_ACCOUNT_EMAIL} --install --force --no-color
+  ./acme.sh --install --email aoc-automation@redhat.com --force --no-color
   RC=$?
   if [ ${RC} -ne 0 ]; then
     log "Failed to install acme.sh script. See previous output for more information."
