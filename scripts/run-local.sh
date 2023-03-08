@@ -2,9 +2,8 @@
 
 server_local_development_env () {
     # export / set all environment variables from the local development env defaults in /configs
-    echo "Setting environment variables from configs/.env.development.local"
-    export $(grep -v '^#' configs/.env.development.local | xargs)
-    export ENVIRONMENT_NAME=development
+    echo "Copying environment .env from configs/.env.development.local"
+    cp ./configs/.env.development.local ./build/.env
 
     # Azure environment variables
     if command -v az &> /dev/null
@@ -14,10 +13,9 @@ server_local_development_env () {
         export AZURE_SUBSCRIPTION_ID=$(az account show --query id -o tsv)
     fi
 
-    # guarantee dev environment
-    export ENVIRONMENT_NAME=development
-
     # ensure we have a resource group (we are assuming az login has occurred)
+    local $(cat ./configs/.env.development.local | grep 'RESOURCE_GROUP_NAME' | xargs)
+
     echo "Ensuring resource group '${RESOURCE_GROUP_NAME}'"
     az group create -n $RESOURCE_GROUP_NAME -l eastus2 -o none
 
