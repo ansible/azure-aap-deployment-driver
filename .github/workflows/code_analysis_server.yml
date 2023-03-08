@@ -6,10 +6,15 @@ on:
     paths: # Only applicable if any go code was changed
       - 'server/**/*.go'
       - 'server/*.go'
+  pull_request:
+    branches:
+      - main
+    paths: # Only applicable if any go code was changed
+      - 'server/**/*.go'
+      - 'server/*.go'
 jobs:
-  Analyze-Server:
+  Build-Test-and-Analyze-Server:
     runs-on: ubuntu-latest
-    if: github.repository == 'ansible/aoc-azure-aap-installer'
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v3
@@ -22,4 +27,5 @@ jobs:
       - name: Run SonarQube analysis
         env:
           SONAR_PROJECT_TOKEN: ${{ secrets.SONAR_PROJECT_TOKEN }}
+        if: ${{ github.event_name == 'push' && github.repository == 'ansible/azure-aap-deployment-driver' }}
         run: tools/run_sonarqube.sh server
