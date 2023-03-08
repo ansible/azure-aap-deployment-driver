@@ -61,3 +61,9 @@ build-web-ui:
 	@echo "Building installer web UI"
 	make build -C ${INSTALLER_WEBUI_DIR}
 	cp -ap ${INSTALLER_WEBUI_DIR}/build/. ${BUILD_DIR}/public
+
+server/local: build-server
+	"$(CURDIR)/scripts/run-local.sh" server
+
+ui/local: build-server
+	"$(CURDIR)/scripts/run-local.sh" ui
