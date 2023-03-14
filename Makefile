@@ -1,8 +1,8 @@
 BUILD_DIR := build
 INSTALLER_SERVER_DIR := server
 INSTALLER_WEBUI_DIR := ui
-CONTAINER_REGISTRY_DEFAULT_SERVER ?= aocinstallerdev.azurecr.io
 CONTAINER_REGISTRY_DEFAULT_NAMESPACE ?= aoc-${USER}
+DRIVER_RELEASE_TAG ?=$(shell git rev-parse --short HEAD)
 IMAGE_NAME ?= installer
 IMAGE_TAG ?= latest
 
@@ -21,6 +21,9 @@ endif
 ifndef CONTAINER_REGISTRY_PASSWORD
 	$(error Environment variable CONTAINER_REGISTRY_PASSWORD is not set)
 endif
+ifndef CONTAINER_REGISTRY_DEFAULT_SERVER
+	$(error Environment variable CONTAINER_REGISTRY_DEFAULT_SERVER is not set)
+endif
 
 resolve-registry:
 ifndef CONTAINER_REGISTRY_NAMESPACE
@@ -32,7 +35,7 @@ endif
 
 assemble: clean resolve-registry build-server build-web-ui
 	@echo "Building docker image: ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}"
-	docker build -t ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} .
+	docker build --build-arg DRIVER_RELEASE_TAG=${DRIVER_RELEASE_TAG} -t ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} .
 	docker tag ${CONTAINER_REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG} ${CONTAINER_REGISTRY}/${IMAGE_NAME}:latest
 
 save-image: assemble
