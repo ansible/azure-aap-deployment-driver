@@ -35,4 +35,4 @@ project.  Results available at [sonarcloud.io](https://sonarcloud.io/project/ove
 
 ## Developer setup
 
-Instructions to clone the repo and run the UI + server on your development machine are [here](ui/docs/developer-setup.md).
+Instructions to clone the repo and run the UI + server on your development machine are [here](./docs/developer-setup.md).
