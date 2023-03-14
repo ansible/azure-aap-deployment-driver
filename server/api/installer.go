@@ -106,6 +106,7 @@ func (a *Installer) WrapHandlerWithDBAndEngine(fn handler.HandleFuncWithDBAndEng
 }
 
 func (a *Installer) Run() {
+	log.Println("Starting httpServer...")
 	a.httpServer = &http.Server{}
 	a.httpServer.Addr = fmt.Sprintf("%s:%s", config.Args.Host, config.Args.Port)
 	a.httpServer.Handler = a.router

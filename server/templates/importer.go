@@ -9,9 +9,15 @@ func DiscoverTemplateOrder(templateBasePath string) ([][]string, error) {
 	dependenciesGraph := NewDependencyGraph()
 
 	templateDirEntries, err := os.ReadDir(templateBasePath)
+
+	if len(templateDirEntries) == 0 {
+		return dependenciesGraph.GetAllDependenciesSorted(), nil
+	}
+
 	if err != nil {
 		return nil, err
 	}
+
 	for _, entry := range templateDirEntries {
 		// expecting only directories
 		if entry.IsDir() {
