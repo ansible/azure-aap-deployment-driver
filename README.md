@@ -32,3 +32,7 @@ For more details on working with development containers, please see [https://cod
 
 Sonar analysis is performed by Github Actions on the code repository for this
 project.  Results available at [sonarcloud.io](https://sonarcloud.io/project/overview?id=aoc-aap-test-installer)
+
+## Developer setup
+
+Instructions to clone the repo and run the UI + server on your development machine are [here](./docs/developer-setup.md).
