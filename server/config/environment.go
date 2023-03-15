@@ -32,7 +32,10 @@ type envVars struct {
 	SAVE_CONTAINER             bool
 }
 
-var environment envVars
+var (
+	environment       envVars
+	environmentErrors error
+)
 
 func GetEnvironment() envVars {
 	if (environment != envVars{}) {

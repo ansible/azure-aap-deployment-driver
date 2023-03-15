@@ -3,15 +3,26 @@ package templates
 import (
 	"os"
 	"path/filepath"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func DiscoverTemplateOrder(templateBasePath string) ([][]string, error) {
+	log.Infof("Starting deployment template discovery in location: %s", templateBasePath)
+
 	dependenciesGraph := NewDependencyGraph()
 
 	templateDirEntries, err := os.ReadDir(templateBasePath)
+	entryCount := len(templateDirEntries)
+
+	if entryCount == 0 {
+		log.Infof("%d deployment templates found in location [%s]", entryCount, templateBasePath)
+	}
+
 	if err != nil {
 		return nil, err
 	}
+
 	for _, entry := range templateDirEntries {
 		// expecting only directories
 		if entry.IsDir() {

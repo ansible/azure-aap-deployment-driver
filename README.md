@@ -11,6 +11,42 @@ The Deployment Driver consists of following components:
 - The web UI providing the user a way to interact with the deployment engine/server
 - Nginx web server and reverse proxy serving the installer web UI and proxy-ing API requests to installer engine
 
+## Local Development
+
+### Setup
+
+To setup for local development you will need to:
+- Have an Azure subscription and Resource Group created
+- Build the server
+
+__Build the server__
+```
+make build-server
+```
+
+Next, you will need to setup a `.env` file and place it in the `./build` folder. 
+
+__Azure__
+
+The Azure requirements to run locally:
+1. An Azure subscription
+2. A Resource Group created with the name set in `RESOURCE_GROUP_NAME` of your `./build/.env' file
+
+```
+# show the current signed in user information
+az account show -o json
+
+# create a resource group in eastus2
+az group create -n $RESOURCE_GROUP_NAME -l eastus2 
+```
+
+## Running the Server and UI
+
+```
+./scripts/run-local.sh server
+./scripts/run-local.sh ui
+```
+
 ## Development Team
 
 This component is primarily developed by the Ansible Automation Platform on Azure team in Red Hat.
