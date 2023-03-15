@@ -14,6 +14,7 @@ type Engine struct {
 	resolver             *Resolver
 	mainOutputs          *model.Output
 	done                 chan struct{}
+	status               *model.Status
 	maxExecutionRestarts int
 	deploymentsClient    *armresources.DeploymentsClient
 }

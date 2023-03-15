@@ -11,7 +11,31 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+func (engine *Engine) Fatalf(format string, args ...interface{}) {
+	log.Errorf(format, args...)
+
+	if !engine.status.IsFatalState {
+		engine.status.IsFatalState = true
+		engine.database.Instance.Save(engine.status)
+	}
+}
+
+func (engine *Engine) IsFatalState() bool {
+	return engine.status.IsFatalState
+}
+
 func (engine *Engine) Run() {
+	if !engine.IsFatalState() {
+		engine.startDeploymentExecutions()
+	} else {
+		log.Errorln("Engine failed to start. In fatal state. Check logs.")
+	}
+
+	log.Info("Main engine loop ended.")
+	engine.waitBeforeEnding()
+}
+
+func (engine *Engine) startDeploymentExecutions() {
 	log.Println("Starting main engine loop...")
 
 	var executionWaitGroup sync.WaitGroup
@@ -122,8 +146,6 @@ func (engine *Engine) Run() {
 			p++
 		}
 	}
-	log.Info("Main engine loop ended.")
-	engine.waitBeforeEnding()
 }
 
 func (engine *Engine) waitBeforeEnding() {

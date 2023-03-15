@@ -54,6 +54,7 @@ type Status struct {
 	BaseModel
 	TemplatesLoaded   bool
 	MainOutputsLoaded bool
+	IsFatalState      bool
 	FirstStart        time.Time
 }
 
