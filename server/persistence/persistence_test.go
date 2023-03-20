@@ -2,7 +2,9 @@ package persistence_test
 
 import (
 	"os"
+	"server/model"
 	"server/persistence"
+	"server/telemetry"
 	"server/test"
 	"testing"
 
@@ -38,6 +40,24 @@ func TestRealDatabase(t *testing.T) {
 func TestInMemoryDatabase(t *testing.T) {
 	db := persistence.NewInMemoryDB()
 	testDb(t, db)
+}
+func TestTelemetryTable(t *testing.T) {
+
+	const DB_FILENAME = "tmp.db"
+	db := persistence.NewPersistentDB(DB_FILENAME)
+	testData := &telemetry.Telemetry{
+		BaseModel:   model.BaseModel{},
+		MetricName:  telemetry.DeployStatus,
+		MetricValue: "SUCCESS",
+		Step:        "1",
+	}
+	db.Instance.Save(&testData)
+	retrieved := &telemetry.Telemetry{}
+	db.Instance.First(retrieved)
+	assert.Equal(t, "SUCCESS", retrieved.MetricValue)
+	sqlDb, _ := db.Instance.DB()
+	sqlDb.Close()
+	os.Remove(DB_FILENAME)
 }
 
 // TestMain wraps the tests.  Setup is done before the call to m.Run() and any
