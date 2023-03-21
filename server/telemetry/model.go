@@ -13,6 +13,7 @@ type Telemetry struct {
 	Step        string
 }
 
+// Getter Setters for each DeploymentMetric starting with DeploymentStatus - can be used for AAP-10177.
 func SetDeploymentStatus(db *gorm.DB, telemetry *Telemetry, status string) {
 	telemetry.MetricName = DeployStatus
 	telemetry.MetricValue = status

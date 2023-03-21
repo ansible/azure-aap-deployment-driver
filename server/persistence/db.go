@@ -1,7 +1,6 @@
 package persistence
 
 import (
-	"fmt"
 	"server/model"
 	"server/telemetry"
 
@@ -34,12 +33,6 @@ func newDB(dbPath string, migrationModels ...interface{}) (*Database, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	result, _ := db.Debug().Migrator().ColumnTypes(&telemetry.Telemetry{})
-	for _, v := range result {
-		fmt.Println(v.Name())
-	}
-
 	return &Database{
 		Instance: db,
 	}, nil
