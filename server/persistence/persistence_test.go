@@ -43,8 +43,7 @@ func TestInMemoryDatabase(t *testing.T) {
 }
 func TestTelemetryTable(t *testing.T) {
 
-	const DB_FILENAME = "tmp.db"
-	db := persistence.NewPersistentDB(DB_FILENAME)
+	db := persistence.NewInMemoryDB()
 	testData := &telemetry.Telemetry{
 		BaseModel:   model.BaseModel{},
 		MetricName:  telemetry.DeployStatus,
@@ -57,7 +56,6 @@ func TestTelemetryTable(t *testing.T) {
 	assert.Equal(t, "SUCCESS", retrieved.MetricValue)
 	sqlDb, _ := db.Instance.DB()
 	sqlDb.Close()
-	os.Remove(DB_FILENAME)
 }
 
 // TestMain wraps the tests.  Setup is done before the call to m.Run() and any
