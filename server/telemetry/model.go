@@ -14,13 +14,18 @@ type Telemetry struct {
 }
 
 // Getter Setters for each DeploymentMetric
-func SetMetric(db *gorm.DB, telemetry *Telemetry, metric DeploymentMetric, status string) {
-	telemetry.MetricName = metric
-	telemetry.MetricValue = status
-	db.Save(&telemetry)
+func SetMetric(db *gorm.DB, metric DeploymentMetric, value string) {
+
+	row := Telemetry{
+		MetricName:  metric,
+		MetricValue: value,
+	}
+	db.Create(&row)
 }
 
-func Metric(db *gorm.DB, metric DeploymentMetric) *gorm.DB {
+func Metric(db *gorm.DB, metric DeploymentMetric) Telemetry {
 
-	return db.Where("MetricName = ?", metric)
+	telemetry := Telemetry{}
+	db.Where("metric_name = ?", metric).Find(&telemetry)
+	return telemetry
 }
