@@ -2,7 +2,6 @@ package persistence
 
 import (
 	"server/model"
-	"server/telemetry"
 
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -29,7 +28,7 @@ func NewInMemoryDB() *Database {
 }
 
 func newDB(dbPath string, migrationModels ...interface{}) (*Database, error) {
-	db, err := newSqliteDB(dbPath, &model.Step{}, &model.Execution{}, &model.Output{}, &model.Status{}, &model.SessionConfig{}, &telemetry.Telemetry{})
+	db, err := newSqliteDB(dbPath, &model.Step{}, &model.Execution{}, &model.Output{}, &model.Status{}, &model.SessionConfig{}, &model.Telemetry{})
 	if err != nil {
 		return nil, err
 	}

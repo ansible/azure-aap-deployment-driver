@@ -2,8 +2,8 @@ package persistence_test
 
 import (
 	"os"
+	"server/model"
 	"server/persistence"
-	"server/telemetry"
 	"server/test"
 	"testing"
 
@@ -43,12 +43,12 @@ func TestInMemoryDatabase(t *testing.T) {
 func TestTelemetryTable(t *testing.T) {
 
 	db := persistence.NewInMemoryDB()
-	telemetry.SetMetric(db.Instance, telemetry.DeployStatus, "SUCCESS")
-	telemetry.SetMetric(db.Instance, telemetry.AccessType, "PRIVATE")
-	retrieved := telemetry.Telemetry{}
-	retrieved = telemetry.Metric(db.Instance, telemetry.DeployStatus)
+	model.SetMetric(db.Instance, model.DeployStatus, "SUCCESS")
+	model.SetMetric(db.Instance, model.AccessType, "PRIVATE")
+	retrieved := model.Telemetry{}
+	retrieved = model.Metric(db.Instance, model.DeployStatus)
 	assert.Equal(t, "SUCCESS", retrieved.MetricValue)
-	retrieved = telemetry.Metric(db.Instance, telemetry.CustomerSubscriptionID)
+	retrieved = model.Metric(db.Instance, model.CustomerSubscriptionID)
 	assert.Equal(t, "", retrieved.MetricValue)
 	sqlDb, _ := db.Instance.DB()
 	sqlDb.Close()

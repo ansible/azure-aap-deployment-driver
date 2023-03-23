@@ -8,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gorm.io/datatypes"
 	_ "gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 // Replicate GORM base model, hiding times from json
@@ -63,6 +64,13 @@ type SessionConfig struct {
 	SessionAuthKey []byte
 }
 
+type Telemetry struct {
+	BaseModel
+	MetricName  DeploymentMetric `gorm:"type:string"`
+	MetricValue string
+	Step        string
+}
+
 func UpdateExecution(execution *Execution, result *DeploymentResult, errJson string) {
 	execution.ExecutionCount++
 	execution.ResumeToken = ""
@@ -101,4 +109,22 @@ func CreateNewOutput(name string, result *DeploymentResult) *Output {
 		ModuleName: name,
 		Values:     result.Outputs,
 	}
+}
+
+// Setter function for each deployment metric
+func SetMetric(db *gorm.DB, metric DeploymentMetric, value string) {
+
+	row := Telemetry{
+		MetricName:  metric,
+		MetricValue: value,
+	}
+	db.Create(&row)
+}
+
+// Getter function for each deployment metric
+func Metric(db *gorm.DB, metric DeploymentMetric) Telemetry {
+
+	telemetry := Telemetry{}
+	db.Where("metric_name = ?", metric).Find(&telemetry)
+	return telemetry
 }
