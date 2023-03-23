@@ -48,6 +48,8 @@ func TestTelemetryTable(t *testing.T) {
 	retrieved := telemetry.Telemetry{}
 	retrieved = telemetry.Metric(db.Instance, telemetry.DeployStatus)
 	assert.Equal(t, "SUCCESS", retrieved.MetricValue)
+	retrieved = telemetry.Metric(db.Instance, telemetry.CustomerSubscriptionID)
+	assert.Equal(t, "", retrieved.MetricValue)
 	sqlDb, _ := db.Instance.DB()
 	sqlDb.Close()
 }
