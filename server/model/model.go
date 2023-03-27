@@ -114,11 +114,10 @@ func CreateNewOutput(name string, result *DeploymentResult) *Output {
 // Setter function for each deployment metric
 func SetMetric(db *gorm.DB, metric DeploymentMetric, value string) {
 
-	row := Telemetry{
+	db.Create(&Telemetry{
 		MetricName:  metric,
 		MetricValue: value,
-	}
-	db.Create(&row)
+	})
 }
 
 // Getter function for each deployment metric
