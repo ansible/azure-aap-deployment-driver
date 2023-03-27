@@ -2,6 +2,7 @@ package persistence_test
 
 import (
 	"os"
+	"server/model"
 	"server/persistence"
 	"server/test"
 	"testing"
@@ -38,6 +39,19 @@ func TestRealDatabase(t *testing.T) {
 func TestInMemoryDatabase(t *testing.T) {
 	db := persistence.NewInMemoryDB()
 	testDb(t, db)
+}
+func TestTelemetryTable(t *testing.T) {
+
+	db := persistence.NewInMemoryDB()
+	model.SetMetric(db.Instance, model.DeployStatus, "SUCCESS")
+	model.SetMetric(db.Instance, model.AccessType, "PRIVATE")
+	retrieved := model.Telemetry{}
+	retrieved = model.Metric(db.Instance, model.DeployStatus)
+	assert.Equal(t, "SUCCESS", retrieved.MetricValue)
+	retrieved = model.Metric(db.Instance, model.CustomerSubscriptionID)
+	assert.Equal(t, "", retrieved.MetricValue)
+	sqlDb, _ := db.Instance.DB()
+	sqlDb.Close()
 }
 
 // TestMain wraps the tests.  Setup is done before the call to m.Run() and any
