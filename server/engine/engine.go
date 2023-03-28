@@ -159,6 +159,8 @@ func (engine *Engine) waitBeforeEnding() {
 		case <-engine.context.Done():
 		}
 	}
+	// Publish telemetry for this deployment to Segment
+	model.PublishToSegment(engine.database.Instance)
 	// Start the process to delete ourself
 	if !config.GetEnvironment().SAVE_CONTAINER {
 		log.Info("Engine starting storage account and container deletion and terminating...")

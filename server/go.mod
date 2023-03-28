@@ -32,6 +32,8 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.16 // indirect
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/segmentio/analytics-go/v3 v3.2.1 // indirect
+	github.com/segmentio/backo-go v1.0.0 // indirect
 	golang.org/x/crypto v0.5.0 // indirect
 	golang.org/x/net v0.5.0 // indirect
 	golang.org/x/sys v0.4.0 // indirect
