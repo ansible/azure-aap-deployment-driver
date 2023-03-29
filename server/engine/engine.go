@@ -77,6 +77,8 @@ func (engine *Engine) startDeploymentExecutions() {
 				latestExecution.Status = model.Restarted
 				engine.database.Instance.Save(&latestExecution)
 				newExecution := &model.Execution{}
+				// set execution count to be one bigger than last execution
+				newExecution.ExecutionCount = latestExecution.ExecutionCount + 1
 				engine.startExecution(step, newExecution, &executionWaitGroup)
 				currentExecutions[stepIndex] = newExecution
 			case model.Succeeded, model.Canceled:
