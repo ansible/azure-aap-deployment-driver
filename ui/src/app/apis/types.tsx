@@ -3,6 +3,7 @@ export enum StepStatuses {
 	STARTED,
 	SUCCEEDED,
 	FAILED,
+	RESTART_PENDING,
 	CANCELED
 }
 
@@ -32,6 +33,8 @@ export class DeploymentStepStatusData {
 					this.status = StepStatuses.STARTED
 					break
 				case "Restart":  // step marked restart was previously failed
+					this.status = StepStatuses.RESTART_PENDING
+					break
 				case "Failed":
 				case "PermanentlyFailed":
 				case "RestartTimedOut":
