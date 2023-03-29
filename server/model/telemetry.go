@@ -10,7 +10,6 @@ const event string = "Deployment Completed"
 // TODO: How to store the write key?
 func PublishToSegment(db *gorm.DB) {
 	client := analytics.New("N1Dfx7gVokm42dmkJOr5GkNKhRmLjF7i")
-	defer client.Close()
 
 	subscriptionID := Metric(db, CustomerSubscriptionID).MetricValue
 	accessType := Metric(db, AccessType).MetricValue
@@ -21,17 +20,23 @@ func PublishToSegment(db *gorm.DB) {
 	startTime := Metric(db, StartTime).MetricValue
 	retries := Metric(db, Retries).MetricValue
 
+	propertiesMap := map[string]interface{}{
+		string(DeployStatus): deployStatus,
+		string(AccessType):   accessType,
+		string(EndTime):      endTime,
+		string(StartTime):    startTime,
+		string(Region):       region,
+		string(Errors):       errors,
+		string(Retries):      retries,
+	}
+
+	//propertiesMap := map[string]interface{}
+
 	client.Enqueue(analytics.Track{
-		UserId: subscriptionID,
-		Event:  event,
-		Properties: map[string]interface{}{
-			string(DeployStatus): deployStatus,
-			string(AccessType):   accessType,
-			string(EndTime):      endTime,
-			string(StartTime):    startTime,
-			string(Region):       region,
-			string(Errors):       errors,
-			string(Retries):      retries,
-		},
+		UserId:     subscriptionID,
+		Event:      event,
+		Properties: propertiesMap,
 	})
+
+	client.Close()
 }
