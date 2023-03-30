@@ -1,39 +1,46 @@
 package model
 
 import (
+	"fmt"
+
+	"server/config"
+
 	"github.com/segmentio/analytics-go/v3"
 	"gorm.io/gorm"
 )
 
+// event name - required for Amplitude
 const event string = "Deployment Completed"
 
-// TODO: How to store the write key?
-func PublishToSegment(db *gorm.DB) {
-	client := analytics.New("N1Dfx7gVokm42dmkJOr5GkNKhRmLjF7i")
+// This slice should have the same metrics as /server/model/enums.go DeploymentMetrics
+var metrics = []DeploymentMetric{
+	StartTime,
+	EndTime,
+	CustomerSubscriptionID,
+	Region,
+	AccessType,
+	DeployStatus,
+	Errors,
+	Retries,
+}
 
-	subscriptionID := Metric(db, CustomerSubscriptionID).MetricValue
-	accessType := Metric(db, AccessType).MetricValue
-	deployStatus := Metric(db, DeployStatus).MetricValue
-	endTime := Metric(db, EndTime).MetricValue
-	errors := Metric(db, Errors).MetricValue
-	region := Metric(db, Region).MetricValue
-	startTime := Metric(db, StartTime).MetricValue
-	retries := Metric(db, Retries).MetricValue
+func BuildSegmentPropertiesMap(db *gorm.DB) analytics.Properties {
 
-	propertiesMap := map[string]interface{}{
-		string(DeployStatus): deployStatus,
-		string(AccessType):   accessType,
-		string(EndTime):      endTime,
-		string(StartTime):    startTime,
-		string(Region):       region,
-		string(Errors):       errors,
-		string(Retries):      retries,
+	var propertiesMap = analytics.Properties{}
+	for _, metric := range metrics {
+		propertiesMap[string(metric)] = fmt.Sprintf("%v", Metric(db, metric).MetricValue)
 	}
+	return propertiesMap
+}
 
-	//propertiesMap := map[string]interface{}
-
+func PublishToSegment(db *gorm.DB) {
+	client := analytics.New(config.GetEnvironment().SEGMENT_WRITE_KEY)
+	// set metrics in DB that are not set yet
+	// TODO : Is there a better place where subscriptionId can be set? Not possible in env.go because of circular imports
+	SetMetric(db, CustomerSubscriptionID, config.GetEnvironment().SUBSCRIPTION)
+	propertiesMap := BuildSegmentPropertiesMap(db)
 	client.Enqueue(analytics.Track{
-		UserId:     subscriptionID,
+		UserId:     propertiesMap[string(CustomerSubscriptionID)].(string),
 		Event:      event,
 		Properties: propertiesMap,
 	})

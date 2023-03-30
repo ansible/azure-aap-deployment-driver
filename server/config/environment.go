@@ -30,6 +30,7 @@ type envVars struct {
 	SESSION_COOKIE_SECURE      bool
 	SESSION_COOKIE_MAX_AGE     int
 	SAVE_CONTAINER             bool
+	SEGMENT_WRITE_KEY          string
 }
 
 var (
@@ -192,6 +193,11 @@ func GetEnvironment() envVars {
 		log.Warnf("SAVE_CONTAINER has unrecognized value, please set to true or false.  Using default: %t", environment.SAVE_CONTAINER)
 	} else {
 		environment.SAVE_CONTAINER = saveContainer
+	}
+
+	environment.SEGMENT_WRITE_KEY = env.Get("SEGMENT_WRITE_KEY")
+	if environment.SEGMENT_WRITE_KEY == "" {
+		log.Warnf("SEGMENT_WRITE_KEY environment variable unset, deployment telemetry will not be available on Amplitude")
 	}
 
 	return environment
