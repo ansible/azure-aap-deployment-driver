@@ -77,8 +77,6 @@ func (engine *Engine) startDeploymentExecutions() {
 				latestExecution.Status = model.Restarted
 				engine.database.Instance.Save(&latestExecution)
 				newExecution := &model.Execution{}
-				// set execution count to be one bigger than last execution
-				newExecution.ExecutionCount = latestExecution.ExecutionCount + 1
 				engine.startExecution(step, newExecution, &executionWaitGroup)
 				currentExecutions[stepIndex] = newExecution
 			case model.Succeeded, model.Canceled:
@@ -102,7 +100,8 @@ func (engine *Engine) startDeploymentExecutions() {
 					terminateMainLoop = true
 					break
 				}
-				if execution != nil && execution.Status != model.Succeeded && execution.Status != model.Canceled && execution.ExecutionCount == engine.maxExecutionRestarts {
+				if execution != nil && execution.Status != model.Succeeded && execution.Status != model.Canceled &&
+					int(engine.countStepExecutions(execution.StepID)) >= engine.maxExecutionRestarts {
 					log.Error("Found failed deployment step that can not be restarted again.")
 					terminateMainLoop = true
 					execution.Status = model.PermanentlyFailed
@@ -177,11 +176,16 @@ func (engine *Engine) Done() <-chan struct{} {
 	return engine.done
 }
 
+func (engine *Engine) countStepExecutions(stepId uint) int64 {
+	var count int64
+	engine.database.Instance.Model(&model.Execution{}).Where("step_id = ?", stepId).Count(&count)
+	return count
+}
+
 func (engine *Engine) GetLatestExecution(step model.Step) model.Execution {
 	latestExecution := model.Execution{}
 	// Avoid GORM error from Last() if no executions yet
-	var count int64
-	engine.database.Instance.Model(&model.Execution{}).Where("step_id = ?", step.ID).Count(&count)
+	count := engine.countStepExecutions(step.ID)
 	if count > 0 {
 		engine.database.Instance.Last(&latestExecution, "step_id = ?", step.ID)
 	}
