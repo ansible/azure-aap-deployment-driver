@@ -48,7 +48,6 @@ type Execution struct {
 	Duration          string          `json:"duration"`
 	CorrelationID     string          `json:"correlationId"`
 	ResumeToken       string          `json:"-"`
-	ExecutionCount    int             `json:"executionCount"`
 }
 
 type Status struct {
@@ -72,7 +71,6 @@ type Telemetry struct {
 }
 
 func UpdateExecution(execution *Execution, result *DeploymentResult, errJson string) {
-	execution.ExecutionCount++
 	execution.ResumeToken = ""
 
 	if result != nil {

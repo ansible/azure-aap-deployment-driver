@@ -69,15 +69,13 @@ func TestDurationParsing(t *testing.T) {
 
 func TestUpdateExecution(t *testing.T) {
 	execution := model.Execution{
-		ResumeToken:    "token",
-		ExecutionCount: 0,
+		ResumeToken: "token",
 	}
 
 	// No result to check
 	model.UpdateExecution(&execution, nil, "")
 	assert.Equal(t, model.Failed, execution.Status)
 	assert.Equal(t, "", execution.ResumeToken, "Resume token should be removed")
-	assert.Equal(t, 1, execution.ExecutionCount, "Execution count should be incremented")
 	execution.ResumeToken = "token"
 	now := time.Now()
 	result := model.DeploymentResult{
@@ -92,7 +90,6 @@ func TestUpdateExecution(t *testing.T) {
 	// With result
 	model.UpdateExecution(&execution, &result, "")
 	assert.Equal(t, "", execution.ResumeToken, "Resume token should be removed")
-	assert.Equal(t, 2, execution.ExecutionCount, "Execution count should be incremented")
 	assert.Equal(t, "ID", execution.DeploymentID)
 	assert.Equal(t, model.Failed, execution.Status)
 	assert.Equal(t, "1 seconds", execution.Duration)
