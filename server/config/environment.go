@@ -47,7 +47,7 @@ func GetEnvironment() envVars {
 	environment.ENGINE_END_WAIT = 900     // 15 minutes wait before server exits after its done
 	environment.ENGINE_RETRY_WAIT = 1800  // 30 minutes wait for a step to be restarted
 	environment.ENGINE_MAX_RUNTIME = 7200 // 2 hours max run time for everything (including restarts)
-	environment.EXECUTION_MAX_RETRY = 3
+	environment.EXECUTION_MAX_RETRY = 10  // 10 executions in total allowed
 	environment.DB_PATH = "/installerstore/installer.db"
 	environment.TEMPLATE_PATH = "/installerstore/templates"
 	environment.AZURE_POLLING_FREQ_SECONDS = 5
@@ -133,55 +133,61 @@ func GetEnvironment() envVars {
 		environment.TEMPLATE_PATH = templatePath
 	}
 
-	engineEndWait, err := strconv.ParseInt(env.Get("ENGINE_END_WAIT", "0"), 10, 64)
+	// using empty string as default to force error condition and use of default when env variable not set
+	engineEndWait, err := strconv.ParseInt(env.Get("ENGINE_END_WAIT", ""), 10, 64)
 	if err != nil {
-		log.Warnf("ENGINE_END_WAIT environment variable is not a number, will use default of %d", environment.ENGINE_END_WAIT)
+		log.Warnf("ENGINE_END_WAIT environment variable is not set or is not a number, will use default: %d", environment.ENGINE_END_WAIT)
 	} else if engineEndWait != 0 {
 		environment.ENGINE_END_WAIT = engineEndWait
 	}
 
-	engineMaxRunTime, err := strconv.ParseInt(env.Get("ENGINE_MAX_RUNTIME", "0"), 10, 64)
+	// using empty string as default to force error condition and use of default when env variable not set
+	engineMaxRunTime, err := strconv.ParseInt(env.Get("ENGINE_MAX_RUNTIME", ""), 10, 64)
 	if err != nil {
-		log.Warnf("ENGINE_MAX_RUNTIME environment variable is not a number, will use default of %d", environment.ENGINE_MAX_RUNTIME)
+		log.Warnf("ENGINE_MAX_RUNTIME environment variable is not set or is not a number, will use default: %d", environment.ENGINE_MAX_RUNTIME)
 	} else if engineMaxRunTime != 0 {
 		environment.ENGINE_MAX_RUNTIME = engineMaxRunTime
 	}
 
-	engineRetryWait, err := strconv.ParseInt(env.Get("ENGINE_RETRY_WAIT", "0"), 10, 64)
+	// using empty string as default to force error condition and use of default when env variable not set
+	engineRetryWait, err := strconv.ParseInt(env.Get("ENGINE_RETRY_WAIT", ""), 10, 64)
 	if err != nil {
-		log.Warnf("ENGINE_RETRY_WAIT environment variable is not a number, will use default of %d", environment.ENGINE_RETRY_WAIT)
+		log.Warnf("ENGINE_RETRY_WAIT environment variable is not set or is not a number, will use default: %d", environment.ENGINE_RETRY_WAIT)
 	} else if engineMaxRunTime != 0 {
 		environment.ENGINE_RETRY_WAIT = engineRetryWait
 	}
 
-	executionMaxRetry, err := strconv.ParseInt(env.Get("EXECUTION_MAX_RETRY", "0"), 10, 32)
+	// using empty string as default to force error condition and use of default when env variable not set
+	executionMaxRetry, err := strconv.ParseInt(env.Get("EXECUTION_MAX_RETRY", ""), 10, 32)
 	if err != nil {
-		log.Warnf("EXECUTION_MAX_RETRY environment variable is not a number, will use default of %d", environment.EXECUTION_MAX_RETRY)
+		log.Warnf("EXECUTION_MAX_RETRY environment variable is not set or is not a number, will use default: %d", environment.EXECUTION_MAX_RETRY)
 	} else {
 		environment.EXECUTION_MAX_RETRY = int(executionMaxRetry)
 	}
 
-	azurePollingFreq, err := strconv.ParseInt(env.Get("AZURE_POLLING_FREQ_SECONDS", "0"), 10, 32)
+	// using empty string as default to force error condition and use of default when env variable not set
+	azurePollingFreq, err := strconv.ParseInt(env.Get("AZURE_POLLING_FREQ_SECONDS", ""), 10, 32)
 	if err != nil {
-		log.Warnf("AZURE_POLLING_FREQ_SECONDS environment variable is not a number, will use default of %d", environment.AZURE_POLLING_FREQ_SECONDS)
+		log.Warnf("AZURE_POLLING_FREQ_SECONDS environment variable is not set or is not a number, will use default: %d", environment.AZURE_POLLING_FREQ_SECONDS)
 	} else if azurePollingFreq > 1 {
 		environment.AZURE_POLLING_FREQ_SECONDS = int(azurePollingFreq)
 	}
 
 	autoRetry, err := strconv.ParseBool(env.Get("AUTO_RETRY", "false"))
 	if err != nil {
-		log.Warnf("AUTO_RETRY has unrecognized value, please set to true or false.  Using default: %t", environment.AUTO_RETRY)
+		log.Warnf("AUTO_RETRY has unrecognized value, please set to true or false. Using default: %t", environment.AUTO_RETRY)
 	} else {
 		environment.AUTO_RETRY = autoRetry
 	}
 
-	autoRetryDelay, err := strconv.ParseInt(env.Get("AUTO_RETRY_DELAY", "0"), 10, 32)
+	// using empty string as default to force error condition and use of default when env variable not set
+	autoRetryDelay, err := strconv.ParseInt(env.Get("AUTO_RETRY_DELAY", ""), 10, 32)
 	if err != nil {
-		log.Warnf("AUTO_RETRY_DELAY environment variable is not a number, will use default of %d", environment.AUTO_RETRY_DELAY)
+		log.Warnf("AUTO_RETRY_DELAY environment variable is not set or is not a number, will use default: %d", environment.AUTO_RETRY_DELAY)
 	} else if autoRetryDelay > 1 {
 		if autoRetryDelay > int64(environment.ENGINE_RETRY_WAIT) {
 			maxAutoRetryDelay := environment.ENGINE_RETRY_WAIT / 2
-			log.Warnf("AUTO_RETRY_DELAY cannot exceed ENGINE_RETRY_WAIT, setting to %d", maxAutoRetryDelay)
+			log.Warnf("AUTO_RETRY_DELAY cannot exceed ENGINE_RETRY_WAIT, setting to: %d", maxAutoRetryDelay)
 			environment.AUTO_RETRY_DELAY = int(maxAutoRetryDelay)
 		} else {
 			environment.AUTO_RETRY_DELAY = int(autoRetryDelay)
@@ -190,7 +196,7 @@ func GetEnvironment() envVars {
 
 	saveContainer, err := strconv.ParseBool(env.Get("SAVE_CONTAINER", "false"))
 	if err != nil {
-		log.Warnf("SAVE_CONTAINER has unrecognized value, please set to true or false.  Using default: %t", environment.SAVE_CONTAINER)
+		log.Warnf("SAVE_CONTAINER has unrecognized value, please set to true or false. Using default: %t", environment.SAVE_CONTAINER)
 	} else {
 		environment.SAVE_CONTAINER = saveContainer
 	}
