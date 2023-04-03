@@ -149,6 +149,10 @@ func (engine *Engine) startDeploymentExecutions() {
 }
 
 func (engine *Engine) waitBeforeEnding() {
+
+	// Publish telemetry for this deployment to Segment before starting wait time
+	log.Info("Sending telemetry to Segment")
+	model.PublishToSegment(engine.database.Instance)
 	// if the context is not yet cancelled, check for failed executions
 	if engine.context.Err() == nil {
 		waitTime := time.Duration(config.GetEnvironment().ENGINE_END_WAIT) * time.Second
@@ -159,8 +163,6 @@ func (engine *Engine) waitBeforeEnding() {
 		case <-engine.context.Done():
 		}
 	}
-	// Publish telemetry for this deployment to Segment
-	model.PublishToSegment(engine.database.Instance)
 	// Start the process to delete ourself
 	if !config.GetEnvironment().SAVE_CONTAINER {
 		log.Info("Engine starting storage account and container deletion and terminating...")
