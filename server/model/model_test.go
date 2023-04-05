@@ -132,7 +132,7 @@ func TestSegmentPublisher(t *testing.T) {
 	db := persistence.NewInMemoryDB()
 	model.SetMetric(db.Instance, model.DeployStatus, "SUCCESS")
 	model.SetMetric(db.Instance, model.AccessType, "PRIVATE")
-	model.SetMetric(db.Instance, model.CustomerSubscriptionID, "XYZ123")
+	model.SetMetric(db.Instance, model.ApplicationId, "XYZ123")
 	model.PublishToSegment(db.Instance)
 }
 

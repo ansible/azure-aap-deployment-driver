@@ -6,7 +6,6 @@ import (
 	"server/config"
 
 	"github.com/segmentio/analytics-go/v3"
-	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -17,7 +16,7 @@ const event string = "Deployment Completed"
 var metrics = []DeploymentMetric{
 	StartTime,
 	EndTime,
-	CustomerSubscriptionID,
+	ApplicationId,
 	Region,
 	AccessType,
 	DeployStatus,
@@ -36,16 +35,14 @@ func BuildSegmentPropertiesMap(db *gorm.DB) analytics.Properties {
 
 func PublishToSegment(db *gorm.DB) {
 
-	log.Info("Starting to Publish")
 	client := analytics.New(config.GetEnvironment().SEGMENT_WRITE_KEY)
-	log.Info("Found client", client)
 	// set metrics in DB that are not set yet
-	// TODO : Is there a better place where subscriptionId can be set? Not possible in env.go because of circular imports
-	SetMetric(db, CustomerSubscriptionID, config.GetEnvironment().SUBSCRIPTION)
+	// TODO : Is there a better place where ApplicationId can be set? Not possible in env.go because of circular imports
+	SetMetric(db, ApplicationId, config.GetEnvironment().APPLICATION_ID)
+	//gather all metrics in a property map
 	propertiesMap := BuildSegmentPropertiesMap(db)
-	log.Info("Map details : \n", propertiesMap)
 	client.Enqueue(analytics.Track{
-		UserId:     propertiesMap[string(CustomerSubscriptionID)].(string),
+		UserId:     config.GetEnvironment().SUBSCRIPTION,
 		Event:      event,
 		Properties: propertiesMap,
 	})

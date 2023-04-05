@@ -18,14 +18,14 @@ const (
 type DeploymentMetric string
 
 const (
-	StartTime              DeploymentMetric = "StartTime"
-	EndTime                DeploymentMetric = "EndTime"
-	CustomerSubscriptionID DeploymentMetric = "CustomerSubscriptionID"
-	Region                 DeploymentMetric = "Region"
-	AccessType             DeploymentMetric = "AccessType"
-	DeployStatus           DeploymentMetric = "DeployStatus"
-	Errors                 DeploymentMetric = "Errors"
-	Retries                DeploymentMetric = "Retries"
+	StartTime     DeploymentMetric = "starttime"
+	EndTime       DeploymentMetric = "endtime"
+	ApplicationId DeploymentMetric = "applicationid"
+	Region        DeploymentMetric = "region"
+	AccessType    DeploymentMetric = "accesstype"
+	DeployStatus  DeploymentMetric = "deploystatus"
+	Errors        DeploymentMetric = "errors"
+	Retries       DeploymentMetric = "retries"
 )
 
 // Allow GORM to store the string value of ExecutionStatus

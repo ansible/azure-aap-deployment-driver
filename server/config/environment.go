@@ -31,6 +31,7 @@ type envVars struct {
 	SESSION_COOKIE_MAX_AGE     int
 	SAVE_CONTAINER             bool
 	SEGMENT_WRITE_KEY          string
+	APPLICATION_ID             string
 }
 
 var (
@@ -204,6 +205,10 @@ func GetEnvironment() envVars {
 	environment.SEGMENT_WRITE_KEY = env.Get("SEGMENT_WRITE_KEY")
 	if environment.SEGMENT_WRITE_KEY == "" {
 		log.Warnf("SEGMENT_WRITE_KEY environment variable unset, deployment telemetry will not be available on Amplitude")
+	}
+	environment.APPLICATION_ID = env.Get("APPLICATION_ID")
+	if environment.APPLICATION_ID == "" {
+		log.Warnf("APPLICATION_ID environment variable unavailable and will not be displayed on Amplitude")
 	}
 
 	return environment

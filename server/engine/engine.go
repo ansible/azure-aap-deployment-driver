@@ -37,7 +37,6 @@ func (engine *Engine) Run() {
 
 func (engine *Engine) startDeploymentExecutions() {
 	log.Println("Starting main engine loop...")
-
 	var executionWaitGroup sync.WaitGroup
 
 	// Find lowest priority step(s) without successful execution and run
@@ -156,7 +155,7 @@ func (engine *Engine) startDeploymentExecutions() {
 func (engine *Engine) waitBeforeEnding() {
 
 	// Publish telemetry for this deployment to Segment before starting wait time
-	log.Info("Sending telemetry to Segment")
+	log.Info("Sending telemetry for this deployment to Segment")
 	model.PublishToSegment(engine.database.Instance)
 	// if the context is not yet cancelled, check for failed executions
 	if engine.context.Err() == nil {
