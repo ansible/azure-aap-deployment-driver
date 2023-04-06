@@ -34,7 +34,11 @@ func BuildSegmentPropertiesMap(db *gorm.DB) analytics.Properties {
 
 func PublishToSegment(db *gorm.DB) {
 
-	client := analytics.New(config.GetEnvironment().SEGMENT_WRITE_KEY)
+	writeKey := config.GetEnvironment().SEGMENT_WRITE_KEY
+	if writeKey == "" {
+		return
+	}
+	client := analytics.New(writeKey)
 	// set metrics in DB that are not set yet
 	SetMetric(db, ApplicationId, config.GetEnvironment().APPLICATION_ID)
 	//gather all metrics in a property map
@@ -44,6 +48,5 @@ func PublishToSegment(db *gorm.DB) {
 		Event:      GetEvent(propertiesMap),
 		Properties: propertiesMap,
 	})
-
 	client.Close()
 }
