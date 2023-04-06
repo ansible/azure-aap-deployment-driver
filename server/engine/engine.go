@@ -37,6 +37,7 @@ func (engine *Engine) Run() {
 
 func (engine *Engine) startDeploymentExecutions() {
 	log.Println("Starting main engine loop...")
+
 	var executionWaitGroup sync.WaitGroup
 
 	// Find lowest priority step(s) without successful execution and run
