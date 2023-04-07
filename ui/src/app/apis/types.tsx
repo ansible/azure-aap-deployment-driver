@@ -4,7 +4,8 @@ export enum StepStatuses {
 	SUCCEEDED,
 	FAILED,
 	RESTART_PENDING,
-	CANCELED
+	CANCELED,
+	PERM_FAILED
 }
 
 export class DeploymentStepStatusData {
@@ -35,8 +36,10 @@ export class DeploymentStepStatusData {
 				case "Restart":  // step marked restart was previously failed
 					this.status = StepStatuses.RESTART_PENDING
 					break
-				case "Failed":
 				case "PermanentlyFailed":
+					this.status = StepStatuses.PERM_FAILED
+					break
+				case "Failed":
 				case "RestartTimedOut":
 					this.status = StepStatuses.FAILED
 					break
@@ -81,6 +84,7 @@ export class DeploymentProgressData {
 	failedExId:number =-1
 	isComplete:boolean = false
 	isCanceled:boolean = false
+	isPermanentlyFailed:boolean = false
 	constructor(steps?:DeploymentStepData[]) {
 		if (Array.isArray(steps) && steps.length > 0) {
 			const succeeded = steps.reduce(
@@ -94,6 +98,7 @@ export class DeploymentProgressData {
 			this.failedStepIds = failedSteps.map((failedStep)=>failedStep.id)
 			this.failedStepNames = failedSteps.map((failedStep)=>failedStep.name)
 			this.isComplete = this.progress === 100
+			this.isPermanentlyFailed = steps.some((currentStep) => currentStep.status?.status === StepStatuses.PERM_FAILED)
 			this.isCanceled = steps.some((currentStep) => currentStep.status?.status === StepStatuses.CANCELED)
 			// TODO Fix this up and probably move somewhere else (not exactly progress related)
 			if(failedSteps[0] != null && failedSteps[0].status != null)

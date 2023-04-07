@@ -14,14 +14,17 @@ interface IDeploymentProgressProps {
 export const DeploymentProgress = ({ progressData }: IDeploymentProgressProps ) => {
 
   // set a deployment message based on the status
-  let  deploymentMessage = ""
+  let deploymentMessage = ""
+  let cleanupMessage = "You still need to delete the managed application from your Azure subscription. " +
+  "For more information about deleting resources, refer to the documentation linked to the left."
   if (progressData.isComplete) {
     deploymentMessage = "Your Ansible Automation Platform deployment is now complete."
   } else if (progressData.isCanceled) {
-    deploymentMessage =
-      "Your Ansible on Azure deployment is cancelled. You still need to delete the managed application from your Azure subscription." +
-      "In the Azure Portal, navigate to 'Resource Groups', and then to the resource group where you deployed the instance of the managed application. " +
-      "Select the managed application from the list of resources and then click 'Delete' to remove all resources associated with the managed application"
+    deploymentMessage = "Your Ansible on Azure deployment is cancelled. "
+    deploymentMessage = deploymentMessage.concat(cleanupMessage)
+  } else if (progressData.isPermanentlyFailed) {
+    deploymentMessage = "The maximum number of retries has been reached and your Ansible on Azure deployment has failed. Please reinstall. "
+    deploymentMessage = deploymentMessage.concat(cleanupMessage)
   } else if (progressData.failedStepIds.length > 0) {
     deploymentMessage = `Deployment step "${progressData.failedStepNames[0]}" failed. Press the Restart button below to restart it.`
   } else {
@@ -29,18 +32,18 @@ export const DeploymentProgress = ({ progressData }: IDeploymentProgressProps ) 
   }
 
   // render restart for the first failed step
-  const restartStep = (progressData.failedStepIds.length > 0 && !progressData.isCanceled ?
+  const restartStep = (progressData.failedStepIds.length > 0 && !progressData.isCanceled && !progressData.isPermanentlyFailed ?
     <RestartStep stepExId={progressData.failedExId} /> :
     <></>
   )
 
   // render progress bar only if no failed steps
-  const progressBar = (progressData.failedStepIds.length === 0 ?
+  const progressBar = (progressData.failedStepIds.length === 0 && !progressData.isPermanentlyFailed ?
     <ProgressBar progressPercent={progressData.progress} ></ProgressBar> :
     <></>
   )
 
-  const cancelButton = ( !progressData.isComplete && !progressData.isCanceled ? <CancelDeployment/> : <></>)
+  const cancelButton = ( !progressData.isComplete && !progressData.isCanceled && !progressData.isPermanentlyFailed ? <CancelDeployment/> : <></>)
 
   return (
     <>
