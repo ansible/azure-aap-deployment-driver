@@ -5,6 +5,7 @@ import (
 	"server/config"
 
 	"github.com/segmentio/analytics-go/v3"
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -36,16 +37,22 @@ func PublishToSegment(db *gorm.DB) {
 
 	writeKey := config.GetEnvironment().SEGMENT_WRITE_KEY
 	if writeKey == "" {
-		return
+		log.Errorf("Segment Write Key is missing : Not sending telemetry to Segment")
 	}
-	client := analytics.New(writeKey)
 	// set metrics in DB that are not set yet
 	SetMetric(db, ApplicationId, config.GetEnvironment().APPLICATION_ID)
 	//gather all metrics in a property map
 	propertiesMap := BuildSegmentPropertiesMap(db)
+	eventName := GetEvent(propertiesMap)
+	if eventName == "" {
+		log.Errorf("Unexpected value for deploy status: [%v]. Not sending telemetry to Segment.", propertiesMap[string(DeployStatus)])
+		return
+	}
+
+	client := analytics.New(writeKey)
 	client.Enqueue(analytics.Track{
 		UserId:     config.GetEnvironment().SUBSCRIPTION,
-		Event:      GetEvent(propertiesMap),
+		Event:      eventName,
 		Properties: propertiesMap,
 	})
 	client.Close()
