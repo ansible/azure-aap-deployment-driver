@@ -33,7 +33,7 @@ export const ErrorInfoPopover = ({ stepStatusData }: IErrorInfoProps) => {
   );
   return (
     <Tooltip content={"Click for error info"}>
-      <Popover minWidth="40rem" bodyContent={data}>
+      <Popover minWidth="40rem" bodyContent={data} showClose={false} >
         <Icon className="icon1" status="danger">
           <ExclamationCircleIcon />
         </Icon>

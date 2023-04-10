@@ -14,7 +14,7 @@ export const StepStatus = ({ stepStatusData }: IStepStatusProps) => {
 
   const hasStarted = (stepStatusData.status === StepStatuses.STARTED)
   const hasSucceeded = (stepStatusData.status === StepStatuses.SUCCEEDED)
-  const hasFailed = (stepStatusData.status === StepStatuses.FAILED)
+  const hasFailed = (stepStatusData.status === StepStatuses.FAILED || stepStatusData.status === StepStatuses.PERM_FAILED)
   const hasRestartPending = (stepStatusData.status === StepStatuses.RESTART_PENDING)
   const hasBeenCanceled = (stepStatusData.status === StepStatuses.CANCELED)
 
@@ -29,9 +29,9 @@ export const StepStatus = ({ stepStatusData }: IStepStatusProps) => {
       <FlexItem className="statusTooltip" align={{ default: 'alignRight' }}>
         { hasBeenCanceled && <Tooltip removeFindDomNode={true} content={<div>{"Cancelled"}</div>}><Icon className='icon1' status="warning"><ExclamationCircleIcon /></Icon></Tooltip> }
         { hasRestartPending && <Tooltip removeFindDomNode={true} content={<div>{"Restart pending"}</div>}><Icon className='icon1' status="warning"><HistoryIcon /></Icon></Tooltip> }
-        { hasSucceeded && <Tooltip removeFindDomNode={true} content={<div>Success</div>}><Icon className='icon1' status="success"><CheckCircleIcon /></Icon></Tooltip> }
+        { hasSucceeded && <Tooltip removeFindDomNode={true} content={<div>{"Success"}</div>}><Icon className='icon1' status="success"><CheckCircleIcon /></Icon></Tooltip> }
         { hasFailed && <ErrorInfoPopover stepStatusData={stepStatusData}></ErrorInfoPopover> }
-        { hasStarted && <Icon className='icon1' isInProgress={true}><CheckCircleIcon /></Icon> }
+        { hasStarted && <Tooltip removeFindDomNode={true} content={<div>{"In Progress"}</div>}><Icon className='icon1' isInProgress={true}><CheckCircleIcon /></Icon></Tooltip> }
       </FlexItem>
     </Flex>
   )
