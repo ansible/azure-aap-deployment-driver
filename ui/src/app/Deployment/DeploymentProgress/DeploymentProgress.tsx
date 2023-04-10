@@ -15,16 +15,14 @@ export const DeploymentProgress = ({ progressData }: IDeploymentProgressProps ) 
 
   // set a deployment message based on the status
   let deploymentMessage = ""
-  let cleanupMessage = "You still need to delete the managed application from your Azure subscription. " +
+  const cleanupMessage = "You still need to delete the managed application from your Azure subscription. " +
   "For more information about deleting resources, refer to the documentation linked to the left."
   if (progressData.isComplete) {
     deploymentMessage = "Your Ansible Automation Platform deployment is now complete."
   } else if (progressData.isCanceled) {
-    deploymentMessage = "Your Ansible on Azure deployment is cancelled. "
-    deploymentMessage = deploymentMessage.concat(cleanupMessage)
+    deploymentMessage = `Your Ansible on Azure deployment is cancelled. ${cleanupMessage}`
   } else if (progressData.isPermanentlyFailed) {
-    deploymentMessage = "The maximum number of retries has been reached and your Ansible on Azure deployment has failed. Please reinstall. "
-    deploymentMessage = deploymentMessage.concat(cleanupMessage)
+    deploymentMessage = `The maximum number of retries has been reached and your Ansible on Azure deployment has failed. Please reinstall. ${cleanupMessage}`
   } else if (progressData.failedStepIds.length > 0) {
     deploymentMessage = `Deployment step "${progressData.failedStepNames[0]}" failed. Press the Restart button below to restart it.`
   } else {
