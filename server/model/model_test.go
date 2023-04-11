@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"os"
 	"server/model"
-	"server/persistence"
 	"server/test"
 	"testing"
 	"time"
@@ -125,15 +124,6 @@ func TestUpdateExecution(t *testing.T) {
 	log.SetOutput(os.Stdout)
 	assert.Contains(t, execution.Error, "invalid character")
 	assert.Contains(t, buf.String(), "Unable to parse")
-}
-
-func TestSegmentPublisher(t *testing.T) {
-
-	db := persistence.NewInMemoryDB()
-	model.SetMetric(db.Instance, model.DeployStatus, "SUCCESS")
-	model.SetMetric(db.Instance, model.AccessType, "PRIVATE")
-	model.SetMetric(db.Instance, model.ApplicationId, "XYZ123")
-	model.PublishToSegment(db.Instance)
 }
 
 // TestMain wraps the tests.  Setup is done before the call to m.Run() and any
