@@ -39,6 +39,7 @@ func PublishToSegment(db *gorm.DB) {
 	writeKey := config.GetEnvironment().SEGMENT_WRITE_KEY
 	if writeKey == "" {
 		log.Errorf("Segment Write Key is missing : Not sending telemetry to Segment")
+		return
 	}
 	// set metrics in DB that are not set yet
 	model.SetMetric(db, model.ApplicationId, config.GetEnvironment().APPLICATION_ID)
