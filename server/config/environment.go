@@ -204,11 +204,11 @@ func GetEnvironment() envVars {
 
 	environment.SEGMENT_WRITE_KEY = env.Get("SEGMENT_WRITE_KEY")
 	if environment.SEGMENT_WRITE_KEY == "" {
-		log.Warnf("SEGMENT_WRITE_KEY environment variable unset, deployment telemetry will not be available on Amplitude")
+		log.Warn("SEGMENT_WRITE_KEY environment variable is either unset or is an empty string, deployment telemetry will not be published to Segment")
 	}
 	environment.APPLICATION_ID = env.Get("APPLICATION_ID")
 	if environment.APPLICATION_ID == "" {
-		log.Warnf("APPLICATION_ID environment variable unavailable and will not be displayed on Amplitude")
+		log.Warn("APPLICATION_ID environment variable is either unset or is an empty string, deployment telemetry will not contain the applicationid property")
 	}
 
 	return environment
