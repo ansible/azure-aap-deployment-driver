@@ -154,6 +154,10 @@ func (engine *Engine) startDeploymentExecutions() {
 }
 
 func (engine *Engine) waitBeforeEnding() {
+
+	// Publish telemetry for this deployment to Segment before starting wait time
+	log.Info("Sending telemetry for this deployment to Segment")
+	PublishToSegment(engine.database.Instance)
 	// if the context is not yet cancelled, check for failed executions
 	if engine.context.Err() == nil {
 		waitTime := time.Duration(config.GetEnvironment().ENGINE_END_WAIT) * time.Second

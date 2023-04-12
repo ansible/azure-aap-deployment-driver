@@ -48,7 +48,7 @@ func TestTelemetryTable(t *testing.T) {
 	retrieved := model.Telemetry{}
 	retrieved = model.Metric(db.Instance, model.DeployStatus)
 	assert.Equal(t, "SUCCESS", retrieved.MetricValue)
-	retrieved = model.Metric(db.Instance, model.CustomerSubscriptionID)
+	retrieved = model.Metric(db.Instance, model.ApplicationId)
 	assert.Equal(t, "", retrieved.MetricValue)
 	sqlDb, _ := db.Instance.DB()
 	sqlDb.Close()
