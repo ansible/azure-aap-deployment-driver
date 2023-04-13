@@ -28,7 +28,7 @@ func Status(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	status := Done
 	for _, step := range steps {
 		latestExecution := getLatestExecution(db, step)
-		if latestExecution.Status == model.PermanentlyFailed {
+		if latestExecution.Status == model.PermanentlyFailed || latestExecution.Status == model.RestartTimedOut {
 			status = Failed
 			break
 		} else if latestExecution.Status == model.Canceled {
