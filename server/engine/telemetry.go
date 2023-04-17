@@ -62,7 +62,6 @@ func PublishToSegment(db *gorm.DB) {
 	//gather all metrics in a property map
 	propertiesMap := BuildSegmentPropertiesMap(db)
 	eventName := GetEvent(propertiesMap)
-	eventName = "aap.azure.installer-deploy-success"
 	if eventName == "" {
 		log.Errorf("Unexpected value for deploy status: [%v]. Not sending telemetry to Segment.", propertiesMap[string(model.DeployStatus)])
 		return
