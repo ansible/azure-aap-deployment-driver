@@ -34,6 +34,21 @@ func BuildSegmentPropertiesMap(db *gorm.DB) analytics.Properties {
 	return propertiesMap
 }
 
+func GetMetricFromMainOutputs(db *gorm.DB) {
+
+	//var outputsMap map[string]interface{}
+	var outputs []model.Output
+	db.Find(&outputs)
+	for _, data := range outputs {
+		if data.ModuleName == "" {
+			location := data.Values["location"].(map[string]interface{})["value"]
+			accessType := data.Values["access"].(map[string]interface{})["value"]
+			model.SetMetric(db, model.Region, location.(string))
+			model.SetMetric(db, model.AccessType, accessType.(string))
+		}
+	}
+}
+
 func PublishToSegment(db *gorm.DB) {
 
 	writeKey := config.GetEnvironment().SEGMENT_WRITE_KEY
@@ -43,9 +58,11 @@ func PublishToSegment(db *gorm.DB) {
 	}
 	// set metrics in DB that are not set yet
 	model.SetMetric(db, model.ApplicationId, config.GetEnvironment().APPLICATION_ID)
+	GetMetricFromMainOutputs(db)
 	//gather all metrics in a property map
 	propertiesMap := BuildSegmentPropertiesMap(db)
 	eventName := GetEvent(propertiesMap)
+	eventName = "aap.azure.installer-deploy-success"
 	if eventName == "" {
 		log.Errorf("Unexpected value for deploy status: [%v]. Not sending telemetry to Segment.", propertiesMap[string(model.DeployStatus)])
 		return
