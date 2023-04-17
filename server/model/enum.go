@@ -28,6 +28,14 @@ const (
 	Retries       DeploymentMetric = "retries"
 )
 
+type TelemetryStatus string
+
+const (
+	DeploymentFailed    TelemetryStatus = "failed"
+	DeploymentSucceeded TelemetryStatus = "succeeded"
+	DeploymentCanceled  TelemetryStatus = "canceled"
+)
+
 // Allow GORM to store the string value of ExecutionStatus
 func (u *ExecutionStatus) Scan(value interface{}) error {
 	*u = ExecutionStatus(value.(string))
