@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"server/config"
 	"server/model"
+	"time"
 
 	"github.com/segmentio/analytics-go/v3"
 	log "github.com/sirupsen/logrus"
@@ -58,6 +59,8 @@ func PublishToSegment(db *gorm.DB) {
 	}
 	// set metrics in DB that are not set yet
 	model.SetMetric(db, model.ApplicationId, config.GetEnvironment().APPLICATION_ID)
+	// time.RFC3339 format is the Go equivalent to ISO 8601 format (minus the milliseconds)
+	model.SetMetric(db, model.EndTime, time.Now().Format(time.RFC3339))
 	GetMetricFromMainOutputs(db)
 	//gather all metrics in a property map
 	propertiesMap := BuildSegmentPropertiesMap(db)
