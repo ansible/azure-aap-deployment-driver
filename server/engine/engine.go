@@ -153,8 +153,26 @@ func (engine *Engine) startDeploymentExecutions() {
 	}
 }
 
-func (engine *Engine) waitBeforeEnding() {
+func (engine *Engine) ReportFinalDeploymentStatusToTelemetry() {
+	steps := []model.Step{}
+	engine.database.Instance.Model(&model.Step{}).Preload("Executions").Find(&steps)
+	status := model.DeploymentSucceeded
+	for _, step := range steps {
+		latestExecution := engine.GetLatestExecution(step)
+		if latestExecution.Status == model.PermanentlyFailed {
+			status = model.DeploymentFailed
+			break
+		} else if latestExecution.Status == model.Canceled {
+			status = model.DeploymentCanceled
+			break
+		}
+	}
+	model.SetMetric(engine.database.Instance, model.DeployStatus, string(status))
+}
 
+func (engine *Engine) waitBeforeEnding() {
+	// Add DeploymentMetric to Database
+	engine.ReportFinalDeploymentStatusToTelemetry()
 	// Publish telemetry for this deployment to Segment before starting wait time
 	log.Info("Sending telemetry for this deployment to Segment")
 	PublishToSegment(engine.database.Instance)
