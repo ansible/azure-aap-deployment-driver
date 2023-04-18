@@ -35,18 +35,21 @@ func BuildSegmentPropertiesMap(db *gorm.DB) analytics.Properties {
 	return propertiesMap
 }
 
-func GetMetricFromMainOutputs(db *gorm.DB) {
+func StoreMetricFromMainOutputs(db *gorm.DB) {
 
 	//var outputsMap map[string]interface{}
-	var outputs []model.Output
-	db.Find(&outputs)
-	for _, data := range outputs {
-		if data.ModuleName == "" {
-			location := data.Values["location"].(map[string]interface{})["value"]
-			accessType := data.Values["access"].(map[string]interface{})["value"]
-			model.SetMetric(db, model.Region, location.(string))
-			model.SetMetric(db, model.AccessType, accessType.(string))
-		}
+	var mainOutput model.Output
+	db.Where("module_name = ?", "").Find(&mainOutput)
+
+	if loc, exists := mainOutput.Values["location"]; exists {
+		model.SetMetric(db, model.Region, loc.(map[string]interface{})["value"].(string))
+	} else {
+		log.Errorf("Location of deployment is missing : will not be included in telemetry")
+	}
+	if access, exists := mainOutput.Values["access"]; exists {
+		model.SetMetric(db, model.AccessType, access.(map[string]interface{})["value"].(string))
+	} else {
+		log.Errorf("Access Type of deployment is missing : will not be included in telemetry")
 	}
 }
 
@@ -61,7 +64,7 @@ func PublishToSegment(db *gorm.DB) {
 	model.SetMetric(db, model.ApplicationId, config.GetEnvironment().APPLICATION_ID)
 	// time.RFC3339 format is the Go equivalent to ISO 8601 format (minus the milliseconds)
 	model.SetMetric(db, model.EndTime, time.Now().Format(time.RFC3339))
-	GetMetricFromMainOutputs(db)
+	StoreMetricFromMainOutputs(db)
 	//gather all metrics in a property map
 	propertiesMap := BuildSegmentPropertiesMap(db)
 	eventName := GetEvent(propertiesMap)
