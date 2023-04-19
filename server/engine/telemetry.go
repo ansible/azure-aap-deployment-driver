@@ -37,19 +37,18 @@ func BuildSegmentPropertiesMap(db *gorm.DB) analytics.Properties {
 
 func StoreMetricFromMainOutputs(db *gorm.DB) {
 
-	//var outputsMap map[string]interface{}
 	var mainOutput model.Output
 	db.Where("module_name = ?", "").Find(&mainOutput)
 
 	if loc, exists := mainOutput.Values["location"]; exists {
 		model.SetMetric(db, model.Region, loc.(map[string]interface{})["value"].(string))
 	} else {
-		log.Errorf("Location of deployment is missing : will not be included in telemetry")
+		log.Error("Location of deployment is missing : will not be included in telemetry")
 	}
 	if access, exists := mainOutput.Values["access"]; exists {
 		model.SetMetric(db, model.AccessType, access.(map[string]interface{})["value"].(string))
 	} else {
-		log.Errorf("Access Type of deployment is missing : will not be included in telemetry")
+		log.Error("Access Type of deployment is missing : will not be included in telemetry")
 	}
 }
 
