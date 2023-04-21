@@ -167,7 +167,7 @@ func (engine *Engine) ReportFinalDeploymentStatusToTelemetry() {
 			break
 		}
 	}
-	model.SetMetric(engine.database.Instance, model.DeployStatus, string(status))
+	model.SetMetric(engine.database.Instance, model.DeployStatus, string(status), "")
 }
 
 func (engine *Engine) waitBeforeEnding() {

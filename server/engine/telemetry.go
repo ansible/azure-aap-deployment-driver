@@ -27,11 +27,29 @@ func GetEvent(propertiesMap analytics.Properties) string {
 func BuildSegmentPropertiesMap(db *gorm.DB) analytics.Properties {
 
 	var propertiesMap = analytics.Properties{}
+	retriesMap := make(map[string]interface{})
+	errorsMap := make(map[string]interface{})
 	var metricData []model.Telemetry
 	db.Find(&metricData)
+	// Error Details and Number of retries will be granular at the step level hence, each error and retry will be mapped to a step
+	// in a nested JSON like format
+	// Rest of the metrics are granular at the deployment level
 	for _, data := range metricData {
-		propertiesMap[string(data.MetricName)] = fmt.Sprintf("%v", data.MetricValue)
+		fmt.Printf("%+v\n", data)
+		if data.Step == "" {
+			propertiesMap[string(data.MetricName)] = fmt.Sprintf("%v", data.MetricValue)
+		} else {
+			switch metric := data.MetricName; metric {
+			case model.Retries:
+				retriesMap[data.Step] = fmt.Sprintf("%v", data.MetricValue)
+			case model.Errors:
+				errorsMap[data.Step] = fmt.Sprintf("%v", data.MetricValue)
+			}
+		}
 	}
+	propertiesMap[string(model.Retries)] = retriesMap
+	propertiesMap[string(model.Errors)] = errorsMap
+
 	return propertiesMap
 }
 
@@ -41,14 +59,31 @@ func StoreMetricFromMainOutputs(db *gorm.DB) {
 	db.Where("module_name = ?", "").Find(&mainOutput)
 
 	if loc, exists := mainOutput.Values["location"]; exists {
-		model.SetMetric(db, model.Region, loc.(map[string]interface{})["value"].(string))
+		model.SetMetric(db, model.Region, loc.(map[string]interface{})["value"].(string), "")
 	} else {
 		log.Error("Location of deployment is missing : will not be included in telemetry")
 	}
 	if access, exists := mainOutput.Values["access"]; exists {
-		model.SetMetric(db, model.AccessType, access.(map[string]interface{})["value"].(string))
+		model.SetMetric(db, model.AccessType, access.(map[string]interface{})["value"].(string), "")
 	} else {
 		log.Error("Access Type of deployment is missing : will not be included in telemetry")
+	}
+}
+
+func StoreRetriesPerStep(db *gorm.DB) {
+
+	var allSteps []model.Step
+	db.Find(&allSteps)
+
+	for _, step := range allSteps {
+		// len(step.Executions) includes the 1st attempt as well
+		// which should not be considered as a "retry"
+		// In cases where a step is not executed at all, retries should be set to 0.
+		retries := len(step.Executions) - 1
+		if retries < 0 {
+			retries = 0
+		}
+		model.SetMetric(db, model.Retries, fmt.Sprint(retries), step.Name)
 	}
 }
 
@@ -60,10 +95,11 @@ func PublishToSegment(db *gorm.DB) {
 		return
 	}
 	// set metrics in DB that are not set yet
-	model.SetMetric(db, model.ApplicationId, config.GetEnvironment().APPLICATION_ID)
+	model.SetMetric(db, model.ApplicationId, config.GetEnvironment().APPLICATION_ID, "")
 	// time.RFC3339 format is the Go equivalent to ISO 8601 format (minus the milliseconds)
-	model.SetMetric(db, model.EndTime, time.Now().Format(time.RFC3339))
+	model.SetMetric(db, model.EndTime, time.Now().Format(time.RFC3339), "")
 	StoreMetricFromMainOutputs(db)
+	StoreRetriesPerStep(db)
 	//gather all metrics in a property map
 	propertiesMap := BuildSegmentPropertiesMap(db)
 	eventName := GetEvent(propertiesMap)
