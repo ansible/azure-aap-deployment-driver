@@ -63,6 +63,8 @@ func PublishToSegment(db *gorm.DB) {
 	model.SetMetric(db, model.ApplicationId, config.GetEnvironment().APPLICATION_ID)
 	// time.RFC3339 format is the Go equivalent to ISO 8601 format (minus the milliseconds)
 	model.SetMetric(db, model.EndTime, time.Now().Format(time.RFC3339))
+	// time.RFC3339 format is the Go equivalent to ISO 8601 format (minus the milliseconds)
+	model.SetMetric(db, model.StartTime, time.Now().Format(time.RFC3339))
 	StoreMetricFromMainOutputs(db)
 	//gather all metrics in a property map
 	propertiesMap := BuildSegmentPropertiesMap(db)
