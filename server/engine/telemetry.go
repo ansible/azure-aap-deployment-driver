@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"server/config"
 	"server/model"
+	"strings"
 	"time"
 
 	"github.com/segmentio/analytics-go/v3"
@@ -70,20 +71,47 @@ func StoreMetricFromMainOutputs(db *gorm.DB) {
 	}
 }
 
-func StoreRetriesPerStep(db *gorm.DB) {
+func StoreRetriesPerStep(db *gorm.DB, step model.Step) {
 
+	retries := len(step.Executions) - 1
+	if retries < 0 {
+		retries = 0
+	}
+	model.SetMetric(db, model.Retries, fmt.Sprint(retries), step.Name)
+
+}
+
+func StoreErrorsPerStep(db *gorm.DB, step model.Step) {
+
+	var errorsArr []string
+	var allErrors string
+
+	for _, execution := range step.Executions {
+		if execution.ErrorDetails != "" {
+			errorsArr = append(errorsArr, execution.ErrorDetails)
+		}
+	}
+	allErrors = strings.Join(errorsArr, "\n")
+	if allErrors != "" {
+		model.SetMetric(db, model.Errors, fmt.Sprint(allErrors), step.Name)
+	}
+}
+
+func StoreMetricsPerStep(db *gorm.DB) {
+
+	// Store number of retries and error details for each step if present
 	var allSteps []model.Step
 	db.Find(&allSteps)
+	db.Model(&model.Step{}).Preload("Executions").Find(&allSteps)
 
 	for _, step := range allSteps {
 		// len(step.Executions) includes the 1st attempt as well
 		// which should not be considered as a "retry"
 		// In cases where a step is not executed at all, retries should be set to 0.
-		retries := len(step.Executions) - 1
-		if retries < 0 {
-			retries = 0
-		}
-		model.SetMetric(db, model.Retries, fmt.Sprint(retries), step.Name)
+		// for errors, loop through all executions and combine all errors found for each step and then merge them all
+		StoreRetriesPerStep(db, step)
+		StoreErrorsPerStep(db, step)
+
 	}
 }
 
@@ -99,7 +127,7 @@ func PublishToSegment(db *gorm.DB) {
 	// time.RFC3339 format is the Go equivalent to ISO 8601 format (minus the milliseconds)
 	model.SetMetric(db, model.EndTime, time.Now().Format(time.RFC3339), "")
 	StoreMetricFromMainOutputs(db)
-	StoreRetriesPerStep(db)
+	StoreMetricsPerStep(db)
 	//gather all metrics in a property map
 	propertiesMap := BuildSegmentPropertiesMap(db)
 	eventName := GetEvent(propertiesMap)
