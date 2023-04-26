@@ -32,6 +32,7 @@ type envVars struct {
 	SAVE_CONTAINER             bool
 	SEGMENT_WRITE_KEY          string
 	APPLICATION_ID             string
+	START_TIME                 string
 }
 
 var (
@@ -209,6 +210,10 @@ func GetEnvironment() envVars {
 	environment.APPLICATION_ID = env.Get("APPLICATION_ID")
 	if environment.APPLICATION_ID == "" {
 		log.Warn("APPLICATION_ID environment variable is either unset or is an empty string, deployment telemetry will not contain the applicationid property")
+	}
+	environment.START_TIME = env.Get("START_TIME")
+	if environment.START_TIME == "" {
+		log.Warn("START_TIME environment variable is either unset or is an empty string, deployment telemetry will not contain the starttime property")
 	}
 
 	return environment
