@@ -68,7 +68,7 @@ func StoreMetricFromMainOutputs(db *gorm.DB) {
 	}
 }
 
-func StoreRetriesPerStep(db *gorm.DB, step model.Step) {
+func storeRetriesPerStep(db *gorm.DB, step model.Step) {
 
 	// len(step.Executions) includes the 1st attempt as well
 	// which should not be considered as a "retry"
@@ -81,7 +81,7 @@ func StoreRetriesPerStep(db *gorm.DB, step model.Step) {
 
 }
 
-func StoreErrorsPerStep(db *gorm.DB, step model.Step) {
+func storeErrorsPerStep(db *gorm.DB, step model.Step) {
 
 	// for errors, loop through all executions and combine all errors found for each step and then merge them all
 	for _, execution := range step.Executions {
@@ -91,7 +91,7 @@ func StoreErrorsPerStep(db *gorm.DB, step model.Step) {
 	}
 }
 
-func StoreMetricsPerStep(db *gorm.DB) {
+func storeMetricsPerStep(db *gorm.DB) {
 
 	// Store number of retries and error details for each step if present
 	var allSteps []model.Step
@@ -100,8 +100,8 @@ func StoreMetricsPerStep(db *gorm.DB) {
 
 	for _, step := range allSteps {
 
-		StoreRetriesPerStep(db, step)
-		StoreErrorsPerStep(db, step)
+		storeRetriesPerStep(db, step)
+		storeErrorsPerStep(db, step)
 
 	}
 }
@@ -113,7 +113,7 @@ func SetFinalMetrics(db *gorm.DB) {
 	// time.RFC3339 format is the Go equivalent to ISO 8601 format (minus the milliseconds)
 	model.SetMetric(db, model.EndTime, time.Now().Format(time.RFC3339), "")
 	StoreMetricFromMainOutputs(db)
-	StoreMetricsPerStep(db)
+	storeMetricsPerStep(db)
 
 }
 
