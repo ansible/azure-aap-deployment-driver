@@ -167,13 +167,15 @@ func (engine *Engine) ReportFinalDeploymentStatusToTelemetry() {
 			break
 		}
 	}
-	model.SetMetric(engine.database.Instance, model.DeployStatus, string(status))
+	model.SetMetric(engine.database.Instance, model.DeployStatus, string(status), "")
 }
 
 func (engine *Engine) waitBeforeEnding() {
 	// Add DeploymentMetric to Database
 	engine.ReportFinalDeploymentStatusToTelemetry()
 	// Publish telemetry for this deployment to Segment before starting wait time
+	log.Info("Setting final metrics before sending telemetry to Segment")
+	SetFinalMetrics(engine.database.Instance)
 	log.Info("Sending telemetry for this deployment to Segment")
 	PublishToSegment(engine.database.Instance)
 	// if the context is not yet cancelled, check for failed executions
