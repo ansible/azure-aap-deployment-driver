@@ -2,6 +2,7 @@ package config
 
 import (
 	"strconv"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -61,6 +62,7 @@ func GetEnvironment() envVars {
 	environment.SESSION_COOKIE_SECURE = true
 	environment.SESSION_COOKIE_MAX_AGE = 0 // 0 to make it a session cookie
 	environment.SAVE_CONTAINER = false
+	environment.START_TIME = time.Now().Format(time.RFC3339)
 
 	env := envs.EnvConfig{}
 	env.ReadEnvs()
@@ -213,7 +215,7 @@ func GetEnvironment() envVars {
 	}
 	environment.START_TIME = env.Get("START_TIME")
 	if environment.START_TIME == "" {
-		log.Warn("START_TIME environment variable is either unset or is an empty string, deployment telemetry will not contain the starttime property")
+		log.Warn("START_TIME environment variable is either unset or is an empty string, deployment telemetry will contain the default starttime property")
 	}
 
 	return environment
