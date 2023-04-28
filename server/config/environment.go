@@ -215,7 +215,7 @@ func GetEnvironment() envVars {
 	}
 	environment.START_TIME = env.Get("START_TIME")
 	if environment.START_TIME == "" {
-		log.Warn("START_TIME environment variable is either unset or is an empty string, deployment telemetry will contain the default starttime property")
+		log.Warn("START_TIME environment variable is either unset or is an empty string, telemetry will contain start time of deployment driver engine")
 	}
 
 	return environment
