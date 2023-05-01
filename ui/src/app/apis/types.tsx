@@ -37,10 +37,10 @@ export class DeploymentStepStatusData {
 					this.status = StepStatuses.RESTART_PENDING
 					break
 				case "PermanentlyFailed":
+				case "RestartTimedOut":
 					this.status = StepStatuses.PERM_FAILED
 					break
 				case "Failed":
-				case "RestartTimedOut":
 					this.status = StepStatuses.FAILED
 					break
 				case "Succeeded":
