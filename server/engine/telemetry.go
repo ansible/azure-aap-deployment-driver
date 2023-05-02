@@ -126,13 +126,13 @@ func PublishToSegment(db *gorm.DB) {
 	}
 	// set metrics in DB that are not set yet
 	if config.GetEnvironment().APPLICATION_ID != "" {
-		model.SetMetric(db, model.ApplicationId, config.GetEnvironment().APPLICATION_ID)
+		model.SetMetric(db, model.ApplicationId, config.GetEnvironment().APPLICATION_ID, "")
 	}
 	// time.RFC3339 format is the Go equivalent to ISO 8601 format (minus the milliseconds)
-	model.SetMetric(db, model.EndTime, time.Now().Format(time.RFC3339))
+	model.SetMetric(db, model.EndTime, time.Now().Format(time.RFC3339), "")
 	// the time is being retrieved as utcNow from the bicep script ( ISO 8601)
 	if config.GetEnvironment().START_TIME != "" {
-		model.SetMetric(db, model.StartTime, config.GetEnvironment().START_TIME)
+		model.SetMetric(db, model.StartTime, config.GetEnvironment().START_TIME, "")
 	}
 	StoreMetricFromMainOutputs(db)
 	//gather all metrics in a property map
