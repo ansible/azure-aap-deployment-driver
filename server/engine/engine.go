@@ -26,6 +26,12 @@ func (engine *Engine) IsFatalState() bool {
 
 func (engine *Engine) Run() {
 	if !engine.IsFatalState() {
+		dryRunController, err := DryRunControllerInstance()
+		if err != nil {
+			// TODO: handle error
+			log.Error(err)
+		}
+		
 		engine.startDeploymentExecutions()
 	} else {
 		log.Errorln("Engine failed to start. In fatal state. Check logs.")
