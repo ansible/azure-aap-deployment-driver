@@ -1,0 +1,19 @@
+services:
+  deployment-driver:
+    env_file: ../bin/.env
+    image: azure-aap-deployment-driver:latest
+    volumes:
+      - "${HOME}/.azure:/root/.azure"
+      - "${HOME}/tmp:/tmp"
+    ports:
+      - 8080:8080
+    environment:
+      - GO_ENV=development
+      - PUBLIC_DOMAIN_NAME=${PUBLIC_DOMAIN_NAME}
+      - LOG_FILE_PATH=/tmp
+    networks:
+      - web
+
+networks:
+  web:
+    external: true
