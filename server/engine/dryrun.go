@@ -19,16 +19,17 @@ var (
 )
 
 type dryRunController struct {
-	deploymentId 	int
-	db 				*gorm.DB
-	done 			chan struct{}
-	clientEndpoint 	string
-	location 		string
-	resourceGroup 	string
-	subscription	string
+	deploymentId 			int
+	db 						*gorm.DB
+	done 					chan struct{}
+	clientEndpoint 			string
+	location 				string
+	resourceGroup 			string
+	subscription			string
+	apiKey 					string
+	hookName 				string
+	callbackClientEndpoint	string
 }
-
-
 
 func (d *dryRunController) save(model *model.DryRun) error {
 	tx := d.db.Begin()
@@ -51,13 +52,17 @@ func (d *dryRunController) getStep() (model.Step, error) {
 
 func (d *dryRunController) Execute(ctx context.Context) (error) {
 	step, err := d.getStep()
+	if err != nil {
+		// TODO: handle error
+		return err
+	}
 
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
 		log.Error(err)
 	}
+
 	client, err := sdk.NewClient(d.clientEndpoint, cred, nil)
-	
 	if err != nil {
 		log.Println(err)
 	}
@@ -77,7 +82,9 @@ func (d *dryRunController) Execute(ctx context.Context) (error) {
 		return err
 	}
 
-	d.deploymentId =int(*dep.ID)
+
+
+	d.deploymentId = int(*dep.ID)
 
 	res, err := client.DryRun(ctx, d.deploymentId, step.Parameters)
 	if err != nil {
