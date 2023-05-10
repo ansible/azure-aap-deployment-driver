@@ -4,6 +4,7 @@ import (
 	"context"
 	"server/model"
 	"sync"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
@@ -13,43 +14,28 @@ import (
 )
 
 var (
-	dryRunInstance *dryRunController
+	dryRunInstance     *dryRunController
 	dryRunInstanceOnce sync.Once
-	dryRunInstanceErr error
+	dryRunInstanceErr  error
 )
 
 type dryRunController struct {
-	deploymentId 	int
-	db 				*gorm.DB
-	done 			chan struct{}
-	clientEndpoint 	string
-	location 		string
-	resourceGroup 	string
-	subscription	string
+	deploymentId   int
+	db             *gorm.DB
+	done           chan struct{}
+	clientEndpoint string
+	location       string
+	resourceGroup  string
+	subscription   string
 }
 
-
-
-func (d *dryRunController) save(model *model.DryRun) error {
-	tx := d.db.Begin()
-	tx.Save(&model)
-
-	if tx.Error != nil {
-		tx.Rollback()
-		return tx.Error
-	}
-	tx.Commit()
-
-	return nil
-}
-
-func (d *dryRunController) getStep() (model.Step, error) {
+func (c *dryRunController) getStep() (model.Step, error) {
 	var step model.Step
 	// TODO: get model.Step from DB
 	return step, nil
 }
 
-func (d *dryRunController) Execute(ctx context.Context) (error) {
+func (d *dryRunController) Execute(ctx context.Context) error {
 	step, err := d.getStep()
 
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
@@ -57,7 +43,7 @@ func (d *dryRunController) Execute(ctx context.Context) (error) {
 		log.Error(err)
 	}
 	client, err := sdk.NewClient(d.clientEndpoint, cred, nil)
-	
+
 	if err != nil {
 		log.Println(err)
 	}
@@ -77,20 +63,14 @@ func (d *dryRunController) Execute(ctx context.Context) (error) {
 		return err
 	}
 
-	d.deploymentId =int(*dep.ID)
+	d.deploymentId = int(*dep.ID)
 
 	res, err := client.DryRun(ctx, d.deploymentId, step.Parameters)
 	if err != nil {
 		return err
 	}
 
-	dryRun := model.DryRun{
-		OperationId: res.Id,
-		Status: res.Status,
-		Result: "",
-	}
-
-	return d.save(&dryRun)
+	return d.save(res)
 }
 
 func DryRunControllerInstance() (*dryRunController, error) {
@@ -102,12 +82,26 @@ func DryRunControllerInstance() (*dryRunController, error) {
 	return dryRunInstance, dryRunInstanceErr
 }
 
-func DryRunDone(eventHook *events.EventHookMessage)  {
-	dryRunControllerInstance, err := DryRunControllerInstance()
-	if err != nil {
-		// TODO: handle error
-		log.Error(err)
-	}
+func DryRunDone(eventHook *events.EventHookMessage) {
+	controller, _ := DryRunControllerInstance()
+	controller.dryRunDone(eventHook)
+}
 
-	dryRunControllerInstance.done <- struct{}{}
+func (c *dryRunController) dryRunDone(eventHook *events.EventHookMessage) {
+	// TODO update execution
+	c.done <- struct{}{}
+}
+
+func (c *dryRunController) save(response *sdk.DryRunResponse) error {
+	// dryRun, err := c.getStep()
+
+	// tx.Save(&model)
+
+	// if tx.Error != nil {
+	// 	tx.Rollback()
+	// 	return tx.Error
+	// }
+	// tx.Commit()
+
+	return nil
 }

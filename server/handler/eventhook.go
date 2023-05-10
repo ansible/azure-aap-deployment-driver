@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"server/config"
+	"server/engine"
 	"strings"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
@@ -26,8 +27,8 @@ func EventHook(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	}
 
 	if handler.isDryRunCompleted(message) {
-		log.Infof("Received event hook message: %+v", message)
-		//engine.DryRunDone(message)
+		log.Debugf("Received event hook message: %+v", message)
+		engine.DryRunDone(message)
 	}
 
 	// TODO: decide the correct response payload
