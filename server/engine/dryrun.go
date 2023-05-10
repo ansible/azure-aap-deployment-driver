@@ -2,14 +2,15 @@ package engine
 
 import (
 	"context"
+	"server/model"
 	"sync"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
-	log "github.com/sirupsen/logrus"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
+	log "github.com/sirupsen/logrus"
+	"gorm.io/gorm"
 )
 
 var (
@@ -19,12 +20,26 @@ var (
 )
 
 type dryRunController struct {
+	db *gorm.DB
 	done chan struct{}
 	clientEndpoint string
 	dryRunCancelFunc context.CancelFunc
 }
 
-func (d *dryRunController) Execute(deploymentId int, paramsMap map[string]interface{}) (*sdk.DryRunResponse, error) {
+func (d *dryRunController) save(model *model.DryRun) error {
+	tx := d.db.Begin()
+	tx.Save(&model)
+
+	if tx.Error != nil {
+		tx.Rollback()
+		return tx.Error
+	}
+	tx.Commit()
+
+	return nil
+}
+
+func (d *dryRunController) Execute(deploymentId int, paramsMap map[string]interface{}) (error) {
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
 		log.Error(err)
@@ -40,9 +55,16 @@ func (d *dryRunController) Execute(deploymentId int, paramsMap map[string]interf
 
 	res, err := client.DryRun(ctx, deploymentId, paramsMap)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return res, nil
+
+	dryRun := model.DryRun{
+		OperationId: res.Id,
+		Status: res.Status,
+		Result: "",
+	}
+
+	return d.save(&dryRun)
 }
 
 func DryRunControllerInstance() (*dryRunController, error) {
