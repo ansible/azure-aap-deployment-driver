@@ -4,9 +4,8 @@ import (
 	"context"
 	"server/model"
 	"sync"
-	"time"
-
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
@@ -20,11 +19,16 @@ var (
 )
 
 type dryRunController struct {
-	db *gorm.DB
-	done chan struct{}
-	clientEndpoint string
-	dryRunCancelFunc context.CancelFunc
+	deploymentId 	int
+	db 				*gorm.DB
+	done 			chan struct{}
+	clientEndpoint 	string
+	location 		string
+	resourceGroup 	string
+	subscription	string
 }
+
+
 
 func (d *dryRunController) save(model *model.DryRun) error {
 	tx := d.db.Begin()
@@ -39,21 +43,43 @@ func (d *dryRunController) save(model *model.DryRun) error {
 	return nil
 }
 
-func (d *dryRunController) Execute(deploymentId int, paramsMap map[string]interface{}) (error) {
+func (d *dryRunController) getStep() (model.Step, error) {
+	var step model.Step
+	// TODO: get model.Step from DB
+	return step, nil
+}
+
+func (d *dryRunController) Execute(ctx context.Context) (error) {
+	step, err := d.getStep()
+
 	cred, err := azidentity.NewDefaultAzureCredential(nil)
 	if err != nil {
 		log.Error(err)
 	}
 	client, err := sdk.NewClient(d.clientEndpoint, cred, nil)
+	
 	if err != nil {
 		log.Println(err)
 	}
 
-	ctx := context.Background()
-	ctx, dryRunCancelFunc := context.WithTimeout(ctx, 60 * time.Minute)
-	d.dryRunCancelFunc = dryRunCancelFunc
+	deploymentName := "TaggedDeployment"
+	request := api.CreateDeployment{
+		Name:           &deploymentName,
+		Template:       step.Template,
+		Location:       &d.location,
+		ResourceGroup:  &d.resourceGroup,
+		SubscriptionID: &d.subscription,
+	}
 
-	res, err := client.DryRun(ctx, deploymentId, paramsMap)
+	dep, err := client.Create(ctx, request)
+	if err != nil {
+		// TODO: handle error
+		return err
+	}
+
+	d.deploymentId =int(*dep.ID)
+
+	res, err := client.DryRun(ctx, d.deploymentId, step.Parameters)
 	if err != nil {
 		return err
 	}
@@ -77,6 +103,11 @@ func DryRunControllerInstance() (*dryRunController, error) {
 }
 
 func DryRunDone(eventHook *events.EventHookMessage)  {
-	// save to db
-	// call channel to proceed to steps
+	dryRunControllerInstance, err := DryRunControllerInstance()
+	if err != nil {
+		// TODO: handle error
+		log.Error(err)
+	}
+
+	dryRunControllerInstance.done <- struct{}{}
 }
