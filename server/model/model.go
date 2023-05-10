@@ -59,6 +59,14 @@ type DryRun struct {
 	Result      any       `json:"result" gorm:"json"`
 }
 
+// support any type for the result field
+func (o *DryRun) BeforeCreate(tx *gorm.DB) error {
+	if o.Result == nil {
+		o.Result = ""
+	}
+	return nil
+}
+
 type Status struct {
 	BaseModel
 	TemplatesLoaded   bool
