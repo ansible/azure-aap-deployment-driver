@@ -5,12 +5,13 @@ import (
 
 	"time"
 
-	"github.com/google/uuid"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/datatypes"
 	_ "gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
+
+const DryRunStepName = "Dry Run"
 
 // Replicate GORM base model, hiding times from json
 type BaseModel struct {
@@ -49,22 +50,6 @@ type Execution struct {
 	Duration          string          `json:"duration"`
 	CorrelationID     string          `json:"correlationId"`
 	ResumeToken       string          `json:"-"`
-}
-
-type DryRun struct {
-	BaseModel
-	// the MODM operation id that represents the instance of the dry run that's been executed
-	OperationId uuid.UUID `json:"operationId"`
-	Status      string    `json:"status" gorm:"type:string"`
-	Result      any       `json:"result" gorm:"json"`
-}
-
-// support any type for the result field
-func (o *DryRun) BeforeCreate(tx *gorm.DB) error {
-	if o.Result == nil {
-		o.Result = ""
-	}
-	return nil
 }
 
 type Status struct {
