@@ -9,11 +9,12 @@ services:
       - 8080:8080
     environment:
       - GO_ENV=development
-      - PUBLIC_DOMAIN_NAME=${PUBLIC_DOMAIN_NAME}
-      - LOG_FILE_PATH=/tmp
+      - MODM_PUBLIC_DOMAIN_NAME=${PUBLIC_DOMAIN_NAME}
+      - MODM_LOG_FILE_PATH=/tmp
+      - MODM_DB_PATH=/tmp
     networks:
-      - web
+      - aapdeploymentdriver
 
 networks:
-  web:
+  aapdeploymentdriver:
     external: true

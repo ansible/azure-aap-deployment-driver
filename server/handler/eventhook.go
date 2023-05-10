@@ -27,8 +27,7 @@ func EventHook(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 
 	if handler.isDryRunCompleted(message) {
 		log.Infof("Received event hook message: %+v", message)
-
-		// TODO: handle the event hook message by update db model
+		//engine.DryRunDone(message)
 	}
 
 	// TODO: decide the correct response payload
