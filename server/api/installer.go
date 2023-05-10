@@ -82,7 +82,7 @@ func (a *Installer) setRouters() {
 	a.Post("/cancelAllSteps", handler.EnsureAuthenticated(a.WrapHandlerWithDBAndEngine(handler.CancelAllSteps)))
 	a.Post("/deleteContainer", handler.EnsureAuthenticated(a.WrapHandlerWithDB(handler.DeleteContainer)))
 	a.Post("/terminate", handler.EnsureAuthenticated(a.WrapHandlerWithDB(handler.Terminate)))
-	a.Get("/eventhook", a.WrapHandlerWithDB(handler.EventHook))
+	a.Post("/eventhook", a.WrapHandlerWithDB(handler.EventHook))
 	a.Get("/dryrun", a.WrapHandlerWithDB(handler.DryRun))
 }
 
