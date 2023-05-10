@@ -26,18 +26,21 @@ func (engine *Engine) IsFatalState() bool {
 
 func (engine *Engine) Run() {
 	if !engine.IsFatalState() {
-
-		// ca
-
 		dryRunController, err := DryRunControllerInstance()
 		if err != nil {
 			// TODO: handle error
 			log.Error(err)
 		}
-		dryRunController.Execute(engine.context)
-		select {
-		case <-dryRunController.done:
-		}
+		
+		go func() {
+			err := dryRunController.Execute(engine.context)
+			if err != nil {
+				// TODO: handle error
+				log.Error(err)
+			}
+		}()
+		
+		<-dryRunController.done
 
 		engine.startDeploymentExecutions()
 	} else {
