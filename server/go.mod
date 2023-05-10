@@ -33,6 +33,7 @@ require (
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
 	github.com/mattn/go-sqlite3 v1.14.16 // indirect
+	github.com/microsoft/commercial-marketplace-offer-deploy v0.2.2 // indirect
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/segmentio/backo-go v1.0.0 // indirect
