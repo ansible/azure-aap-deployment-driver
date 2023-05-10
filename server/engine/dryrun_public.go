@@ -24,7 +24,8 @@ func (d *dryRunController) Execute(ctx context.Context) error {
 
 	client, err := sdk.NewClient(d.clientEndpoint, cred, nil)
 	if err != nil {
-		log.Println(err)
+		// TODO: handle error
+		return err
 	}
 
 	deploymentName := "TaggedDeployment"
@@ -41,8 +42,19 @@ func (d *dryRunController) Execute(ctx context.Context) error {
 		// TODO: handle error
 		return err
 	}
-
 	d.deploymentId = int(*dep.ID)
+
+	createEventRequest := api.CreateEventHookRequest{
+		APIKey:   &d.apiKey,
+		Callback: &d.callbackClientEndpoint,
+		Name:     &d.hookName,
+	}
+
+	_, err = client.CreateEventHook(ctx, createEventRequest)
+	if err != nil {
+		// TODO: handle error
+		return err
+	}
 
 	res, err := client.DryRun(ctx, d.deploymentId, step.Parameters)
 	if err != nil {
