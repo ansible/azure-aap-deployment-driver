@@ -40,36 +40,16 @@ func (engine *Engine) initialize() {
 			engine.Fatalf("Unable to import ARM templates: %v", err)
 		}
 
-		stepCount := 0
-		for i, templateBatch := range templateOrderArray {
-			for _, templateName := range templateBatch {
-				if engine.IsFatalState() {
-					return
-				}
-
-				templateContent, err := templates.ReadJSONTemplate(templatePath, templateName)
-				if err != nil {
-					engine.Fatalf("Unable to read in template file for [%s]", templateName)
-				}
-				parametersContent, err := templates.ReadJSONTemplateParameters(templatePath, templateName)
-				if err != nil {
-					engine.Fatalf("Unable to read in template file for [%s]", templateName)
-				}
-				engine.database.Instance.Create(&model.Step{
-					Priority:   uint(i),
-					Name:       templateName,
-					Template:   templateContent,
-					Parameters: parametersContent,
-				})
-				stepCount++
-			}
+		// start steps with dry run step at the beginning
+		insertDryRunAt := 0
+		mainTemplate, mainParameters, err := templates.GetMainTemplateAndParameters(templatePath)
+		if err != nil {
+			engine.Fatalf("Unable to read in main template and parameters files")
 		}
 
-		if stepCount > 0 {
-			engine.status.TemplatesLoaded = true
-			engine.database.Instance.Save(engine.status)
-		}
-		log.Infof("Finished deployment template discovery, stored %d steps in database.", stepCount)
+		engine.addDryRunStep(mainTemplate, mainParameters, insertDryRunAt)
+		engine.addSteps(templateOrderArray, insertDryRunAt+1, templatePath)
+
 	} else {
 		log.Infof("Skipped discovery of templates, they are in database already.")
 	}
@@ -95,4 +75,49 @@ func (engine *Engine) initialize() {
 	// Allways read the main outputs from DB
 	engine.mainOutputs = &model.Output{}
 	engine.database.Instance.Find(engine.mainOutputs, model.Output{ModuleName: ""})
+}
+
+// explicity adds a dry run step
+//
+//	remarks: expects the full main template and parameters
+func (engine *Engine) addDryRunStep(mainTemplate map[string]any, mainParameters map[string]any, priority int) {
+	engine.database.Instance.Create(&model.Step{
+		Priority:   uint(priority),
+		Name:       model.DryRunStepName,
+		Template:   mainTemplate,
+		Parameters: mainParameters,
+	})
+}
+
+func (engine *Engine) addSteps(templateOrderArray [][]string, startAt int, templatePath string) {
+	stepCount := startAt
+	for i, templateBatch := range templateOrderArray {
+		for _, templateName := range templateBatch {
+			if engine.IsFatalState() {
+				return
+			}
+
+			templateContent, err := templates.ReadJSONTemplate(templatePath, templateName)
+			if err != nil {
+				engine.Fatalf("Unable to read in template file for [%s]", templateName)
+			}
+			parametersContent, err := templates.ReadJSONTemplateParameters(templatePath, templateName)
+			if err != nil {
+				engine.Fatalf("Unable to read in template file for [%s]", templateName)
+			}
+			engine.database.Instance.Create(&model.Step{
+				Priority:   uint(i),
+				Name:       templateName,
+				Template:   templateContent,
+				Parameters: parametersContent,
+			})
+			stepCount++
+		}
+	}
+
+	if stepCount > 0 {
+		engine.status.TemplatesLoaded = true
+		engine.database.Instance.Save(engine.status)
+	}
+	log.Infof("Finished deployment template discovery, stored %d steps in database.", stepCount)
 }

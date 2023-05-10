@@ -105,3 +105,23 @@ func (c *dryRunController) save(response *sdk.DryRunResponse) error {
 
 	return nil
 }
+
+func (c *dryRunController) getDryRun() (*model.Step, error) {
+	// db := c.db
+
+	// // there could be more dry runs, so get the most recent one
+	// dryRun := &model.Step{}
+	// tx := db.Model(dryRun).Order("updated_at desc").First(dryRun)
+	// if tx.Error != nil { // not found
+	// 	return nil, tx.Error
+	// }
+	// return dryRun, nil
+	return nil, nil
+}
+
+func (c *dryRunController) saveResult(message *events.EventHookMessage) error {
+	// TODO: save the dry run record as an execution on the step
+	// get the step by model.DryRunStepName
+	//	engine.database.Instance.Model(&model.Step{}).Preload("Executions").Find(&steps)
+	return nil
+}

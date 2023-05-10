@@ -7,6 +7,14 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// gets the main template and parameters
+//
+//	returns: mainTemplate, mainParameters, error
+func GetMainTemplateAndParameters(templateBasePath string) (map[string]any, map[string]any, error) {
+	// TODO: implement GetMainTemplateAndParameters
+	return map[string]any{}, map[string]any{}, nil
+}
+
 func DiscoverTemplateOrder(templateBasePath string) ([][]string, error) {
 	log.Infof("Starting deployment template discovery in location: %s", templateBasePath)
 
