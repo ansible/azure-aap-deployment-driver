@@ -84,9 +84,9 @@ func GetEnvironment() envVars {
 		log.Fatal("RESOURCE_GROUP_NAME environment variable must be set.")
 	}
 
-	environment.AZURE_LOCATION = env.Get("LOCATION")
+	environment.AZURE_LOCATION = env.Get("AZURE_LOCATION")
 	if environment.AZURE_LOCATION == "" {
-		log.Fatal("LOCATION environment variable must be set.")
+		log.Fatal("AZURE_LOCATION environment variable must be set.")
 	}
 
 	environment.STORAGE_ACCOUNT_NAME = env.Get("STORAGE_ACCOUNT_NAME")
