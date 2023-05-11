@@ -16,6 +16,10 @@ run_ui () {
     popd
 }
 
+run_docker() {
+   ./build.sh
+}
+
 TARGET=$1
 
 case $TARGET in
