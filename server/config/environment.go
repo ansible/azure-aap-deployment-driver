@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 
@@ -12,6 +13,7 @@ import (
 type envVars struct {
 	SUBSCRIPTION               string
 	RESOURCE_GROUP_NAME        string
+	LOCATION			   	   string
 	CONTAINER_GROUP_NAME       string
 	STORAGE_ACCOUNT_NAME       string
 	PASSWORD                   string
@@ -35,6 +37,7 @@ type envVars struct {
 	APPLICATION_ID             string
 	START_TIME                 string
 	WEB_HOOK_API_KEY           string
+	WEB_HOOK_CALLBACK_URL      string
 }
 
 var (
@@ -67,9 +70,17 @@ func GetEnvironment() envVars {
 
 	// TODO: need to set this to a real value that's not hardcoded
 	environment.WEB_HOOK_API_KEY = "6P7Q9SATBVDWEXGZH2J4M5N6Q8"
+	environment.WEB_HOOK_CALLBACK_URL = fmt.Sprintf("http://localhost:%s/eventhook", Args.Port)
 
 	env := envs.EnvConfig{}
 	env.ReadEnvs()
+
+	hostName := env.Get("WEB_HOOK_HOSTNAME")
+	if hostName == "" {
+		log.Fatal("WEB_HOOK_HOSTNAME environment variable must be set.")
+	}
+	
+	
 
 	environment.SUBSCRIPTION = env.Get("AZURE_SUBSCRIPTION_ID")
 	if environment.SUBSCRIPTION == "" {
@@ -79,6 +90,11 @@ func GetEnvironment() envVars {
 	environment.RESOURCE_GROUP_NAME = env.Get("RESOURCE_GROUP_NAME")
 	if environment.RESOURCE_GROUP_NAME == "" {
 		log.Fatal("RESOURCE_GROUP_NAME environment variable must be set.")
+	}
+
+	environment.LOCATION = env.Get("LOCATION")
+	if environment.LOCATION == "" {
+		log.Fatal("LOCATION environment variable must be set.")
 	}
 
 	environment.STORAGE_ACCOUNT_NAME = env.Get("STORAGE_ACCOUNT_NAME")
