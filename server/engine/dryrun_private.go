@@ -2,65 +2,85 @@ package engine
 
 import (
 	"server/model"
+	"strconv"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
 
-// func (d *dryRunController) save(model *model.DryRun) error {
-// 	tx := d.db.Begin()
-// 	tx.Save(&model)
-
-// 	if tx.Error != nil {
-// 		tx.Rollback()
-// 		return tx.Error
-// 	}
-// 	tx.Commit()
-
-// 	return nil
-// }
-
-func (d *dryRunController) getStep() (model.Step, error) {
-	var step model.Step
-	// TODO: get model.Step from DB
+func (c *dryRunController) getStep() (*model.Step, error) {
+	step := &model.Step{}
+	tx := c.db.Model(step).Preload("Executions").Where("name = ?", model.DryRunStepName).First(step)
+	if tx.Error != nil { // not found
+		return nil, tx.Error
+	}
 	return step, nil
 }
 
-func (c *dryRunController) dryRunDone(eventHook *events.EventHookMessage) {
-	// TODO update execution
+// updates the step execution (or inserts) and signals dry run is done
+func (c *dryRunController) dryRunDone(message *events.EventHookMessage) {
+	c.update(message)
 	c.done <- struct{}{}
 }
 
-func (c *dryRunController) save(response *sdk.DryRunResponse) error {
-	// dryRun, err := c.getStep()
+// creates a new step execution to track the dry run
+func (c *dryRunController) create(response *sdk.DryRunResponse) error {
+	tx := c.db.Begin()
+	step, err := c.getStep()
+	if err != nil {
+		return err
+	}
 
-	// tx.Save(&model)
+	status := model.Started
+	if response.Status != operation.StatusScheduled.String() {
+		status = model.Failed
+	}
 
-	// if tx.Error != nil {
-	// 	tx.Rollback()
-	// 	return tx.Error
-	// }
-	// tx.Commit()
+	step.Executions = append(step.Executions, model.Execution{
+		DeploymentID:  strconv.Itoa(c.deploymentId),
+		Status:        status,
+		CorrelationID: response.Id.String(),
+	})
+
+	tx.Save(&step)
+
+	if tx.Error != nil {
+		tx.Rollback()
+		return tx.Error
+	}
+	tx.Commit()
 
 	return nil
 }
 
-func (c *dryRunController) getDryRun() (*model.Step, error) {
-	// db := c.db
+func (c *dryRunController) update(message *events.EventHookMessage) error {
+	step, err := c.getStep()
+	if err != nil {
+		return err
+	}
+	data := message.Data.(events.DeploymentEventData)
+	var execution *model.Execution
 
-	// // there could be more dry runs, so get the most recent one
-	// dryRun := &model.Step{}
-	// tx := db.Model(dryRun).Order("updated_at desc").First(dryRun)
-	// if tx.Error != nil { // not found
-	// 	return nil, tx.Error
-	// }
-	// return dryRun, nil
-	return nil, nil
-}
+	for i := range step.Executions {
+		if step.Executions[i].CorrelationID == data.OperationId.String() {
+			execution = &step.Executions[i]
+			break
+		}
+	}
 
-func (c *dryRunController) saveResult(message *events.EventHookMessage) error {
-	// TODO: save the dry run record as an execution on the step
-	// get the step by model.DryRunStepName
-	//	engine.database.Instance.Model(&model.Step{}).Preload("Executions").Find(&steps)
+	if execution == nil {
+		execution = &model.Execution{StepID: step.ID, CorrelationID: data.OperationId.String()}
+	}
+
+	status := model.Succeeded
+	if message.Status == operation.StatusFailed.String() {
+		status = model.Failed
+	}
+	execution.Status = status
+	execution.Details = data.Message
+	step.Executions = append(step.Executions, *execution)
+
+	c.db.Save(&step)
 	return nil
 }

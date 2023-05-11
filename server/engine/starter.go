@@ -35,18 +35,17 @@ func (engine *Engine) initialize() {
 		// Load templates into database
 		templatePath := config.GetEnvironment().TEMPLATE_PATH
 		templateOrderArray, err := templates.DiscoverTemplateOrder(templatePath)
-
 		if err != nil {
 			engine.Fatalf("Unable to import ARM templates: %v", err)
 		}
 
-		// start steps with dry run step at the beginning
-		insertDryRunAt := 0
 		mainTemplate, mainParameters, err := templates.GetMainTemplateAndParameters(templatePath)
 		if err != nil {
 			engine.Fatalf("Unable to read in main template and parameters files")
 		}
 
+		// start steps with dry run step at the beginning
+		insertDryRunAt := 0
 		engine.addDryRunStep(mainTemplate, mainParameters, insertDryRunAt)
 		engine.addSteps(templateOrderArray, insertDryRunAt+1, templatePath)
 
