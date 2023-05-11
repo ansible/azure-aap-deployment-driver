@@ -22,7 +22,7 @@ services:
 
   deployment-driver:
     env_file: ../bin/.env
-    image: azure-aap-deployment-driver:latest
+    image: aap-deployment-driver:latest
     volumes:
       - "${HOME}/.azure:/root/.azure"
       - "${HOME}/tmp:/tmp"
