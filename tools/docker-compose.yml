@@ -33,7 +33,7 @@ services:
       - 8080:8080
     environment:
       - GO_ENV=development
-      - MODM_PUBLIC_URL=${MODM_PUBLIC_URL}
+      - MODM_PUBLIC_BASE_URL=${MODM_PUBLIC_BASE_URL}
       - MODM_LOG_FILE_PATH=/tmp
       - MODM_DB_PATH=/tmp
     networks:

@@ -10,6 +10,7 @@ WORKDIR /builder
 # UI / frontend - will be hosted via proxy server
 RUN mkdir ./ui && mkdir -p ./build/public
 COPY ./ui/ ./ui
+RUN cd ./ui && npm install
 RUN cd ./ui && npm run build
 RUN cp -r ./ui/build ./build/public
 
