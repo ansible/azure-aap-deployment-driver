@@ -15,6 +15,7 @@ var (
 type ErrorHandler func(err error)
 
 type dryRunController struct {
+	// the MODM deployment id
 	deploymentId   int
 	db             *gorm.DB
 	done           chan struct{}
