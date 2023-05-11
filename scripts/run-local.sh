@@ -37,7 +37,7 @@ function run_docker_cleanup() {
 
 function start_ngrok_background() {
   # start up ngrok and get address
-  ngrok http 8080 > /dev/null &
+  ngrok http 80 > /dev/null &
   ngrok_start_result=$?
   export NGROK_ID=$!
 
