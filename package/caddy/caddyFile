@@ -12,7 +12,7 @@
 	file_server
 }
 
-{$SITE_URL} {
+{$SITE_URL}/api {
 	reverse_proxy http://{$HOSTNAME}:{$SERVER_LOCAL_PORT}
 }
 
