@@ -42,8 +42,8 @@ cd $modm_build_dir
 make build &> /dev/null
 
 echo "- copying binaries to ./bin"
-mkdir -p ../../bin/modm
-cp ./bin/apiserver ./bin/operator ../../bin/modm
+mkdir -p ../../bin
+cp ./bin/apiserver ./bin/operator ../../bin
 cd ../../
 
 echo ""

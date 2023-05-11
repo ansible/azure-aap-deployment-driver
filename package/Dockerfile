@@ -46,8 +46,8 @@ RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 
 # Copy the binary to the production image from the builder stage.
 COPY --from=builder /builder/bin/server /server
-COPY --from=builder /builder/bin/modm/operator /modm/operator
-COPY --from=builder /builder/bin/modm/apiserver /modm/apiserver
+COPY --from=builder /builder/bin/modm/operator /operator
+COPY --from=builder /builder/bin/modm/apiserver /apiserver
 COPY --from=builder /builder/bin/entrypoint.sh /entrypoint.sh
 
 CMD ["/entrypoint.sh"]
