@@ -13,7 +13,6 @@ const MainTemplateName = "mainTemplate"
 //
 //	returns: mainTemplate, mainParameters, error
 func GetMainTemplateAndParameters(templateBasePath string) (map[string]any, map[string]any, error) {
-	// TODO: implement GetMainTemplateAndParameters
 	mainTemplate, err := readJSON(filepath.Join(templateBasePath, MainTemplateName+".json"))
 	if err != nil {
 		return nil, nil, err
