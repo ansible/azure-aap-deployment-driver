@@ -80,8 +80,6 @@ func GetEnvironment() envVars {
 		log.Fatal("WEB_HOOK_HOSTNAME environment variable must be set.")
 	}
 	
-	
-
 	environment.SUBSCRIPTION = env.Get("AZURE_SUBSCRIPTION_ID")
 	if environment.SUBSCRIPTION == "" {
 		log.Fatal("AZURE_SUBSCRIPTION_ID environment variable must be set.")
