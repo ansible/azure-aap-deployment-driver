@@ -17,7 +17,7 @@ run_ui () {
 }
 
 run_docker() {
-   ./build.sh docker
+   ./scripts/build.sh docker
    start_ngrok_background
    docker compose -f ./tools/docker-compose.yml up  
 }
