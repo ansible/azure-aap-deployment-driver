@@ -28,8 +28,10 @@ function run_docker_cleanup() {
   echo "  killing ngrok"
   kill $NGROK_ID 2>/dev/null
 
-  echo "  removing MODM ready file in ~/tmp"
+  echo "  removing ready and db files in ~/tmp"
   rm ~/tmp/ready 2>/dev/null
+  rm ~/tmp/server.db 2>/dev/null
+  rm ~/tmp/modm.db 2>/dev/null
   echo ""
 }
 
