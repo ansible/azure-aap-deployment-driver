@@ -26,6 +26,7 @@ services:
     volumes:
       - "${HOME}/.azure:/root/.azure"
       - "${HOME}/tmp:/tmp"
+      - "../test/templates:/templates"
     # 80 container port is what the server is listening on
     # 8080 container port is for MODM apiserver
     ports:

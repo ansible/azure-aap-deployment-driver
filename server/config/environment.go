@@ -13,7 +13,7 @@ import (
 type envVars struct {
 	SUBSCRIPTION               string
 	RESOURCE_GROUP_NAME        string
-	LOCATION			   	   string
+	AZURE_LOCATION             string
 	CONTAINER_GROUP_NAME       string
 	STORAGE_ACCOUNT_NAME       string
 	PASSWORD                   string
@@ -41,8 +41,7 @@ type envVars struct {
 }
 
 var (
-	environment       envVars
-	environmentErrors error
+	environment envVars
 )
 
 func GetEnvironment() envVars {
@@ -74,7 +73,7 @@ func GetEnvironment() envVars {
 
 	env := envs.EnvConfig{}
 	env.ReadEnvs()
-	
+
 	environment.SUBSCRIPTION = env.Get("AZURE_SUBSCRIPTION_ID")
 	if environment.SUBSCRIPTION == "" {
 		log.Fatal("AZURE_SUBSCRIPTION_ID environment variable must be set.")
@@ -85,8 +84,8 @@ func GetEnvironment() envVars {
 		log.Fatal("RESOURCE_GROUP_NAME environment variable must be set.")
 	}
 
-	environment.LOCATION = env.Get("LOCATION")
-	if environment.LOCATION == "" {
+	environment.AZURE_LOCATION = env.Get("LOCATION")
+	if environment.AZURE_LOCATION == "" {
 		log.Fatal("LOCATION environment variable must be set.")
 	}
 

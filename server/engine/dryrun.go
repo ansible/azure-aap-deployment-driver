@@ -28,20 +28,20 @@ type NameOrKeyCreate func() string
 
 type dryRunController struct {
 	// the MODM deployment id
-	deploymentId   			int
-	db             			*gorm.DB
-	done           			chan struct{}
-	clientEndpoint 			string
-	location       			string
-	resourceGroup  			string
-	subscription   			string
-	apiKey         			string
-	hookName       			string
-	deploymentName 			string
+	deploymentId   int
+	db             *gorm.DB
+	done           chan struct{}
+	clientEndpoint string
+	location       string
+	resourceGroup  string
+	subscription   string
+	apiKey         string
+	hookName       string
+	deploymentName string
 
 	// this is the url that will be called by MODM. It maps to /eventhook route for handler/eventhook
-	eventHookCallbackUrl 	string
-	HandleError          	ErrorHandler
+	eventHookCallbackUrl string
+	HandleError          ErrorHandler
 }
 
 func (d *dryRunController) Execute(ctx context.Context) {
@@ -101,14 +101,14 @@ func (d *dryRunController) Execute(ctx context.Context) {
 func DryRunControllerInstance() (*dryRunController, error) {
 	dryRunInstanceOnce.Do(func() {
 		dryRunInstance = &dryRunController{
-			resourceGroup: config.GetEnvironment().RESOURCE_GROUP_NAME,
-			subscription: config.GetEnvironment().SUBSCRIPTION,
-			location: config.GetEnvironment().LOCATION,
-			apiKey: uuid.New().String(),
-			hookName: "aad-hook-" + uuid.New().String(),
-			deploymentName: "aad-dep-" + uuid.New().String(),
+			resourceGroup:        config.GetEnvironment().RESOURCE_GROUP_NAME,
+			subscription:         config.GetEnvironment().SUBSCRIPTION,
+			location:             config.GetEnvironment().AZURE_LOCATION,
+			apiKey:               uuid.New().String(),
+			hookName:             "aad-hook-" + uuid.New().String(),
+			deploymentName:       "aad-dep-" + uuid.New().String(),
 			eventHookCallbackUrl: config.GetEnvironment().WEB_HOOK_CALLBACK_URL,
-			done: make(chan struct{}),
+			done:                 make(chan struct{}),
 			HandleError: func(err error) {
 				if err != nil {
 					log.Error(err)
@@ -202,4 +202,3 @@ func (c *dryRunController) update(message *events.EventHookMessage) error {
 	c.db.Save(&step.Executions)
 	return nil
 }
-
