@@ -20,7 +20,9 @@ type testDryRunController struct {
 }
 
 func newTestDryRunController() *testDryRunController {
-	database := persistence.NewInMemoryDB()
+	database := persistence.NewNoCacheInMemoryDb()
+	database.Instance = database.Instance.Session(&gorm.Session{NewDB: true})
+
 	engine := &Engine{
 		database: database,
 	}
@@ -42,6 +44,8 @@ func Test_dryRunController_getStep(t *testing.T) {
 	step, err := controller.getStep()
 
 	assert.NoError(t, err)
+
+	assert.Equal(t, 0, len(step.Executions))
 	assert.Equal(t, model.DryRunStepName, step.Name)
 }
 
@@ -52,33 +56,36 @@ func Test_dryRunController_getStep_fetches_association_with_operationId(t *testi
 		db: test.db,
 	}
 
-	step, _ := controller.getStep()
+	step, err := controller.getStep()
+	assert.NoError(t, err)
+	assert.Equal(t, 0, len(step.Executions))
 
 	// add execution step to ensure that's returned with the step
-	operationId := uuid.New()
-	step.Executions = append(step.Executions, model.Execution{
+	operationId := uuid.MustParse("d42e3b3d-c54e-4408-aa65-b9c98d137a72")
+	execution := model.Execution{
+		StepID:        step.ID,
 		DeploymentID:  "1",
 		Status:        model.Started,
 		CorrelationID: operationId.String(),
-	})
+	}
 
-	test.db.Save(&step)
+	test.db.Save(&execution)
 
-	step, err := controller.getStep()
+	step, err = controller.getStep()
+	assert.Equal(t, 1, len(step.Executions))
 
 	assert.NoError(t, err)
 	assert.Equal(t, step.Executions[0].CorrelationID, operationId.String())
 	assert.Equal(t, step.Executions[0].ID, uint(1))
 }
 
-func Test_dryRunController_update_sets_execution(t *testing.T) {
+func Test_dryRunController_update(t *testing.T) {
 	test := newTestDryRunController()
-
 	controller := &dryRunController{
 		db: test.db,
 	}
 
-	operationId := uuid.New()
+	operationId := uuid.MustParse("f181f551-5d17-4ab4-bbcb-407d47b63f77")
 	message := &events.EventHookMessage{
 		Id:     uuid.New(),
 		Status: operation.StatusSuccess.String(),
@@ -94,7 +101,39 @@ func Test_dryRunController_update_sets_execution(t *testing.T) {
 	step, err := controller.getStep()
 	assert.NoError(t, err)
 
+	assert.Equal(t, 1, len(step.Executions))
 	assert.Equal(t, operationId.String(), step.Executions[0].CorrelationID)
+
+	// update to be ide
+}
+
+func Test_dryRunController_update_should_be_idempotent(t *testing.T) {
+	test := newTestDryRunController()
+	controller := &dryRunController{
+		db: test.db,
+	}
+
+	operationId := uuid.MustParse("f181f551-5d17-4ab4-bbcb-407d47b63f77")
+	message := &events.EventHookMessage{
+		Id:     uuid.New(),
+		Status: operation.StatusSuccess.String(),
+		Data: events.DeploymentEventData{
+			DeploymentId: 1,
+			OperationId:  operationId,
+		},
+	}
+	err := controller.update(message)
+	assert.NoError(t, err)
+
+	err = controller.update(message)
+	assert.NoError(t, err)
+
+	step, _ := controller.getStep()
+
+	assert.Equal(t, 1, len(step.Executions))
+	assert.Equal(t, operationId.String(), step.Executions[0].CorrelationID)
+
+	// update to be ide
 }
 
 func Test_dryRunController_dryRunDone(t *testing.T) {

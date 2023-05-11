@@ -11,7 +11,9 @@ import (
 
 func (c *dryRunController) getStep() (*model.Step, error) {
 	step := &model.Step{}
-	tx := c.db.Model(step).Preload("Executions").Where("name = ?", model.DryRunStepName).First(step)
+
+	join := "left join executions on executions.step_id = steps.id"
+	tx := c.db.Model(step).Preload("Executions").Joins(join).Where("steps.name = ?", model.DryRunStepName).First(step)
 	if tx.Error != nil { // not found
 		return nil, tx.Error
 	}
@@ -37,13 +39,14 @@ func (c *dryRunController) create(response *sdk.DryRunResponse) error {
 		status = model.Failed
 	}
 
-	step.Executions = append(step.Executions, model.Execution{
+	execution := model.Execution{
+		StepID:        step.ID,
 		DeploymentID:  strconv.Itoa(c.deploymentId),
 		Status:        status,
 		CorrelationID: response.Id.String(),
-	})
+	}
 
-	tx.Save(&step)
+	tx.Save(&execution)
 
 	if tx.Error != nil {
 		tx.Rollback()
@@ -71,6 +74,7 @@ func (c *dryRunController) update(message *events.EventHookMessage) error {
 
 	if execution == nil {
 		execution = &model.Execution{StepID: step.ID, CorrelationID: data.OperationId.String()}
+		step.Executions = append(step.Executions, *execution)
 	}
 
 	status := model.Succeeded
@@ -79,8 +83,7 @@ func (c *dryRunController) update(message *events.EventHookMessage) error {
 	}
 	execution.Status = status
 	execution.Details = data.Message
-	step.Executions = append(step.Executions, *execution)
 
-	c.db.Save(&step)
+	c.db.Save(&step.Executions)
 	return nil
 }

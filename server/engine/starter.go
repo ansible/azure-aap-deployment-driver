@@ -85,6 +85,7 @@ func (engine *Engine) addDryRunStep(mainTemplate map[string]any, mainParameters 
 		Name:       model.DryRunStepName,
 		Template:   mainTemplate,
 		Parameters: mainParameters,
+		Executions: []model.Execution{},
 	})
 }
 
