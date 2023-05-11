@@ -28,25 +28,13 @@ func (engine *Engine) Run() {
 	if !engine.IsFatalState() {
 		dryRunController, err := DryRunControllerInstance()
 		if err != nil {
-			// TODO: handle error
 			log.Error(err)
 		}
-		
-		go func() {
-			err := dryRunController.Execute(engine.context)
-			if err != nil {
-				// TODO: handle error
-				log.Error(err)
-			}
-		}()
-		
-		<-dryRunController.done
-
+		dryRunController.Execute(engine.context)
 		engine.startDeploymentExecutions()
 	} else {
 		log.Errorln("Engine failed to start. In fatal state. Check logs.")
 	}
-
 	log.Info("Main engine loop ended.")
 	engine.waitBeforeEnding()
 }

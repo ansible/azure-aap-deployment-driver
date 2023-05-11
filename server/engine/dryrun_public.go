@@ -7,61 +7,60 @@ import (
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
-	log "github.com/sirupsen/logrus"
 )
 
-func (d *dryRunController) Execute(ctx context.Context) error {
-	step, err := d.getStep()
-	if err != nil {
-		// TODO: handle error
-		return err
-	}
+func (d *dryRunController) Execute(ctx context.Context) {
+	go func() {
+		step, err := d.getStep()
+		if err != nil {
+			d.HandleError(err)
+		}
 
-	cred, err := azidentity.NewDefaultAzureCredential(nil)
-	if err != nil {
-		log.Error(err)
-	}
+		cred, err := azidentity.NewDefaultAzureCredential(nil)
+		if err != nil {
+			d.HandleError(err)
+		}
 
-	client, err := sdk.NewClient(d.clientEndpoint, cred, nil)
-	if err != nil {
-		// TODO: handle error
-		return err
-	}
+		client, err := sdk.NewClient(d.clientEndpoint, cred, nil)
+		if err != nil {
+			d.HandleError(err)
+		}
 
-	deploymentName := "TaggedDeployment"
-	request := api.CreateDeployment{
-		Name:           &deploymentName,
-		Template:       step.Template,
-		Location:       &d.location,
-		ResourceGroup:  &d.resourceGroup,
-		SubscriptionID: &d.subscription,
-	}
+		deploymentName := "TaggedDeployment"
+		request := api.CreateDeployment{
+			Name:           &deploymentName,
+			Template:       step.Template,
+			Location:       &d.location,
+			ResourceGroup:  &d.resourceGroup,
+			SubscriptionID: &d.subscription,
+		}
 
-	dep, err := client.Create(ctx, request)
-	if err != nil {
-		// TODO: handle error
-		return err
-	}
-	d.deploymentId = int(*dep.ID)
+		dep, err := client.Create(ctx, request)
+		if err != nil {
+			d.HandleError(err)
+		}
+		d.deploymentId = int(*dep.ID)
 
-	createEventRequest := api.CreateEventHookRequest{
-		APIKey:   &d.apiKey,
-		Callback: &d.callbackClientEndpoint,
-		Name:     &d.hookName,
-	}
+		createEventRequest := api.CreateEventHookRequest{
+			APIKey:   &d.apiKey,
+			Callback: &d.callbackClientEndpoint,
+			Name:     &d.hookName,
+		}
 
-	_, err = client.CreateEventHook(ctx, createEventRequest)
-	if err != nil {
-		// TODO: handle error
-		return err
-	}
+		_, err = client.CreateEventHook(ctx, createEventRequest)
+		if err != nil {
+			d.HandleError(err)
+		}
 
-	res, err := client.DryRun(ctx, d.deploymentId, step.Parameters)
-	if err != nil {
-		return err
-	}
+		res, err := client.DryRun(ctx, d.deploymentId, step.Parameters)
+		if err != nil {
+			d.HandleError(err)
+		}
 
-	return d.save(res)
+		d.save(res)
+	}()
+
+	<-d.done
 }
 
 func DryRunControllerInstance() (*dryRunController, error) {

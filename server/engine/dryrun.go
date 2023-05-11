@@ -12,6 +12,8 @@ var (
 	dryRunInstanceErr  error
 )
 
+type ErrorHandler func(err error)
+
 type dryRunController struct {
 	deploymentId           int
 	db                     *gorm.DB
@@ -23,4 +25,5 @@ type dryRunController struct {
 	apiKey                 string
 	hookName               string
 	callbackClientEndpoint string
+	HandleError				ErrorHandler
 }
