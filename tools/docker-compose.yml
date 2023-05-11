@@ -14,9 +14,10 @@ services:
       - ../package/caddy/Caddyfile:/etc/caddy/Caddyfile
     restart: unless-stopped
     environment:
-      - MODM_SITE_URL=http://localhost
+      - SITE_URL=http://localhost
       - ACME_ACCOUNT_EMAIL=nowhere@nowhere.com
-      - MODM_LOCAL_HOSTNAME=modm
+      - HOSTNAME=deployment-driver
+      - SERVER_LOCAL_PORT=9090
       - MODM_LOCAL_PORT=8080
 
   deployment-driver:
@@ -28,11 +29,11 @@ services:
     # 80 container port is what the server is listening on
     # 8080 container port is for MODM apiserver
     ports:
-      - 8081:80
+      - 9090:9090
       - 8080:8080
     environment:
       - GO_ENV=development
-      - MODM_PUBLIC_DOMAIN_NAME=${PUBLIC_DOMAIN_NAME}
+      - MODM_PUBLIC_URL=${MODM_PUBLIC_URL}
       - MODM_LOG_FILE_PATH=/tmp
       - MODM_DB_PATH=/tmp
     networks:

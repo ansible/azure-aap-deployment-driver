@@ -5,9 +5,17 @@ FROM golang:1.19-buster as builder
 WORKDIR /builder
 
 ARG MODM_VERSION=v0.2.2
+ARG NODE_VERSION=latest
 
 RUN apt update && apt-get install git
-RUN mkdir ./scripts && mkdir ./bin
+RUN apt-get update && apt-get install -y \
+    software-properties-common \
+    npm
+RUN npm install npm@latest -g && \
+    npm install n -g && \
+    n ${NODE_VERSION}
+
+RUN mkdir ./scripts && mkdir ./bin && mkdir ./ui
 
 
 COPY ./package/entrypoint.sh ./bin
@@ -22,6 +30,13 @@ RUN go mod download
 COPY ./server/ ./
 
 RUN go build -o ./bin/ ./
+
+# ---------------------------------------------------------------
+# Build the web
+
+# UI / frontend - will be hosted via proxy server
+COPY ./ui ./ui/
+RUN cd ./ui && npm run build
 
 # ---------------------------------------------------------------
 # Build MODM using script which clones a specific version and outs to bin folder
@@ -45,9 +60,10 @@ RUN apt install curl -y
 RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 
 # Copy the binary to the production image from the builder stage.
+COPY --from=builder /builder/public /public
 COPY --from=builder /builder/bin/server /server
-COPY --from=builder /builder/bin/modm/operator /operator
-COPY --from=builder /builder/bin/modm/apiserver /apiserver
+COPY --from=builder /builder/bin/operator /operator
+COPY --from=builder /builder/bin/apiserver /apiserver
 COPY --from=builder /builder/bin/entrypoint.sh /entrypoint.sh
 
 CMD ["/entrypoint.sh"]

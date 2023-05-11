@@ -17,7 +17,7 @@ run_ui () {
 }
 
 run_docker() {
-   ./build.sh
+   ./build.sh docker
 }
 
 TARGET=$1
