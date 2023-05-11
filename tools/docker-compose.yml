@@ -25,7 +25,7 @@ services:
     image: aap-deployment-driver:latest
     volumes:
       - "${HOME}/.azure:/root/.azure"
-      - "${HOME}/tmp:/tmp"
+      - "${HOME}/tmp/aap-deployment-driver:/tmp"
       - "../test/templates:/templates"
     # 80 container port is what the server is listening on
     # 8080 container port is for MODM apiserver

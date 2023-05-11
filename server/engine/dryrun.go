@@ -4,6 +4,7 @@ import (
 	"context"
 	"server/config"
 	"server/model"
+	"server/persistence"
 	"strconv"
 	"sync"
 
@@ -101,6 +102,7 @@ func (d *dryRunController) Execute(ctx context.Context) {
 func DryRunControllerInstance() (*dryRunController, error) {
 	dryRunInstanceOnce.Do(func() {
 		dryRunInstance = &dryRunController{
+			db:                   persistence.NewPersistentDB(config.GetEnvironment().DB_PATH).Instance,
 			resourceGroup:        config.GetEnvironment().RESOURCE_GROUP_NAME,
 			subscription:         config.GetEnvironment().SUBSCRIPTION,
 			location:             config.GetEnvironment().AZURE_LOCATION,
