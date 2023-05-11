@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	log "github.com/sirupsen/logrus"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
@@ -67,6 +68,12 @@ func DryRunControllerInstance() (*dryRunController, error) {
 	dryRunInstanceOnce.Do(func() {
 		dryRunInstance = &dryRunController{
 			done: make(chan struct{}),
+			HandleError: func(err error) {
+				if err != nil {
+					log.Error(err)
+				}
+			},
+			
 		}
 	})
 	return dryRunInstance, dryRunInstanceErr
