@@ -22,6 +22,17 @@ run_docker() {
    docker compose -f ./tools/docker-compose.yml up  
 }
 
+function run_docker_cleanup() {
+  echo "Shutdown cleanup..."
+  # make sure ngrok is killed
+  echo "  killing ngrok"
+  kill $NGROK_ID 2>/dev/null
+
+  echo "  removing MODM ready file in ~/tmp"
+  rm ~/tmp/ready 2>/dev/null
+  echo ""
+}
+
 function start_ngrok_background() {
   # start up ngrok and get address
   ngrok http 8080 > /dev/null &
@@ -52,6 +63,7 @@ case $TARGET in
     run_ui
     ;;
   docker)
+    trap run_docker_cleanup EXIT
     run_docker
     ;;
   *)
