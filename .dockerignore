@@ -4,5 +4,6 @@
 /aap-azurerm/
 /installerstore
 /tools/
-/ui/
 README.md
+node_modules
+build
