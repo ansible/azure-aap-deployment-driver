@@ -7,6 +7,7 @@ import (
 	"server/persistence"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/google/uuid"
@@ -46,6 +47,8 @@ type dryRunController struct {
 }
 
 func (d *dryRunController) Execute(ctx context.Context) {
+	time.Sleep(10 * time.Second)
+
 	go func() {
 		step, err := d.getStep()
 		if err != nil {
@@ -110,6 +113,7 @@ func DryRunControllerInstance() (*dryRunController, error) {
 			hookName:             "aad-hook-" + uuid.New().String(),
 			deploymentName:       "aad-dep-" + uuid.New().String(),
 			eventHookCallbackUrl: config.GetEnvironment().WEB_HOOK_CALLBACK_URL,
+			clientEndpoint:       "http://localhost:8080",
 			done:                 make(chan struct{}),
 			HandleError: func(err error) {
 				if err != nil {
