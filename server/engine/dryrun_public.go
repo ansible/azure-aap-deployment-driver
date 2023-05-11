@@ -44,7 +44,7 @@ func (d *dryRunController) Execute(ctx context.Context) {
 
 		createEventRequest := api.CreateEventHookRequest{
 			APIKey:   &d.apiKey,
-			Callback: &d.callbackClientEndpoint,
+			Callback: &d.eventHookCallbackUrl,
 			Name:     &d.hookName,
 		}
 
@@ -58,7 +58,7 @@ func (d *dryRunController) Execute(ctx context.Context) {
 			d.HandleError(err)
 		}
 
-		d.save(res)
+		d.create(res)
 	}()
 
 	<-d.done
