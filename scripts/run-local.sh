@@ -17,7 +17,7 @@ run_ui () {
 }
 
 run_docker() {
-   ./scripts/build.sh docker
+   docker build . -t aap-deployment-driver -f ./package/Dockerfile
    start_ngrok_background
    docker compose -f ./tools/docker-compose.yml up  
 }
