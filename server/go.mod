@@ -12,8 +12,8 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/sessions v1.2.1
-	github.com/microsoft/commercial-marketplace-offer-deploy v0.2.3
-	github.com/microsoft/commercial-marketplace-offer-deploy/sdk v0.2.3
+	github.com/microsoft/commercial-marketplace-offer-deploy v0.3.1
+	github.com/microsoft/commercial-marketplace-offer-deploy/sdk v0.3.1
 	github.com/segmentio/analytics-go/v3 v3.2.1
 	github.com/sirupsen/logrus v1.9.0
 	github.com/stretchr/testify v1.8.2

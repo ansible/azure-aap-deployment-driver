@@ -59,10 +59,10 @@ github.com/kylelemons/godebug v1.1.0/go.mod h1:9/0rRGxNHcop5bhtWyNeEfOS8JIWk580+
 github.com/mattn/go-sqlite3 v1.14.15/go.mod h1:2eHXhiwb8IkHr+BDWZGa96P6+rkvnG63S2DGjv9HUNg=
 github.com/mattn/go-sqlite3 v1.14.16 h1:yOQRA0RpS5PFz/oikGwBEqvAWhWg5ufRz4ETLjwpU1Y=
 github.com/mattn/go-sqlite3 v1.14.16/go.mod h1:2eHXhiwb8IkHr+BDWZGa96P6+rkvnG63S2DGjv9HUNg=
-github.com/microsoft/commercial-marketplace-offer-deploy v0.2.3 h1:LaK5wA1aQ9AxerOIydxRe0WbDA7K/Dhy2eWJ0fUMGaA=
-github.com/microsoft/commercial-marketplace-offer-deploy v0.2.3/go.mod h1:9bCYRrkkjqX84AklLIBCM4gbho0kfDp8cPx3L2T/KPM=
-github.com/microsoft/commercial-marketplace-offer-deploy/sdk v0.2.3 h1:7nN5kTQsYXtrfLTd/s90HavG3/ov8Xfuo9iirL74yxo=
-github.com/microsoft/commercial-marketplace-offer-deploy/sdk v0.2.3/go.mod h1:D9u4r0IkBEucoVe5Jw2Kbl8renLxxma6O6bKsDuj1xQ=
+github.com/microsoft/commercial-marketplace-offer-deploy v0.3.1 h1:YsVsFHuDbmM7RgC/mOjOOuhat7zk8EZq2xUOa4NhCAk=
+github.com/microsoft/commercial-marketplace-offer-deploy v0.3.1/go.mod h1:9bCYRrkkjqX84AklLIBCM4gbho0kfDp8cPx3L2T/KPM=
+github.com/microsoft/commercial-marketplace-offer-deploy/sdk v0.3.1 h1:1Ym0iuMXuaCjHBBNVsitnzNj1aQMF9pD3Maj0h4rfRs=
+github.com/microsoft/commercial-marketplace-offer-deploy/sdk v0.3.1/go.mod h1:ysPrL37fbQdRBQlE8+bAQHIv/uDeL1B4xckA8GuO2QU=
 github.com/microsoft/go-mssqldb v0.17.0 h1:Fto83dMZPnYv1Zwx5vHHxpNraeEaUlQ/hhHLgZiaenE=
 github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8 h1:KoWmjvw+nsYOo29YJK9vDA65RGE3NrOnUtO7a+RF9HU=
 github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8/go.mod h1:HKlIX3XHQyzLZPlr7++PzdhaXEj94dEiJgZDTsxEqUI=
