@@ -102,7 +102,7 @@ func (d *dryRunController) Execute(ctx context.Context) {
 	<-d.done
 }
 
-func DryRunControllerInstance() (*dryRunController, error) {
+func DryRunControllerInstance() *dryRunController {
 	dryRunInstanceOnce.Do(func() {
 		dryRunInstance = &dryRunController{
 			db:                   persistence.NewPersistentDB(config.GetEnvironment().DB_PATH).Instance,
@@ -122,12 +122,7 @@ func DryRunControllerInstance() (*dryRunController, error) {
 			},
 		}
 	})
-	return dryRunInstance, dryRunInstanceErr
-}
-
-func DryRunDone(eventHook *events.EventHookMessage) {
-	controller, _ := DryRunControllerInstance()
-	controller.dryRunDone(eventHook)
+	return dryRunInstance
 }
 
 func (c *dryRunController) getStep() (*model.Step, error) {
@@ -142,7 +137,7 @@ func (c *dryRunController) getStep() (*model.Step, error) {
 }
 
 // updates the step execution (or inserts) and signals dry run is done
-func (c *dryRunController) dryRunDone(message *events.EventHookMessage) {
+func (c *dryRunController) DryRunDone(message *events.EventHookMessage) {
 	c.update(message)
 	c.done <- struct{}{}
 }

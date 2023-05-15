@@ -155,7 +155,7 @@ func Test_dryRunController_dryRunDone(t *testing.T) {
 			},
 		}
 		time.Sleep(2 * time.Second)
-		controller.dryRunDone(message)
+		controller.DryRunDone(message)
 	}()
 	log.Print("waiting for done")
 	<-test.done
