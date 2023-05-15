@@ -3,22 +3,6 @@
   # deployment driver container: 80 (the server 8081), 8080 (modm api server)
   
 services:
-  caddy:
-    image: caddy:2-alpine
-    ports:
-      - 80:80
-    networks:
-      - aapdeploymentdriver
-    volumes:
-      - ../package/caddy/Caddyfile:/etc/caddy/Caddyfile
-    restart: unless-stopped
-    environment:
-      - SITE_URL=http://localhost
-      - ACME_ACCOUNT_EMAIL=nowhere@nowhere.com
-      - HOSTNAME=deployment-driver
-      - SERVER_LOCAL_PORT=9090
-      - MODM_LOCAL_PORT=8080
-
   deployment-driver:
     env_file: ../bin/.env
     image: aap-deployment-driver:latest
