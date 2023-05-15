@@ -10,7 +10,7 @@ services:
     networks:
       - aapdeploymentdriver
     volumes:
-      - ../package/caddy/Caddyfile:/etc/caddy/Caddyfile
+      - ../package/caddy/caddyFile:/etc/caddy/caddyFile
     restart: unless-stopped
     environment:
       - SITE_URL=http://localhost
