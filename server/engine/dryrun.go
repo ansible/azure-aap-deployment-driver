@@ -22,7 +22,6 @@ import (
 var (
 	dryRunInstance     *dryRunController
 	dryRunInstanceOnce sync.Once
-	dryRunInstanceErr  error
 )
 
 type ErrorHandler func(err error)
