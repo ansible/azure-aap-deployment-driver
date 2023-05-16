@@ -27,6 +27,14 @@ func NewInMemoryDB() *Database {
 	return db
 }
 
+func NewNoCacheInMemoryDb() *Database {
+	db, err := newDB(NO_CACHE_IN_MEMORY_DB)
+	if err != nil {
+		log.Fatalf("Could not open in-memory database. Error: %v", err)
+	}
+	return db
+}
+
 func newDB(dbPath string, migrationModels ...interface{}) (*Database, error) {
 	db, err := newSqliteDB(dbPath, &model.Step{}, &model.Execution{}, &model.Output{}, &model.Status{}, &model.SessionConfig{}, &model.Telemetry{})
 	if err != nil {

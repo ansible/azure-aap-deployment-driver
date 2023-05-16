@@ -22,6 +22,7 @@
 __pycache__
 build/
 dist/
+bin/
 .tox/
 .pylintrc
 

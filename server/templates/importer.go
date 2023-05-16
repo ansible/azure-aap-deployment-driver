@@ -7,6 +7,24 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const MainTemplateName = "mainTemplate"
+
+// gets the main template and parameters
+//
+//	returns: mainTemplate, mainParameters, error
+func GetMainTemplateAndParameters(templateBasePath string) (map[string]any, map[string]any, error) {
+	mainTemplate, err := readJSON(filepath.Join(templateBasePath, MainTemplateName+".json"))
+	if err != nil {
+		return nil, nil, err
+	}
+	mainParameters, err := readJSON(filepath.Join(templateBasePath, MainTemplateName+".parameters.json"))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return mainTemplate, mainParameters, nil
+}
+
 func DiscoverTemplateOrder(templateBasePath string) ([][]string, error) {
 	log.Infof("Starting deployment template discovery in location: %s", templateBasePath)
 

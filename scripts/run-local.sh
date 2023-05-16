@@ -16,6 +16,44 @@ run_ui () {
     popd
 }
 
+run_docker() {
+   docker build . -t aap-deployment-driver -f ./package/Dockerfile
+   start_ngrok_background
+   docker compose -f ./tools/docker-compose.yml up  
+}
+
+function run_docker_cleanup() {
+  echo "Shutdown cleanup..."
+  # make sure ngrok is killed
+  echo "  killing ngrok"
+  kill $NGROK_ID 2>/dev/null
+
+  echo "  removing ready and db files in ~/tmp"
+  rm ~/tmp/ready 2>/dev/null
+  rm ~/tmp/server.db 2>/dev/null
+  rm ~/tmp/modm.db 2>/dev/null
+  echo ""
+}
+
+function start_ngrok_background() {
+  # start up ngrok and get address
+  ngrok http 80 > /dev/null &
+  ngrok_start_result=$?
+  export NGROK_ID=$!
+
+  if [ $ngrok_start_result -gt 0 ]; then
+    echo "NGROK failed to start."
+    echo "exiting."
+    exit 1
+  fi
+
+  echo "NGROK started: $NGROK_ID"
+  sleep 2
+  export MODM_PUBLIC_BASE_URL=$(curl -s localhost:4040/api/tunnels | jq '.tunnels[0].public_url' -r)
+  echo "NGROK URL:  $MODM_PUBLIC_BASE_URL"
+}
+
+
 TARGET=$1
 
 case $TARGET in
@@ -25,6 +63,10 @@ case $TARGET in
     ;;
   ui)
     run_ui
+    ;;
+  docker)
+    trap run_docker_cleanup EXIT
+    run_docker
     ;;
   *)
     echo -n "unknown"

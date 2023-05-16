@@ -1,0 +1,28 @@
+
+  # run ngrok first to get access the PUBLIC HTTPS url --> Caddy. Caddy then routes the traffix to each port exposed on the 
+  # deployment driver container: 80 (the server 8081), 8080 (modm api server)
+  
+services:
+  deployment-driver:
+    env_file: ../bin/.env
+    image: aap-deployment-driver:latest
+    volumes:
+      - "${HOME}/.azure:/root/.azure"
+      - "${HOME}/tmp/aap-deployment-driver:/tmp"
+      - "../test/templates:/templates"
+    # 80 container port is what the server is listening on
+    # 8080 container port is for MODM apiserver
+    ports:
+      - 9090:9090
+      - 8080:8080
+    environment:
+      - GO_ENV=development
+      - MODM_PUBLIC_BASE_URL=${MODM_PUBLIC_BASE_URL}/modm
+      - MODM_LOG_FILE_PATH=/tmp
+      - MODM_DB_PATH=/tmp
+    networks:
+      - aapdeploymentdriver
+
+networks:
+  aapdeploymentdriver:
+    external: true

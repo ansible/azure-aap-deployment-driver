@@ -11,6 +11,8 @@ import (
 	"gorm.io/gorm"
 )
 
+const DryRunStepName = "Dry Run"
+
 // Replicate GORM base model, hiding times from json
 type BaseModel struct {
 	ID        uint      `gorm:"primary_key"`
