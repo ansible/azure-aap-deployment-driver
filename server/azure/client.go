@@ -25,7 +25,7 @@ type azureDetails struct {
 var azureInfo azureDetails
 
 func NewDeploymentsClient(opts *arm.ClientOptions) *armresources.DeploymentsClient {
-	client, err := armresources.NewDeploymentsClient(getAzureInfo().Subscription, getAzureInfo().Credentials, opts)
+	client, err := armresources.NewDeploymentsClient(GetAzureInfo().Subscription, GetAzureInfo().Credentials, opts)
 	if err != nil {
 		log.Fatalf("Failed to get deployments client: %v", err)
 	}
@@ -34,7 +34,7 @@ func NewDeploymentsClient(opts *arm.ClientOptions) *armresources.DeploymentsClie
 }
 
 func NewResourceGroupsClient(opts *arm.ClientOptions) *armresources.ResourceGroupsClient {
-	client, err := armresources.NewResourceGroupsClient(getAzureInfo().Subscription, getAzureInfo().Credentials, opts)
+	client, err := armresources.NewResourceGroupsClient(GetAzureInfo().Subscription, GetAzureInfo().Credentials, opts)
 	if err != nil {
 		log.Fatalf("Failed to get resource groups client: %v", err)
 	}
@@ -147,7 +147,7 @@ func CancelDeployment(ctx context.Context, client *armresources.DeploymentsClien
 
 // Delete Azure storage account
 func DeleteStorageAccount(resourceGroupName string, storageAccountName string) error {
-	storageClient, err := armstorage.NewAccountsClient(getAzureInfo().Subscription, getAzureInfo().Credentials, nil)
+	storageClient, err := armstorage.NewAccountsClient(GetAzureInfo().Subscription, GetAzureInfo().Credentials, nil)
 	if err != nil {
 		return err
 	}
@@ -162,7 +162,7 @@ func DeleteStorageAccount(resourceGroupName string, storageAccountName string) e
 
 // Delete Azure container group and its containers
 func DeleteContainer(resourceGroupName string, containerGroupName string) error {
-	containerClient, err := armcontainerinstance.NewContainerGroupsClient(getAzureInfo().Subscription, getAzureInfo().Credentials, nil)
+	containerClient, err := armcontainerinstance.NewContainerGroupsClient(GetAzureInfo().Subscription, GetAzureInfo().Credentials, nil)
 	if err != nil {
 		return err
 	}
