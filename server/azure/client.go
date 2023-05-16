@@ -66,7 +66,7 @@ func EnsureAzureLogin(client *armresources.ResourceGroupsClient) {
 	}
 }
 
-func getAzureInfo() azureDetails {
+func GetAzureInfo() azureDetails {
 	if azureInfo.Credentials == nil {
 		opts := azidentity.DefaultAzureCredentialOptions{}
 		opts.Retry.MaxRetries = 10
