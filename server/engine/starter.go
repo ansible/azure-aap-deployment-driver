@@ -87,12 +87,12 @@ func (engine *Engine) addDryRunStep(mainTemplate map[string]any, mainParameters 
 		Parameters: mainParameters,
 		Executions: []model.Execution{},
 	})
+	log.Info("Added dry run step to database")
 }
 
-func (engine *Engine) addSteps(templateOrderArray [][]string, startAt int, templatePath string) {
-	stepCount := startAt
+func (engine *Engine) addSteps(templateOrderArray [][]string, startingPriority int, templatePath string) {
+	stepCount := 0
 	for i, templateBatch := range templateOrderArray {
-		priority := startAt + i
 		for _, templateName := range templateBatch {
 			if engine.IsFatalState() {
 				return
@@ -107,7 +107,7 @@ func (engine *Engine) addSteps(templateOrderArray [][]string, startAt int, templ
 				engine.Fatalf("Unable to read in template file for [%s]", templateName)
 			}
 			engine.database.Instance.Create(&model.Step{
-				Priority:   uint(priority),
+				Priority:   uint(i+startingPriority),
 				Name:       templateName,
 				Template:   templateContent,
 				Parameters: parametersContent,
@@ -120,5 +120,5 @@ func (engine *Engine) addSteps(templateOrderArray [][]string, startAt int, templ
 		engine.status.TemplatesLoaded = true
 		engine.database.Instance.Save(engine.status)
 	}
-	log.Infof("Finished deployment template discovery, stored %d steps in database.", stepCount)
+	log.Infof("Finished deployment template discovery, added %d steps to database.", stepCount)
 }
