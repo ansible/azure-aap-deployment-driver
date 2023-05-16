@@ -2,6 +2,7 @@ package engine
 
 import (
 	"context"
+	"server/azure"
 	"server/config"
 	"server/model"
 	"server/persistence"
@@ -9,7 +10,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
@@ -54,12 +54,8 @@ func (d *dryRunController) Execute(ctx context.Context) {
 			d.HandleError(err)
 		}
 
-		cred, err := azidentity.NewDefaultAzureCredential(nil)
-		if err != nil {
-			d.HandleError(err)
-		}
-
-		client, err := sdk.NewClient(d.clientEndpoint, cred, nil)
+		azureInfo := azure.GetAzureInfo()
+		client, err := sdk.NewClient(d.clientEndpoint, azureInfo.Credentials, nil)
 		if err != nil {
 			d.HandleError(err)
 		}
