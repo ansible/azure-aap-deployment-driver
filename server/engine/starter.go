@@ -92,6 +92,7 @@ func (engine *Engine) addDryRunStep(mainTemplate map[string]any, mainParameters 
 func (engine *Engine) addSteps(templateOrderArray [][]string, startAt int, templatePath string) {
 	stepCount := startAt
 	for i, templateBatch := range templateOrderArray {
+		priority := startAt + i
 		for _, templateName := range templateBatch {
 			if engine.IsFatalState() {
 				return
@@ -106,7 +107,7 @@ func (engine *Engine) addSteps(templateOrderArray [][]string, startAt int, templ
 				engine.Fatalf("Unable to read in template file for [%s]", templateName)
 			}
 			engine.database.Instance.Create(&model.Step{
-				Priority:   uint(i),
+				Priority:   uint(priority),
 				Name:       templateName,
 				Template:   templateContent,
 				Parameters: parametersContent,
