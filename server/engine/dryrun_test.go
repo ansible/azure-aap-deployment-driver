@@ -7,8 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
@@ -86,10 +85,10 @@ func Test_dryRunController_update(t *testing.T) {
 	}
 
 	operationId := uuid.MustParse("f181f551-5d17-4ab4-bbcb-407d47b63f77")
-	message := &events.EventHookMessage{
+	message := &sdk.EventHookMessage{
 		Id:     uuid.New(),
-		Status: operation.StatusSuccess.String(),
-		Data: events.DeploymentEventData{
+		Status: sdk.StatusSuccess.String(),
+		Data: sdk.DeploymentEventData{
 			DeploymentId: 1,
 			OperationId:  operationId,
 		},
@@ -114,10 +113,10 @@ func Test_dryRunController_update_should_be_idempotent(t *testing.T) {
 	}
 
 	operationId := uuid.MustParse("f181f551-5d17-4ab4-bbcb-407d47b63f77")
-	message := &events.EventHookMessage{
+	message := &sdk.EventHookMessage{
 		Id:     uuid.New(),
-		Status: operation.StatusSuccess.String(),
-		Data: events.DeploymentEventData{
+		Status: sdk.StatusSuccess.String(),
+		Data: sdk.DeploymentEventData{
 			DeploymentId: 1,
 			OperationId:  operationId,
 		},
@@ -146,10 +145,10 @@ func Test_dryRunController_dryRunDone(t *testing.T) {
 
 	go func() {
 		operationId := uuid.New()
-		message := &events.EventHookMessage{
+		message := &sdk.EventHookMessage{
 			Id:     uuid.New(),
-			Status: operation.StatusSuccess.String(),
-			Data: events.DeploymentEventData{
+			Status: sdk.StatusSuccess.String(),
+			Data: sdk.DeploymentEventData{
 				DeploymentId: 1,
 				OperationId:  operationId,
 			},
