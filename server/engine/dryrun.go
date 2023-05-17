@@ -11,9 +11,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/api"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/operation"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -61,7 +58,7 @@ func (d *dryRunController) Execute(ctx context.Context) {
 		}
 
 		deploymentName := d.deploymentName
-		request := api.CreateDeployment{
+		request := sdk.CreateDeployment{
 			Name:           &deploymentName,
 			Template:       step.Template,
 			Location:       &d.location,
@@ -75,7 +72,7 @@ func (d *dryRunController) Execute(ctx context.Context) {
 		}
 		d.deploymentId = int(*dep.ID)
 
-		createEventRequest := api.CreateEventHookRequest{
+		createEventRequest := sdk.CreateEventHookRequest{
 			APIKey:   &d.apiKey,
 			Callback: &d.eventHookCallbackUrl,
 			Name:     &d.hookName,
@@ -132,13 +129,13 @@ func (c *dryRunController) getStep() (*model.Step, error) {
 }
 
 // updates the step execution (or inserts) and signals dry run is done
-func (c *dryRunController) DryRunDone(message *events.EventHookMessage) {
+func (c *dryRunController) DryRunDone(message *sdk.EventHookMessage) {
 	c.update(message)
 	c.done <- struct{}{}
 }
 
 // creates a new step execution to track the dry run
-func (c *dryRunController) create(response *sdk.DryRunResponse) error {
+func (c *dryRunController) create(response *sdk.InvokeDryRunResponse) error {
 	tx := c.db.Begin()
 	step, err := c.getStep()
 	if err != nil {
@@ -146,7 +143,7 @@ func (c *dryRunController) create(response *sdk.DryRunResponse) error {
 	}
 
 	status := model.Started
-	if response.Status != operation.StatusScheduled.String() {
+	if response.Status != sdk.StatusScheduled.String() {
 		status = model.Failed
 	}
 
@@ -168,12 +165,12 @@ func (c *dryRunController) create(response *sdk.DryRunResponse) error {
 	return nil
 }
 
-func (c *dryRunController) update(message *events.EventHookMessage) error {
+func (c *dryRunController) update(message *sdk.EventHookMessage) error {
 	step, err := c.getStep()
 	if err != nil {
 		return err
 	}
-	data := message.Data.(events.DeploymentEventData)
+	data := message.Data.(sdk.DeploymentEventData)
 	var execution *model.Execution
 
 	for i := range step.Executions {
@@ -189,7 +186,7 @@ func (c *dryRunController) update(message *events.EventHookMessage) error {
 	}
 
 	status := model.Succeeded
-	if message.Status == operation.StatusFailed.String() {
+	if message.Status == sdk.StatusFailed.String() {
 		status = model.Failed
 	}
 	execution.Status = status

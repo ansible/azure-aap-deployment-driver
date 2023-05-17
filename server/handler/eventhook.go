@@ -10,7 +10,7 @@ import (
 	"server/engine"
 	"strings"
 
-	"github.com/microsoft/commercial-marketplace-offer-deploy/pkg/events"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -46,8 +46,8 @@ type eventHookHandler struct {
 	apiKey string
 }
 
-func (h *eventHookHandler) isDryRunCompleted(message *events.EventHookMessage) bool {
-	return events.EventType(message.Type) == events.EventTypeDryRunCompleted
+func (h *eventHookHandler) isDryRunCompleted(message *sdk.EventHookMessage) bool {
+	return sdk.EventTypeName(message.Type) == sdk.EventTypeDryRunCompleted
 }
 
 // function that validates the API Key from MODM to protect against unauthorized requests
@@ -75,13 +75,13 @@ func newEventHookHandler(request *http.Request, response http.ResponseWriter, ap
 	}
 }
 
-func (h *eventHookHandler) getMessage() (*events.EventHookMessage, error) {
+func (h *eventHookHandler) getMessage() (*sdk.EventHookMessage, error) {
 	err := h.authorizeRequest()
 	if err != nil {
 		return nil, err
 	}
 
-	message := &events.EventHookMessage{}
+	message := &sdk.EventHookMessage{}
 	err = json.NewDecoder(h.request.Body).Decode(message)
 	if err != nil {
 		return nil, err
