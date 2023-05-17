@@ -13,11 +13,16 @@ RUN yum -y --repo ubi-9-appstream-rpms install socat && \
   unzip -qoj acme.zip acme.sh-${ACME_RELEASE_TAG}/acme.sh -d . && rm acme.zip && \
   echo "ACME=${ACME_RELEASE_TAG}" >> versions && echo "DRIVER=${DRIVER_RELEASE_TAG}" >> versions
 
+RUN rpm --import https://packages.microsoft.com/keys/microsoft.asc && \
+  dnf install -y https://packages.microsoft.com/config/rhel/9.0/packages-microsoft-prod.rpm && \
+  dnf install -y azure-cli
+
+
 ADD ["nginx", "/etc/nginx/"]
-ADD ["start.sh", "build/server", "./"]
+ADD ["start.sh", "build/server", "build/apiserver", "build/operator", "./"]
 ADD ["build/public", "/var/www/aapinstaller/public"]
 
-RUN chmod +x ./acme.sh ./server && chmod +x ./start.sh
+RUN chmod +x ./acme.sh ./server ./apiserver ./operator && chmod +x ./start.sh
 
 VOLUME [ "/installerstore" ]
 

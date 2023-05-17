@@ -38,6 +38,7 @@ type envVars struct {
 	START_TIME                 string
 	WEB_HOOK_API_KEY           string
 	WEB_HOOK_CALLBACK_URL      string
+	LOG_PATH                   string
 }
 
 var (
@@ -66,6 +67,7 @@ func GetEnvironment() envVars {
 	environment.SESSION_COOKIE_MAX_AGE = 0 // 0 to make it a session cookie
 	environment.SAVE_CONTAINER = false
 	environment.START_TIME = time.Now().Format(time.RFC3339)
+	environment.LOG_PATH = "/installerstore/engine.txt"
 
 	// TODO: need to set this to a real value that's not hardcoded
 	environment.WEB_HOOK_API_KEY = "6P7Q9SATBVDWEXGZH2J4M5N6Q8"
@@ -142,6 +144,11 @@ func GetEnvironment() envVars {
 	dbPath := env.Get("DB_PATH")
 	if len(dbPath) > 0 {
 		environment.DB_PATH = dbPath
+	}
+
+	logPath := env.Get("LOG_PATH")
+	if len(logPath) > 0 {
+		environment.LOG_PATH = logPath
 	}
 
 	templatePath := env.Get("TEMPLATE_PATH")
