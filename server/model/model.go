@@ -5,6 +5,7 @@ import (
 
 	"time"
 
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/datatypes"
 	_ "gorm.io/driver/sqlite"
@@ -50,6 +51,19 @@ type Execution struct {
 	Duration          string          `json:"duration"`
 	CorrelationID     string          `json:"correlationId"`
 	ResumeToken       string          `json:"-"`
+
+	// the execution data of a dry run (received from modm)
+	DryRunExecution *DryRunExecution `json:"dryRunExecution" gorm:"json"`
+}
+
+type DryRunExecution struct { // the execution instance of the dry run (received from modm)
+	Id string `json:"operationId"`
+	// momd deploymentId, different than the DeploymentID in Execution
+	DeploymentId uint   `json:"deploymentId"`
+	Status       string `json:"status"`
+
+	// the errors captured from the dry run (received from modm) if the status (on this struct) is failed
+	Error *sdk.DryRunErrorResponse `json:"error"`
 }
 
 type Status struct {

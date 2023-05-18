@@ -29,7 +29,7 @@ func EventHook(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	if handler.isDryRunCompleted(message) {
 		log.Debugf("Received event hook message: %+v", message)
 		controller := engine.DryRunControllerInstance()
-		controller.DryRunDone(message)
+		controller.Done(message)
 	}
 
 	// TODO: decide the correct response payload
