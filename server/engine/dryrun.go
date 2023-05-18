@@ -2,14 +2,15 @@ package engine
 
 import (
 	"context"
+	"fmt"
 	"server/azure"
 	"server/config"
 	"server/model"
 	"server/persistence"
-	"strconv"
 	"sync"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
@@ -58,7 +59,7 @@ func (d *dryRunController) Execute(ctx context.Context) {
 		}
 
 		deploymentName := d.deploymentName
-		request := sdk.CreateDeployment{
+		createDeployment := sdk.CreateDeployment{
 			Name:           &deploymentName,
 			Template:       step.Template,
 			Location:       &d.location,
@@ -66,7 +67,7 @@ func (d *dryRunController) Execute(ctx context.Context) {
 			SubscriptionID: &d.subscription,
 		}
 
-		dep, err := client.Create(ctx, request)
+		dep, err := client.Create(ctx, createDeployment)
 		if err != nil {
 			d.HandleError(err)
 		}
@@ -83,12 +84,12 @@ func (d *dryRunController) Execute(ctx context.Context) {
 			d.HandleError(err)
 		}
 
-		res, err := client.DryRun(ctx, d.deploymentId, step.Parameters)
+		executionInfo, err := client.DryRun(ctx, d.deploymentId, step.Parameters)
 		if err != nil {
 			d.HandleError(err)
 		}
 
-		d.create(res)
+		d.create(uint(d.deploymentId), executionInfo, err)
 	}()
 
 	<-d.done
@@ -103,7 +104,7 @@ func DryRunControllerInstance() *dryRunController {
 			location:             config.GetEnvironment().AZURE_LOCATION,
 			apiKey:               config.GetEnvironment().WEB_HOOK_API_KEY,
 			hookName:             "deployment-driver-hook",
-			deploymentName:       "deployment-driver/" + uuid.New().String(),
+			deploymentName:       "deployment-driver-" + uuid.New().String(),
 			eventHookCallbackUrl: config.GetEnvironment().WEB_HOOK_CALLBACK_URL,
 			clientEndpoint:       "http://localhost:8080",
 			done:                 make(chan struct{}),
@@ -121,7 +122,8 @@ func (c *dryRunController) getStep() (*model.Step, error) {
 	step := &model.Step{}
 
 	join := "left join executions on executions.step_id = steps.id"
-	tx := c.db.Model(step).Preload("Executions").Joins(join).Where("steps.name = ?", model.DryRunStepName).First(step)
+	tx := c.db.Model(step).Preload("Executions").Joins(join).Where("steps.name = ?", model.DryRunStepName).First(&step)
+
 	if tx.Error != nil { // not found
 		return nil, tx.Error
 	}
@@ -129,29 +131,39 @@ func (c *dryRunController) getStep() (*model.Step, error) {
 }
 
 // updates the step execution (or inserts) and signals dry run is done
-func (c *dryRunController) DryRunDone(message *sdk.EventHookMessage) {
+func (c *dryRunController) Done(message *sdk.EventHookMessage) {
 	c.update(message)
 	c.done <- struct{}{}
 }
 
 // creates a new step execution to track the dry run
-func (c *dryRunController) create(response *sdk.InvokeDryRunResponse) error {
-	tx := c.db.Begin()
-	step, err := c.getStep()
-	if err != nil {
-		return err
+func (c *dryRunController) create(deploymentId uint, response *sdk.InvokeDryRunResponse, err error) error {
+	step, stepErr := c.getStep()
+	if stepErr != nil {
+		return stepErr
 	}
 
+	tx := c.db.Begin()
+
 	status := model.Started
-	if response.Status != sdk.StatusScheduled.String() {
+	if response.Status != sdk.StatusScheduled.String() || err != nil {
 		status = model.Failed
 	}
 
-	execution := model.Execution{
-		StepID:        step.ID,
-		DeploymentID:  strconv.Itoa(c.deploymentId),
-		Status:        status,
-		CorrelationID: response.Id.String(),
+	execution := &model.Execution{
+		StepID: step.ID,
+		Status: status,
+		DryRunExecution: &model.DryRunExecution{
+			Id:           response.Id.String(),
+			DeploymentId: deploymentId,
+			Status:       "", //status is the status result of the dry run. which isn't set yet because the result hasn't been received
+		},
+	}
+
+	if err != nil {
+		execution.Status = model.Failed
+		execution.DryRunExecution.Status = sdk.StatusFailed.String()
+		execution.Error = err.Error()
 	}
 
 	tx.Save(&execution)
@@ -166,32 +178,68 @@ func (c *dryRunController) create(response *sdk.InvokeDryRunResponse) error {
 }
 
 func (c *dryRunController) update(message *sdk.EventHookMessage) error {
+	data, err := message.DryRunEventData()
+	if err != nil {
+		log.Debugf("event hook message is [%s] not dryrun. error: %v", message.Type, err)
+		return err
+	}
+
 	step, err := c.getStep()
 	if err != nil {
 		return err
 	}
-	data := message.Data.(sdk.DeploymentEventData)
-	var execution *model.Execution
 
-	for i := range step.Executions {
-		if step.Executions[i].CorrelationID == data.OperationId.String() {
-			execution = &step.Executions[i]
-			break
-		}
-	}
-
-	if execution == nil {
-		execution = &model.Execution{StepID: step.ID, CorrelationID: data.OperationId.String()}
-		step.Executions = append(step.Executions, *execution)
+	id := data.OperationId.String()
+	execution, err := c.getDryRunExecution(data.OperationId.String())
+	if err != nil {
+		return fmt.Errorf("failed to find a dry run execution with id [%s] for stepID [%d]: %v", id, err, step.ID)
 	}
 
 	status := model.Succeeded
 	if message.Status == sdk.StatusFailed.String() {
 		status = model.Failed
 	}
+
 	execution.Status = status
-	execution.Details = data.Message
+	execution.Error = message.Error
+
+	dryRunStatus := data.Status
+	if dryRunStatus == nil || data.Error != nil {
+		dryRunStatus = to.Ptr(sdk.StatusFailed.String())
+	}
+
+	execution.DryRunExecution.Status = *dryRunStatus
+	execution.DryRunExecution.Error = data.Error
 
 	c.db.Save(&step.Executions)
 	return nil
+}
+
+// method that gets the step exeuction
+func (c *dryRunController) getDryRunExecution(id string) (*model.Execution, error) {
+	step, err := c.getStep()
+	if err != nil {
+		return nil, err
+	}
+
+	var execution *model.Execution
+
+	for i := range step.Executions {
+		if step.Executions[i].DryRunExecution != nil && step.Executions[i].DryRunExecution.Id == id {
+			execution = &step.Executions[i]
+			break
+		}
+	}
+
+	if execution == nil {
+		execution = &model.Execution{
+			StepID: step.ID,
+			DryRunExecution: &model.DryRunExecution{
+				Id: id,
+			},
+		}
+		step.Executions = append(step.Executions, *execution)
+		c.db.Save(&step.Executions)
+	}
+	return execution, nil
 }
