@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mkdir ./bin
+mkdir -p ./bin
 
 # ---------------------------------------------------------------------------
 # Microsoft's marketplace offer deployment manager

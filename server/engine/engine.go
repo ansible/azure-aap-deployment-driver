@@ -26,8 +26,6 @@ func (engine *Engine) IsFatalState() bool {
 
 func (engine *Engine) Run() {
 	if !engine.IsFatalState() {
-		dryRunController := DryRunControllerInstance()
-		dryRunController.Execute(engine.context)
 		engine.startDeploymentExecutions()
 	} else {
 		log.Errorln("Engine failed to start. In fatal state. Check logs.")
@@ -222,6 +220,16 @@ func (engine *Engine) GetLatestExecution(step model.Step) model.Execution {
 }
 
 func (engine *Engine) startExecution(step model.Step, execution *model.Execution, waitGroup *sync.WaitGroup) {
+	if step.Name == model.DryRunStepName {
+		// Special case for dry run, this will execute it and update the result (blocks until finished)
+		log.Info("Executing dry run...")
+		dryRunController := DryRunControllerInstance()
+		dryRunController.Execute(engine.context)
+		newExecution := engine.GetLatestExecution(step)
+		execution = &newExecution
+		return
+	}
+
 	execution.Status = model.Started
 	execution.StepID = step.ID
 	engine.database.Instance.Save(&execution)
