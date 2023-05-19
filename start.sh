@@ -13,7 +13,6 @@ fi
 
 if [ -z ${INSTALLER_TEMPLATE_URL} ]; then
   echo "Environment variable INSTALLER_TEMPLATE_URL missing."
-  exit 1
 fi
 
 function log {
@@ -30,28 +29,40 @@ stop() {
     kill -TERM "$SERVER_PID" 2> /dev/null
     wait "$SERVER_PID"
   fi
+  if [[ -n "$APISERVER_PID" ]]; then
+    kill -TERM "$APISERVER_PID" 2> /dev/null
+    wait "$APISERVER_PID"
+  fi
+  if [[ -n "$OPERATOR_PID" ]]; then
+    kill -TERM "$OPERATOR_PID" 2> /dev/null
+    wait "$OPERATOR_PID"
+  fi
   nginx -s quit
   waitForNginxToStop
 }
 
 trap stop EXIT
 
-log "Fetching installer templates"
-mkdir -p /installerstore/templates
-curl --fail-with-body ${INSTALLER_TEMPLATE_URL} -o /installerstore/templates.zip
+if [ ! -d "/installerstore/templates" ]; then
+  log "Fetching installer templates"
+  mkdir -p /installerstore/templates
+  curl --fail-with-body ${INSTALLER_TEMPLATE_URL} -o /installerstore/templates.zip
 
-RC=$?
-if [ ${RC} -ne 0 ]; then
-  log "Failed to fetch templates zip file from ${INSTALLER_TEMPLATE_URL}, aborting."
-  exit ${RC}
-fi
+  RC=$?
+  if [ ${RC} -ne 0 ]; then
+    log "Failed to fetch templates zip file from ${INSTALLER_TEMPLATE_URL}, aborting."
+    exit ${RC}
+  fi
 
-unzip -o -d /installerstore/templates -q /installerstore/templates.zip
+  unzip -o -d /installerstore/templates -q /installerstore/templates.zip
 
-RC=$?
-if [ ${RC} -ne 0 ]; then
-  log "Failed to unzip templates zip file, aborting."
-  exit ${RC}
+  RC=$?
+  if [ ${RC} -ne 0 ]; then
+    log "Failed to unzip templates zip file, aborting."
+    exit ${RC}
+  fi
+else
+  log "Templates already present"
 fi
 
 log "Creating required directories and links..."
@@ -179,8 +190,12 @@ fi
 export SESSION_COOKIE_DOMAIN=${INSTALLER_DOMAIN_NAME}
 
 ./server &
-
 SERVER_PID=$!
+./apiserver &
+APISERVER_PID=$!
+./operator &
+OPERATOR_PID=$!
+
 NGINX_PID=$(cat /var/run/nginx.pid)
 
 log "Start-up done, will wait here while nginx is running."

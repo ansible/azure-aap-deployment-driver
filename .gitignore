@@ -37,6 +37,7 @@ installer.template.json
 server/server
 coverage.txt
 .env
+test/templates/*/
 
 # Pyenv file
 .python-version

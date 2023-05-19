@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const DryRunStepName = "Dry Run"
+const DryRunStepName = "Dry__Run"
 
 // Replicate GORM base model, hiding times from json
 type BaseModel struct {
@@ -63,7 +63,7 @@ type DryRunExecution struct { // the execution instance of the dry run (received
 	Status       string `json:"status"`
 
 	// the errors captured from the dry run (received from modm) if the status (on this struct) is failed
-	Error *sdk.DryRunErrorResponse `json:"error"`
+	Errors []sdk.DryRunError `json:"errors"`
 }
 
 type Status struct {

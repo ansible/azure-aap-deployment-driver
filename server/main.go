@@ -10,8 +10,8 @@ import (
 )
 
 func main() {
-	config.ConfigureLogging()
 	config.ParseArgs()
+	config.ConfigureLogging()
 
 	db := persistence.NewPersistentDB(config.GetEnvironment().DB_PATH)
 	// TODO store first start up in DB so we can determine max allowed run time for installer
