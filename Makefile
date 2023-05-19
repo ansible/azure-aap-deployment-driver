@@ -8,7 +8,7 @@ IMAGE_TAG ?= latest
 MODM_REPOSITORY_NAME := commercial-marketplace-offer-deploy
 MODM_BUILD_DIR := build/${MODM_REPOSITORY_NAME}
 MODM_REPOSITORY_URL := https://github.com/microsoft/${MODM_REPOSITORY_NAME}.git
-MODM_VERSION := v1.0.2
+MODM_VERSION := v1.1.0
 
 .PHONY: clean assemble save-image push-image check-credentials build-server build-web-ui
 
