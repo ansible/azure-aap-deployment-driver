@@ -13,6 +13,7 @@ RUN yum -y --repo ubi-9-appstream-rpms install socat && \
   unzip -qoj acme.zip acme.sh-${ACME_RELEASE_TAG}/acme.sh -d . && rm acme.zip && \
   echo "ACME=${ACME_RELEASE_TAG}" >> versions && echo "DRIVER=${DRIVER_RELEASE_TAG}" >> versions
 
+# AZ cli for local development purposes, can be removed later if desired
 RUN rpm --import https://packages.microsoft.com/keys/microsoft.asc && \
   dnf install -y https://packages.microsoft.com/config/rhel/9.0/packages-microsoft-prod.rpm && \
   dnf install -y azure-cli
