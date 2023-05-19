@@ -10,7 +10,7 @@ mkdir -p ./bin
 #
 
 # this can be set as an incoming flag value
-modm_version=v1.0.0
+modm_version=v1.0.2
 
 if [ "$MODM_VERSION" != "" ]; then
     modm_version=$MODM_VERSION
