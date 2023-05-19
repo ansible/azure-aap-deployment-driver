@@ -14,6 +14,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
@@ -43,7 +44,7 @@ type dryRunController struct {
 	HandleError          ErrorHandler
 }
 
-func (d *dryRunController) Execute(ctx context.Context) {
+func (d *dryRunController) Execute(ctx context.Context, parameters datatypes.JSONMap) {
 	time.Sleep(10 * time.Second)
 
 	go func() {
@@ -84,7 +85,7 @@ func (d *dryRunController) Execute(ctx context.Context) {
 			d.HandleError(err)
 		}
 
-		executionInfo, err := client.DryRun(ctx, d.deploymentId, step.Parameters)
+		executionInfo, err := client.DryRun(ctx, d.deploymentId, parameters)
 		if err != nil {
 			d.HandleError(err)
 		}

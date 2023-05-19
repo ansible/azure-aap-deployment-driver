@@ -220,13 +220,14 @@ func (engine *Engine) GetLatestExecution(step model.Step) model.Execution {
 }
 
 func (engine *Engine) startExecution(step model.Step, execution *model.Execution, waitGroup *sync.WaitGroup) {
+
 	if step.Name == model.DryRunStepName {
 		// Special case for dry run, this will execute it and update the result (blocks until finished)
 		log.Info("Executing dry run...")
+		outputValues := engine.getOutputValuesMap()
+		engine.resolver.ResolveReferencesToOutputs(step.Parameters, outputValues)
 		dryRunController := DryRunControllerInstance()
-		dryRunController.Execute(engine.context)
-		newExecution := engine.GetLatestExecution(step)
-		execution = &newExecution
+		dryRunController.Execute(engine.context, step.Parameters)
 		return
 	}
 
@@ -307,15 +308,7 @@ func (engine *Engine) runStep(step model.Step, execution *model.Execution, waitG
 
 	engine.resolver.ResolveReferencesToParameters(step.Parameters, engine.mainOutputs.Values)
 
-	// find all outputs, skip over those with no module names and build a map of them
-	outputValues := make(map[string]map[string]interface{})
-	var allOutputs []model.Output
-	engine.database.Instance.Model(&model.Output{}).Find(&allOutputs)
-	for _, v := range allOutputs {
-		if v.ModuleName != "" {
-			outputValues[v.ModuleName] = v.Values
-		}
-	}
+	outputValues := engine.getOutputValuesMap()
 	engine.resolver.ResolveReferencesToOutputs(step.Parameters, outputValues)
 
 	// Create the deployment
@@ -372,4 +365,17 @@ func (engine *Engine) CancelStep(step model.Step) {
 	if err != nil {
 		log.Errorf("Couldn't cancel deployment: %v", err)
 	}
+}
+
+func (engine *Engine) getOutputValuesMap() (map[string]map[string]interface{}) {
+		// find all outputs, skip over those with no module names and build a map of them
+		outputValues := make(map[string]map[string]interface{})
+		var allOutputs []model.Output
+		engine.database.Instance.Model(&model.Output{}).Find(&allOutputs)
+		for _, v := range allOutputs {
+			if v.ModuleName != "" {
+				outputValues[v.ModuleName] = v.Values
+			}
+		}
+		return outputValues
 }
