@@ -192,19 +192,23 @@ func (c *dryRunController) update(message *sdk.EventHookMessage) error {
 		// Dry run ran, but failed maybe with multiple errors
 		// TODO must be a better way to do the error concatenation
 		c.execution.Status = model.Failed
-		var errString strings.Builder
+		var errString, errDetails strings.Builder
 		for _, error := range data.Errors {
 			errString.WriteString(*error.Code + ": " + *error.Message + "\n")
+			for _, detail := range error.Details {
+				errDetails.WriteString(*detail.Message + "\n")
+			}
 		}
 		c.execution.Error = errString.String()
+		c.execution.ErrorDetails = errDetails.String()
 	}
 	duration := data.CompletedAt.Sub(data.StartedAt)
 	c.execution.Timestamp = data.StartedAt
 	c.execution.Duration = duration.String() // TODO match formatting with other code
 	c.execution.DryRunExecution.Status = data.Status
 	c.execution.DryRunExecution.Errors = data.Errors
+	c.execution.CorrelationID = "N/A"
 
 	c.db.Save(c.execution)
 	return nil
 }
-
