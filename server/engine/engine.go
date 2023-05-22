@@ -225,10 +225,9 @@ func (engine *Engine) startExecution(step model.Step, execution *model.Execution
 		// Special case for dry run, this will execute it and update the result (blocks until finished)
 		log.Info("Executing dry run...")
 		execution.StepID = step.ID
-		outputValues := engine.getOutputValuesMap()
-		engine.resolver.ResolveReferencesToOutputs(step.Parameters, outputValues)
+		dryRunMap := engine.resolver.ResolveDryRunParamsMap(step.Parameters, engine.mainOutputs.Values)
 		dryRunController := NewDryRunControllerInstance(engine.database.Instance, execution)
-		dryRunController.Execute(engine.context, step.Parameters)
+		dryRunController.Execute(engine.context, dryRunMap)
 		return
 	}
 

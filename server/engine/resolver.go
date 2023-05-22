@@ -50,6 +50,20 @@ func (resolver Resolver) ResolveReferencesToParameters(parameters map[string]int
 	}
 }
 
+func (resolver Resolver) ResolveDryRunParamsMap(params map[string]interface{}, outputs map[string]interface{}) map[string]interface{} {
+	outMap := make(map[string]interface{})
+	for k, v := range params {
+		val, ok := outputs[k]
+		if ok {
+			outMap[k] = val.(map[string]interface{})["value"]
+		} else {
+			// Take default value since it will have correct type
+			outMap[k] = v.(map[string]interface{})["value"]
+		}
+	}
+	return outMap
+}
+
 func (resolver Resolver) ResolveReferencesToOutputs(parameters map[string]interface{}, outputs map[string]map[string]interface{}) error {
 	for k, v := range parameters {
 
