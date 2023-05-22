@@ -91,6 +91,7 @@ func (engine *Engine) addDryRunStep(mainTemplate map[string]any, mainParameters 
 }
 
 func (engine *Engine) addSteps(templateOrderArray [][]string, startingPriority int, templatePath string) {
+	// We only want dry run as priority zero, so normally the startingPriority should be 1
 	stepCount := 0
 	for i, templateBatch := range templateOrderArray {
 		for _, templateName := range templateBatch {

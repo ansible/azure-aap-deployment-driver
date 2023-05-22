@@ -2,6 +2,7 @@ package engine
 
 import (
 	"context"
+	"fmt"
 	"server/azure"
 	"server/config"
 	"server/model"
@@ -204,7 +205,7 @@ func (c *dryRunController) update(message *sdk.EventHookMessage) error {
 	}
 	duration := data.CompletedAt.Sub(data.StartedAt)
 	c.execution.Timestamp = data.StartedAt
-	c.execution.Duration = duration.String() // TODO match formatting with other code
+	c.execution.Duration = fmt.Sprintf("%.2f seconds", duration.Seconds())
 	c.execution.DryRunExecution.Status = data.Status
 	c.execution.DryRunExecution.Errors = data.Errors
 	c.execution.CorrelationID = "N/A"

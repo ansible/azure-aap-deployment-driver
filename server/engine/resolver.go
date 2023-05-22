@@ -51,13 +51,14 @@ func (resolver Resolver) ResolveReferencesToParameters(parameters map[string]int
 }
 
 func (resolver Resolver) ResolveDryRunParamsMap(params map[string]interface{}, outputs map[string]interface{}) map[string]interface{} {
+	// Dry run wants just a map of key/value pairs {"access": "public"} for instance
 	outMap := make(map[string]interface{})
 	for k, v := range params {
 		val, ok := outputs[k]
 		if ok {
 			outMap[k] = val.(map[string]interface{})["value"]
 		} else {
-			// Take default value since it will have correct type
+			// Take default (empty) value since it will have correct type
 			outMap[k] = v.(map[string]interface{})["value"]
 		}
 	}

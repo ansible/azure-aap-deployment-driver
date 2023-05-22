@@ -223,6 +223,7 @@ func (engine *Engine) startExecution(step model.Step, execution *model.Execution
 
 	if step.Name == model.DryRunStepName {
 		// Special case for dry run, this will execute it and update the result (blocks until finished)
+		// The dry run controller handles updating the execution and will end with Succeeded or Failed.
 		log.Info("Executing dry run...")
 		execution.StepID = step.ID
 		dryRunMap := engine.resolver.ResolveDryRunParamsMap(step.Parameters, engine.mainOutputs.Values)
