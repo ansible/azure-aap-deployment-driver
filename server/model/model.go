@@ -12,7 +12,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const DryRunStepName = "Dry__Run"
+const DryRunStepName = "Deployment__Readiness__Check"
 
 // Replicate GORM base model, hiding times from json
 type BaseModel struct {
