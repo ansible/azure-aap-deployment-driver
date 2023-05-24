@@ -69,10 +69,10 @@ build-modm:
 	@echo "Cleaning build dir"
 	rm -rf ${MODM_BUILD_DIR}
 	@echo "Cloning repository"
-	git clone --filter=blob:none --depth=1 -b ${MODM_VERSION} --single-branch --quiet ${MODM_REPOSITORY_URL} ${MODM_BUILD_DIR} &> /dev/null
+	git clone --filter=blob:none --depth=1 -b ${MODM_VERSION} --single-branch --quiet -c advice.detachedHead=false ${MODM_REPOSITORY_URL} ${MODM_BUILD_DIR}
 	rm -rf ${MODM_BUILD_DIR}/.git
 	@echo "Building binaries..."
-	cd ${MODM_BUILD_DIR} && make build &> /dev/null
+	cd ${MODM_BUILD_DIR} && make build
 	@echo "Copying binaries to ./build"
 	cp ${MODM_BUILD_DIR}/bin/apiserver ${MODM_BUILD_DIR}/bin/operator ${BUILD_DIR}
 	@echo "Removing MODM build dir"
