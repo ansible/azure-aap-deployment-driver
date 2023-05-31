@@ -2,10 +2,8 @@ package engine
 
 import (
 	"context"
-	"fmt"
 	"server/config"
 	"server/model"
-	"strings"
 	"sync"
 	"time"
 
@@ -16,11 +14,11 @@ import (
 )
 
 var (
-	dryRunInstance     *dryRunController
-	dryRunInstanceOnce sync.Once
+	modmRunInstance     *modmRunController
+	modmRunInstanceOnce sync.Once
 )
 
-type dryRunController struct {
+type modmRunController struct {
 	// the MODM deployment id
 	deploymentId   int
 	db             *gorm.DB
@@ -34,7 +32,7 @@ type dryRunController struct {
 	HandleError          ErrorHandler
 }
 
-func (d *dryRunController) Execute(ctx context.Context, client sdk.Client, template datatypes.JSONMap, parameters datatypes.JSONMap) {
+func (d *modmRunController) Execute(ctx context.Context, client sdk.Client, template datatypes.JSONMap, parameters datatypes.JSONMap) {
 	time.Sleep(10 * time.Second)
 
 	go func() {
@@ -49,20 +47,20 @@ func (d *dryRunController) Execute(ctx context.Context, client sdk.Client, templ
 			d.HandleError(err)
 		}
 
-		executionInfo, err := client.DryRun(ctx, d.deploymentId, parameters)
+		_, err = client.Start(ctx, d.deploymentId, parameters, &sdk.StartOptions{})
 		if err != nil {
 			d.HandleError(err)
 		}
 
-		d.createExecution(uint(d.deploymentId), executionInfo, err)
+		d.createExecution(err)
 	}()
 
 	<-d.done
 }
 
-func NewDryRunControllerInstance(db *gorm.DB, deploymentId int) *dryRunController {
-	dryRunInstanceOnce.Do(func() {
-		dryRunInstance = &dryRunController{
+func NewModmRunControllerInstance(db *gorm.DB, deploymentId int) *modmRunController {
+	modmRunInstanceOnce.Do(func() {
+		modmRunInstance = &modmRunController{
 			db:                   db,
 			deploymentId:         deploymentId,
 			execution:            &model.Execution{},
@@ -77,14 +75,14 @@ func NewDryRunControllerInstance(db *gorm.DB, deploymentId int) *dryRunControlle
 			},
 		}
 	})
-	return dryRunInstance
+	return modmRunInstance
 }
 
-func GetDryRunControllerInstance() *dryRunController {
-	return dryRunInstance
+func GetModmRunControllerInstance() *modmRunController {
+	return modmRunInstance
 }
 
-func (c *dryRunController) getStep() (*model.Step, error) {
+func (c *modmRunController) getStep() (*model.Step, error) {
 	step := &model.Step{}
 
 	join := "left join executions on executions.step_id = steps.id"
@@ -97,35 +95,27 @@ func (c *dryRunController) getStep() (*model.Step, error) {
 }
 
 // updates the step execution (or inserts) and signals dry run is done
-func (c *dryRunController) Done(message *sdk.EventHookMessage) {
+func (c *modmRunController) Done(message *sdk.EventHookMessage) {
 	c.updateExecution(message)
 	c.done <- struct{}{}
 }
 
 // creates a new step execution to track the dry run
-func (c *dryRunController) createExecution(deploymentId uint, response *sdk.InvokeDryRunResponse, err error) error {
+func (c *modmRunController) createExecution(err error) error {
 	tx := c.db.Begin()
 
 	status := model.Started
-	if response.Status != sdk.StatusScheduled.String() || err != nil {
-		status = model.Failed
-	}
 
 	step, err := c.getStep()
 	if err != nil {
 		log.Infof("Unable to get step for dry run: %v", err)
 	}
 	c.execution.StepID = step.ID
+
 	c.execution.Status = status
-	c.execution.DryRunExecution = &model.DryRunExecution{
-			Id:           response.Id.String(),
-			DeploymentId: deploymentId,
-			Status:       "", //status is the status result of the dry run. which isn't set yet because the result hasn't been received
-	}
 
 	if err != nil {
 		c.execution.Status = model.Failed
-		c.execution.DryRunExecution.Status = sdk.StatusFailed.String()
 		c.execution.Error = err.Error()
 	}
 
@@ -140,40 +130,21 @@ func (c *dryRunController) createExecution(deploymentId uint, response *sdk.Invo
 	return nil
 }
 
-func (c *dryRunController) updateExecution(message *sdk.EventHookMessage) error {
-	data, err := message.DryRunEventData()
+func (c *modmRunController) updateExecution(message *sdk.EventHookMessage) error {
+	data, err := message.DeploymentEventData()
 	if err != nil {
-		log.Debugf("event hook message is [%s] not dryrun. error: %v", message.Type, err)
+		log.Debugf("event hook message is [%s] not deployment. error: %v", message.Type, err)
 		return err
 	}
 
 	// Start with success
 	c.execution.Status = model.Succeeded
-
 	if message.Status == sdk.StatusFailed.String() {
 		// Dry run failed to run
 		c.execution.Status = model.Failed
 		c.execution.Error = message.Error
-	} else if data.Status == sdk.StatusFailed.String() {
-		// Dry run ran, but failed maybe with multiple errors
-		// TODO must be a better way to do the error concatenation
-		c.execution.Status = model.Failed
-		var errString, errDetails strings.Builder
-		for _, error := range data.Errors {
-			errString.WriteString(*error.Code + ": " + *error.Message + "\n")
-			for _, detail := range error.Details {
-				errDetails.WriteString(*detail.Message + "\n")
-			}
-		}
-		c.execution.Error = errString.String()
-		c.execution.ErrorDetails = errDetails.String()
-	}
-	duration := data.CompletedAt.Sub(data.StartedAt)
-	c.execution.Timestamp = data.StartedAt
-	c.execution.Duration = fmt.Sprintf("%.2f seconds", duration.Seconds())
-	//c.execution.DryRunExecution.Status = data.Status
-	//c.execution.DryRunExecution.Errors = data.Errors
-	c.execution.CorrelationID = "N/A"
+	} 
+	c.execution.CorrelationID = (*data.CorrelationId).String()
 
 	c.db.Save(c.execution)
 	return nil

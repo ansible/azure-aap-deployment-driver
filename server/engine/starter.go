@@ -9,19 +9,19 @@ import (
 	"server/persistence"
 	"server/templates"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 )
 
-func NewEngine(ctx context.Context, db *persistence.Database, client *armresources.DeploymentsClient) *Engine {
+func NewEngine(ctx context.Context, db *persistence.Database, modmClient *sdk.Client) *Engine {
 	engine := &Engine{
 		context:              ctx,
 		database:             db,
-		resolver:             NewResolver(config.GetEnvironment().SUBSCRIPTION, config.GetEnvironment().RESOURCE_GROUP_NAME),
 		done:                 make(chan struct{}),
 		status:               &model.Status{},
 		maxExecutionRestarts: config.GetEnvironment().EXECUTION_MAX_RETRY,
-		deploymentsClient:    client,
+		modmClient:           modmClient,
 	}
 	engine.initialize()
 	return engine
@@ -34,21 +34,18 @@ func (engine *Engine) initialize() {
 	if !engine.status.TemplatesLoaded {
 		// Load templates into database
 		templatePath := config.GetEnvironment().TEMPLATE_PATH
-		templateOrderArray, err := templates.DiscoverTemplateOrder(templatePath)
-		if err != nil {
-			engine.Fatalf("Unable to import ARM templates: %v", err)
-		}
 
 		mainTemplate, mainParameters, err := templates.GetMainTemplateAndParameters(templatePath)
 		if err != nil {
 			engine.Fatalf("Unable to read in main template and parameters files")
 		}
 
+		// Store template and parameters
+		engine.template = mainTemplate
+		engine.parameters = mainParameters
 		// start steps with dry run step at the beginning
-		insertDryRunAt := 0
-		engine.addDryRunStep(mainTemplate, mainParameters, insertDryRunAt)
-		engine.addSteps(templateOrderArray, insertDryRunAt+1, templatePath)
-
+		engine.addDryRunStep(mainTemplate)
+		engine.createModmDeployment(mainTemplate)
 	} else {
 		log.Infof("Skipped discovery of templates, they are in database already.")
 	}
@@ -76,50 +73,33 @@ func (engine *Engine) initialize() {
 	engine.database.Instance.Find(engine.mainOutputs, model.Output{ModuleName: ""})
 }
 
-// explicity adds a dry run step
-//
-//	remarks: expects the full main template and parameters
-func (engine *Engine) addDryRunStep(mainTemplate map[string]any, mainParameters map[string]any, priority int) {
+func (engine *Engine) addDryRunStep(mainTemplate map[string]any) {
 	engine.database.Instance.Create(&model.Step{
-		Priority:   uint(priority),
 		Name:       model.DryRunStepName,
-		Template:   mainTemplate,
-		Parameters: mainParameters,
-		Executions: []model.Execution{},
 	})
 	log.Info("Added dry run step to database")
 }
 
-func (engine *Engine) addSteps(templateOrderArray [][]string, startingPriority int, templatePath string) {
-	// We only want dry run as priority zero, so normally the startingPriority should be 1
-	stepCount := 0
-	for i, templateBatch := range templateOrderArray {
-		for _, templateName := range templateBatch {
-			if engine.IsFatalState() {
-				return
-			}
+func (engine *Engine) createModmDeployment(mainTemplate map[string]any) {
+	createDeployment := sdk.CreateDeployment{}
+	createDeployment.ResourceGroup = to.Ptr(config.GetEnvironment().RESOURCE_GROUP_NAME)
+	createDeployment.Location = to.Ptr(config.GetEnvironment().AZURE_LOCATION)
+	createDeployment.Name = to.Ptr(model.ModmDeploymentName)
+	createDeployment.Template = mainTemplate
+	createDeployment.SubscriptionID = to.Ptr(config.GetEnvironment().SUBSCRIPTION)
 
-			templateContent, err := templates.ReadJSONTemplate(templatePath, templateName)
-			if err != nil {
-				engine.Fatalf("Unable to read in template file for [%s]", templateName)
-			}
-			parametersContent, err := templates.ReadJSONTemplateParameters(templatePath, templateName)
-			if err != nil {
-				engine.Fatalf("Unable to read in template file for [%s]", templateName)
-			}
-			engine.database.Instance.Create(&model.Step{
-				Priority:   uint(i+startingPriority),
-				Name:       templateName,
-				Template:   templateContent,
-				Parameters: parametersContent,
-			})
-			stepCount++
+	resp, err := engine.modmClient.Create(engine.context, createDeployment)
+	if err != nil {
+		log.Fatalf("Failed to create MODM deployment: %v", err)
+	}
+	for _, stage := range resp.Stages {
+		log.Infof("Found stage %s", *stage.Name)
+		step := model.Step{
+			Name: *stage.Name,
+			StageId: *stage.ID,
 		}
+		engine.database.Instance.Save(&step)
 	}
-
-	if stepCount > 0 {
-		engine.status.TemplatesLoaded = true
-		engine.database.Instance.Save(engine.status)
-	}
-	log.Infof("Finished deployment template discovery, added %d steps to database.", stepCount)
+	engine.modmDeploymentId = int(*resp.ID)
+	log.Infof("Created MODM deployment.  Added %d steps to database.", len(resp.Stages))
 }

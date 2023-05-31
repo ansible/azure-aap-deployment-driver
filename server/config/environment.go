@@ -24,7 +24,6 @@ type envVars struct {
 	ENGINE_MAX_RUNTIME         int64
 	ENGINE_RETRY_WAIT          int64
 	EXECUTION_MAX_RETRY        int
-	AZURE_POLLING_FREQ_SECONDS int
 	AUTO_RETRY                 bool
 	AUTO_RETRY_DELAY           int
 	SESSION_COOKIE_NAME        string
@@ -40,6 +39,7 @@ type envVars struct {
 	WEB_HOOK_CALLBACK_URL      string
 	LOG_PATH                   string
 	LOG_LEVEL                  string
+	MODM_ENDPOINT              string
 }
 
 var (
@@ -58,7 +58,6 @@ func GetEnvironment() envVars {
 	environment.EXECUTION_MAX_RETRY = 10  // 10 executions in total allowed
 	environment.DB_PATH = "/installerstore/installer.db"
 	environment.TEMPLATE_PATH = "/installerstore/templates"
-	environment.AZURE_POLLING_FREQ_SECONDS = 5
 	environment.AUTO_RETRY = false
 	environment.AUTO_RETRY_DELAY = 60 // Retry after 60 seconds if AUTO_RETRY set
 	environment.SESSION_COOKIE_NAME = "madd_session"
@@ -69,7 +68,11 @@ func GetEnvironment() envVars {
 	environment.SAVE_CONTAINER = false
 	environment.START_TIME = time.Now().Format(time.RFC3339)
 	environment.LOG_PATH = "/installerstore/engine.txt"
+<<<<<<< HEAD
 	environment.LOG_LEVEL = "info"
+=======
+	environment.MODM_ENDPOINT = "http://localhost:8080"
+>>>>>>> da7773a (AAP-12191 deploy all steps via MODM)
 
 	// TODO: need to set this to a real value that's not hardcoded
 	environment.WEB_HOOK_API_KEY = "6P7Q9SATBVDWEXGZH2J4M5N6Q8"
@@ -163,6 +166,11 @@ func GetEnvironment() envVars {
 		environment.TEMPLATE_PATH = templatePath
 	}
 
+	modmEndpoint := env.Get("MODM_ENDPOINT")
+	if len(modmEndpoint) > 0 {
+		environment.MODM_ENDPOINT = modmEndpoint
+	}
+
 	// using empty string as default to force error condition and use of default when env variable not set
 	engineEndWait, err := strconv.ParseInt(env.Get("ENGINE_END_WAIT", ""), 10, 64)
 	if err != nil {
@@ -193,14 +201,6 @@ func GetEnvironment() envVars {
 		log.Warnf("EXECUTION_MAX_RETRY environment variable is not set or is not a number, will use default: %d", environment.EXECUTION_MAX_RETRY)
 	} else {
 		environment.EXECUTION_MAX_RETRY = int(executionMaxRetry)
-	}
-
-	// using empty string as default to force error condition and use of default when env variable not set
-	azurePollingFreq, err := strconv.ParseInt(env.Get("AZURE_POLLING_FREQ_SECONDS", ""), 10, 32)
-	if err != nil {
-		log.Warnf("AZURE_POLLING_FREQ_SECONDS environment variable is not set or is not a number, will use default: %d", environment.AZURE_POLLING_FREQ_SECONDS)
-	} else if azurePollingFreq > 1 {
-		environment.AZURE_POLLING_FREQ_SECONDS = int(azurePollingFreq)
 	}
 
 	autoRetry, err := strconv.ParseBool(env.Get("AUTO_RETRY", "false"))

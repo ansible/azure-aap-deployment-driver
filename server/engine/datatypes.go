@@ -5,16 +5,18 @@ import (
 	"server/model"
 	"server/persistence"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
 
 type Engine struct {
 	context              context.Context
 	database             *persistence.Database
-	resolver             *Resolver
 	mainOutputs          *model.Output
+	template             map[string]interface{}
+	parameters           map[string]interface{}
 	done                 chan struct{}
 	status               *model.Status
 	maxExecutionRestarts int
-	deploymentsClient    *armresources.DeploymentsClient
+	modmClient           *sdk.Client
+	modmDeploymentId     int
 }

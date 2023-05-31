@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"context"
 	"server/azure"
 	"server/config"
 	"server/model"
@@ -35,15 +34,27 @@ func (engine *Engine) Run() {
 }
 
 func (engine *Engine) startDeploymentExecutions() {
-	log.Println("Starting main engine loop...")
+	log.Info("Starting engine execution...")
+
+	dryRunStep := model.Step{}
+	tx := engine.database.Instance.Where("name = ?", model.DryRunStepName).Find(&dryRunStep)
+	if tx.RowsAffected != 1 {
+		log.Fatal("Unable to find dry run step in database.")
+	}
+	
+	log.Info("Executing Dry Run...")
+	engine.executeDryRun(dryRunStep)
+	// TODO Check result and wait for retry or cancel
+
+	log.Info("Executing deployment...")
+	engine.executeModmDeployment()
 
 	var executionWaitGroup sync.WaitGroup
 
-	// Find lowest priority step(s) without successful execution and run
-	for p := 0; engine.context.Err() == nil; {
+	for ; engine.context.Err() == nil; {
 		stepsToRun := []model.Step{}
 		// TODO change this next block to check length of the array instead of looking at DB stuff
-		res := engine.database.Instance.Where("priority = ?", p).Find(&stepsToRun)
+		res := engine.database.Instance.Order("id").Find(&stepsToRun)
 		if res.RowsAffected == 0 {
 			// No steps at this order level, get out of here
 			log.Info("No more deployment steps found.")
@@ -59,32 +70,24 @@ func (engine *Engine) startDeploymentExecutions() {
 		// with the slice being size of steps the elements can be null!
 		currentExecutions := make([]*model.Execution, len(stepsToRun))
 
-		for stepIndex, step := range stepsToRun {
+		for _, step := range stepsToRun {
 			latestExecution := engine.GetLatestExecution(step)
 
 			switch latestExecution.Status {
 			case model.Started:
 				// After container restart, we may have in-progress deployments to restart
-				engine.startExecution(step, &latestExecution, &executionWaitGroup)
-				currentExecutions[stepIndex] = &latestExecution
+				// TODO Handle container restart case w/ MODM
 			case "":
-				// Unexecuted step
-				engine.startExecution(step, &latestExecution, &executionWaitGroup)
-				currentExecutions[stepIndex] = &latestExecution
+				// Unexecuted step, just wait for MODM
 			case model.Restart:
 				// Step to restart, mark as seen and start
-				latestExecution.Status = model.Restarted
-				engine.database.Instance.Save(&latestExecution)
-				newExecution := model.Execution{}
-				engine.startExecution(step, &newExecution, &executionWaitGroup)
-				currentExecutions[stepIndex] = &newExecution
+				// TODO Figure out how to restart failed steps with MODM
 			case model.Succeeded, model.Canceled:
 				continue
 			}
 		}
-		// wait for all go routines to finish
-		log.Info("Waiting for execution of step(s) to finish...")
-		executionWaitGroup.Wait()
+		// TODO Figure out how to handle loop
+		time.Sleep(60 * time.Second)
 
 		restartRequired := false
 		// if the context is not yet cancelled, check for failed executions
@@ -144,11 +147,8 @@ func (engine *Engine) startDeploymentExecutions() {
 				}
 			}
 		}
-
-		// if no executions need to be restarted, increment priority level to move to next level
-		if !restartRequired {
-			p++
-		}
+		// TODO continue this loop until all steps are Succeeded
+		// OR better yet, wait at the end of each loop for a stage completion event
 	}
 }
 
@@ -219,27 +219,32 @@ func (engine *Engine) GetLatestExecution(step model.Step) model.Execution {
 	return latestExecution
 }
 
-func (engine *Engine) startExecution(step model.Step, execution *model.Execution, waitGroup *sync.WaitGroup) {
+func (engine *Engine) executeDryRun(step model.Step) {
+	dryRunController := NewDryRunControllerInstance(engine.database.Instance, engine.modmDeploymentId)
+	dryRunController.Execute(engine.context, *engine.modmClient, engine.template, engine.getParamsMap())
+}
 
-	if step.Name == model.DryRunStepName {
-		// Special case for dry run, this will execute it and update the result (blocks until finished)
-		// The dry run controller handles updating the execution and will end with Succeeded or Failed.
-		log.Info("Executing dry run...")
-		execution.StepID = step.ID
-		dryRunMap := engine.resolver.ResolveDryRunParamsMap(step.Parameters, engine.mainOutputs.Values)
-		dryRunController := NewDryRunControllerInstance(engine.database.Instance, execution)
-		dryRunController.Execute(engine.context, dryRunMap)
-		return
+func (engine *Engine) executeModmDeployment() {
+	_, err := engine.modmClient.Start(engine.context, engine.modmDeploymentId, engine.getParamsMap(), nil)
+	if err != nil {
+		log.Errorf("Failed to start MODM deployment: %v", err)
 	}
+}
 
-	execution.Status = model.Started
-	execution.StepID = step.ID
-	engine.database.Instance.Save(&execution)
-
-	// Run in goroutine to allow parallel deployments
-	log.Infof("Starting execution of deployment step [%s]...", step.Name)
-	waitGroup.Add(1)
-	go engine.runStep(step, execution, waitGroup)
+func (engine *Engine) getParamsMap() map[string]interface{} {
+	// MODM wants just a map of key/value pairs {"access": "public"} for instance
+	outputs := engine.mainOutputs.Values
+	outMap := make(map[string]interface{})
+	for k, v := range engine.parameters {
+		val, ok := outputs[k]
+		if ok {
+			outMap[k] = val.(map[string]interface{})["value"]
+		} else {
+			// Take default (empty) value since it will have correct type
+			outMap[k] = v.(map[string]interface{})["value"]
+		}
+	}
+	return outMap
 }
 
 func (engine *Engine) startWaitingForRestart(execution *model.Execution, waitGroup *sync.WaitGroup) {
@@ -298,85 +303,11 @@ func (engine *Engine) waitForStepRestart(execution *model.Execution, waitGroup *
 	}
 }
 
-func (engine *Engine) runStep(step model.Step, execution *model.Execution, waitGroup *sync.WaitGroup) {
-	defer waitGroup.Done()
-
-	// Check if this is an interrupted/restarted deployment
-	resumeToken := ""
-	if execution.Status == model.Started && execution.ResumeToken != "" {
-		resumeToken = execution.ResumeToken
-	}
-
-	engine.resolver.ResolveReferencesToParameters(step.Parameters, engine.mainOutputs.Values)
-
-	outputValues := engine.getOutputValuesMap()
-	engine.resolver.ResolveReferencesToOutputs(step.Parameters, outputValues)
-
-	// Create the deployment
-	deployment, err := azure.StartDeployARMTemplate(engine.context, engine.deploymentsClient, step.Name, step.Template, step.Parameters, resumeToken)
-	if err != nil {
-		if err == context.Canceled {
-			log.Printf("Starting of step [%s] deployment interrupted by shutdown.", step.Name)
-			return
-		}
-		log.Printf("Failed to start step [%s] deployment: %v", step.Name, err)
-		model.UpdateExecution(execution, nil, model.GetAzureErrorJSONString(err))
-		engine.database.Instance.Save(&execution)
-		return
-	}
-	log.Printf("Started execution of step [%s]", step.Name)
-
-	// Deployment started, grab resume token in case we get restarted
-	token, err := deployment.ResumeToken()
-	if err != nil {
-		log.Printf("Failed to extract resume token from started deployment: %v", err)
-	}
-	execution.ResumeToken = token
-	if err := engine.database.Instance.Save(&execution).Error; err != nil {
-		log.Printf("Failed to update execution in DB with resume token: %v", err)
-	}
-
-	// Finish deployment and wait for result
-	deployResponse, err := azure.WaitForDeployARMTemplate(engine.context, step.Name, deployment)
-	if err != nil {
-		if err == context.Canceled {
-			log.Printf("Completion of step [%s] deployment interrupted by shutdown.", step.Name)
-			return
-		}
-		log.Printf("Deployment of step [%s] failed: %v", step.Name, err)
-		failedDeploymentResponse, getDeploymentErr := azure.GetDeployment(engine.context, engine.deploymentsClient, step.Name)
-		if getDeploymentErr != nil {
-			log.Tracef("Unable to get failed deployment details: %v", getDeploymentErr)
-		}
-		model.UpdateExecution(execution, failedDeploymentResponse, model.GetAzureErrorJSONString(err))
-		engine.database.Instance.Save(&execution)
-		return
-	}
-	log.Printf("Deployment of step [%s] complete", step.Name)
-
-	// store outputs
-	engine.database.Instance.Create(model.CreateNewOutput(step.Name, deployResponse))
-	// store execution
-	model.UpdateExecution(execution, deployResponse, "")
-	engine.database.Instance.Save(&execution)
-}
-
+/* TODO Figure out how to implement cancel for MODM
 func (engine *Engine) CancelStep(step model.Step) {
 	err := azure.CancelDeployment(engine.context, engine.deploymentsClient, step.Name)
 	if err != nil {
 		log.Errorf("Couldn't cancel deployment: %v", err)
 	}
 }
-
-func (engine *Engine) getOutputValuesMap() (map[string]map[string]interface{}) {
-		// find all outputs, skip over those with no module names and build a map of them
-		outputValues := make(map[string]map[string]interface{})
-		var allOutputs []model.Output
-		engine.database.Instance.Model(&model.Output{}).Find(&allOutputs)
-		for _, v := range allOutputs {
-			if v.ModuleName != "" {
-				outputValues[v.ModuleName] = v.Values
-			}
-		}
-		return outputValues
-}
+ */

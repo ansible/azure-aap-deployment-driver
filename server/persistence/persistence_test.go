@@ -37,12 +37,12 @@ func TestRealDatabase(t *testing.T) {
 }
 
 func TestInMemoryDatabase(t *testing.T) {
-	db := persistence.NewInMemoryDB()
+	db := persistence.NewNoCacheInMemoryDb()
 	testDb(t, db)
 }
 func TestTelemetryTable(t *testing.T) {
 
-	db := persistence.NewInMemoryDB()
+	db := persistence.NewNoCacheInMemoryDb()
 	model.SetMetric(db.Instance, model.DeployStatus, "SUCCESS", "")
 	model.SetMetric(db.Instance, model.AccessType, "PRIVATE", "")
 	retrieved := model.Telemetry{}

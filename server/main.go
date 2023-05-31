@@ -6,7 +6,10 @@ import (
 	"server/config"
 	"server/controllers"
 	"server/engine"
+	"server/modm"
 	"server/persistence"
+
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 )
 
 func main() {
@@ -18,12 +21,13 @@ func main() {
 
 	// Instantiate Azure clients and session
 	azure.EnsureAzureLogin(nil)
-	deploymentsClient := azure.NewDeploymentsClient(nil)
+
+	modmClient := modm.NewModmClient(config.GetEnvironment().MODM_ENDPOINT, azure.GetAzureInfo().Credentials, &sdk.ClientOptions{})
 
 	// Graceful exit handler
 	exit := controllers.NewExitController()
 
-	engine := engine.NewEngine(exit.Context(), db, deploymentsClient)
+	engine := engine.NewEngine(exit.Context(), db, modmClient)
 
 	app := api.NewApp(db, engine)
 

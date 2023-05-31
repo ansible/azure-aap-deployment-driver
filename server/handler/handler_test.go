@@ -14,7 +14,6 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/stretchr/testify/assert"
-	"gorm.io/datatypes"
 )
 
 var database *persistence.Database
@@ -50,7 +49,6 @@ func TestStep(t *testing.T) {
 		t.Fatal(err)
 	}
 	assert.Equal(t, "step1", response.Name)
-	assert.Equal(t, uint(0), response.Priority)
 	assert.Equal(t, 2, len(response.Executions))
 }
 
@@ -140,7 +138,7 @@ func testHttpRoute(t *testing.T, method string, path string, body io.Reader) *ht
 // needed teardown after that.
 func TestMain(m *testing.M) {
 	test.SetEnvironment()
-	database = persistence.NewInMemoryDB()
+	database = persistence.NewNoCacheInMemoryDb()
 
 	execution1 := model.Execution{
 		StepID:            1,
@@ -156,26 +154,18 @@ func TestMain(m *testing.M) {
 
 	step1 := model.Step{
 		Name:     "step1",
-		Template: datatypes.JSONMap{},
-		Priority: 0,
 	}
 
 	step2 := model.Step{
 		Name:     "step2",
-		Template: datatypes.JSONMap{},
-		Priority: 1,
 	}
 
 	step3 := model.Step{
 		Name:     "step3",
-		Template: datatypes.JSONMap{},
-		Priority: 1,
 	}
 
 	step4 := model.Step{
 		Name:     "step4",
-		Template: datatypes.JSONMap{},
-		Priority: 2,
 	}
 
 	database.Instance.Save(&step1)

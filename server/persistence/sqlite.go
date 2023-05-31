@@ -7,7 +7,6 @@ import (
 	"gorm.io/gorm"
 )
 
-const IN_MEMORY_DB string = "file::memory:?cache=shared"
 const NO_CACHE_IN_MEMORY_DB string = "file::memory:"
 
 func newSqliteDB(dbPath string, migrationModels ...interface{}) (*gorm.DB, error) {

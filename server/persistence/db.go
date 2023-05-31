@@ -19,14 +19,6 @@ func NewPersistentDB(dbPath string) *Database {
 	return db
 }
 
-func NewInMemoryDB() *Database {
-	db, err := newDB(IN_MEMORY_DB)
-	if err != nil {
-		log.Fatalf("Could not open in-memory database. Error: %v", err)
-	}
-	return db
-}
-
 func NewNoCacheInMemoryDb() *Database {
 	db, err := newDB(NO_CACHE_IN_MEMORY_DB)
 	if err != nil {

@@ -13,6 +13,7 @@ import (
 )
 
 const DryRunStepName = "Deployment__Readiness__Check"
+const ModmDeploymentName = "ansible-on-azure"
 
 // Replicate GORM base model, hiding times from json
 type BaseModel struct {
@@ -25,10 +26,8 @@ type BaseModel struct {
 type Step struct {
 	BaseModel
 	Name       string            `gorm:"unique" json:"name"`
-	Template   datatypes.JSONMap `json:"-"`
-	Parameters datatypes.JSONMap `json:"-"`
-	Priority   uint              `json:"order"`
 	Executions []Execution       `json:"executions" gorm:"constraint:OnUpdate:CASCADE;"`
+	StageId    string            `json:"-"`
 }
 
 type Output struct {
@@ -127,7 +126,6 @@ func CreateNewOutput(name string, result *DeploymentResult) *Output {
 
 // Setter function for each deployment metric
 func SetMetric(db *gorm.DB, metric DeploymentMetric, value string, step string) {
-
 	db.Create(&Telemetry{
 		MetricName:  metric,
 		MetricValue: value,
@@ -137,7 +135,6 @@ func SetMetric(db *gorm.DB, metric DeploymentMetric, value string, step string) 
 
 // Getter function for each deployment metric
 func Metric(db *gorm.DB, metric DeploymentMetric) Telemetry {
-
 	telemetry := Telemetry{}
 	db.Where("metric_name = ?", metric).Find(&telemetry)
 	return telemetry

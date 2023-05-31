@@ -26,8 +26,18 @@ func EventHook(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if handler.isDryRunCompleted(message) {
-		log.Debugf("Received event hook message: %+v", message)
+	log.Debugf("Received event: %s - %s - %v", message.Type, message.Subject, message.Data)
+
+	switch message.Type {
+	case sdk.EventTypeDeploymentCompleted.String():
+		// Overall deployment complete
+		log.Debug("Received event: Deployment completed.")
+	case sdk.EventTypeStageCompleted.String():
+		// Process execution result
+		log.Debugf("Received event: Stage completed: %s", message.Subject)
+		// TODO call something to update execution result
+	case sdk.EventTypeDryRunCompleted.String():
+		log.Debugf("Received event: Dry Run completed: %s", message.Subject)
 		controller := engine.GetDryRunControllerInstance()
 		controller.Done(message)
 	}
@@ -44,10 +54,6 @@ type eventHookHandler struct {
 	db       *gorm.DB
 	// the API Key that was set when the event hook was created with the MODM client sdk
 	apiKey string
-}
-
-func (h *eventHookHandler) isDryRunCompleted(message *sdk.EventHookMessage) bool {
-	return sdk.EventTypeName(message.Type) == sdk.EventTypeDryRunCompleted
 }
 
 // function that validates the API Key from MODM to protect against unauthorized requests
