@@ -7,7 +7,6 @@ import (
 	"server/model"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
@@ -21,41 +20,33 @@ var (
 )
 
 type dryRunController struct {
-	// the MODM deployment id
 	deploymentId   int
 	db             *gorm.DB
 	execution      *model.Execution
 	done           chan struct{}
 	apiKey         string
 	hookName       string
-
-	// this is the url that will be called by MODM. It maps to /eventhook route for handler/eventhook
 	eventHookCallbackUrl string
 	HandleError          ErrorHandler
 }
 
 func (d *dryRunController) Execute(ctx context.Context, client sdk.Client, template datatypes.JSONMap, parameters datatypes.JSONMap) {
-	time.Sleep(10 * time.Second)
+	createEventRequest := sdk.CreateEventHookRequest{
+		APIKey:   &d.apiKey,
+		Callback: &d.eventHookCallbackUrl,
+		Name:     &d.hookName,
+	}
 
-	go func() {
-		createEventRequest := sdk.CreateEventHookRequest{
-			APIKey:   &d.apiKey,
-			Callback: &d.eventHookCallbackUrl,
-			Name:     &d.hookName,
-		}
+	_, err := client.CreateEventHook(ctx, createEventRequest)
+	if err != nil {
+		d.HandleError(err)
+	}
 
-		_, err := client.CreateEventHook(ctx, createEventRequest)
-		if err != nil {
-			d.HandleError(err)
-		}
-
-		executionInfo, err := client.DryRun(ctx, d.deploymentId, parameters)
-		if err != nil {
-			d.HandleError(err)
-		}
-
-		d.createExecution(uint(d.deploymentId), executionInfo, err)
-	}()
+	executionInfo, err := client.DryRun(ctx, d.deploymentId, parameters)
+	if err != nil {
+		d.HandleError(err)
+	}
+	d.createExecution(uint(d.deploymentId), executionInfo, err)
 
 	<-d.done
 }
@@ -174,7 +165,7 @@ func (c *dryRunController) updateExecution(message *sdk.EventHookMessage) error 
 	//c.execution.DryRunExecution.Status = data.Status
 	//c.execution.DryRunExecution.Errors = data.Errors
 	c.execution.CorrelationID = "N/A"
-
+	log.Infof("Dry run completed with status: %s", c.execution.Status)
 	c.db.Save(c.execution)
 	return nil
 }

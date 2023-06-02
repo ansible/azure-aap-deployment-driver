@@ -15,7 +15,7 @@ import (
 )
 
 type azureDetails struct {
-	Credentials  *azidentity.DefaultAzureCredential
+	Credentials  *azidentity.ManagedIdentityCredential
 	Subscription string
 }
 
@@ -56,9 +56,9 @@ func EnsureAzureLogin(client *armresources.ResourceGroupsClient) {
 
 func GetAzureInfo() azureDetails {
 	if azureInfo.Credentials == nil {
-		opts := azidentity.DefaultAzureCredentialOptions{}
+		opts := azidentity.ManagedIdentityCredentialOptions{}
 		opts.Retry.MaxRetries = 10
-		cred, err := azidentity.NewDefaultAzureCredential(&opts)
+		cred, err := azidentity.NewManagedIdentityCredential(&opts)
 		if err != nil {
 			log.Fatalf("Error: Unable to create Azure credential: %v", err)
 		}

@@ -2,11 +2,10 @@ package engine
 
 import (
 	"context"
-	"server/config"
 	"server/model"
 	"sync"
-	"time"
 
+	"github.com/google/uuid"
 	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/datatypes"
@@ -19,43 +18,34 @@ var (
 )
 
 type modmRunController struct {
-	// the MODM deployment id
 	deploymentId   int
 	db             *gorm.DB
 	execution      *model.Execution
 	done           chan struct{}
-	apiKey         string
-	hookName       string
-
-	// this is the url that will be called by MODM. It maps to /eventhook route for handler/eventhook
-	eventHookCallbackUrl string
-	HandleError          ErrorHandler
+	HandleError    ErrorHandler
 }
 
 func (d *modmRunController) Execute(ctx context.Context, client sdk.Client, template datatypes.JSONMap, parameters datatypes.JSONMap) {
-	time.Sleep(10 * time.Second)
+	_, err := client.Start(ctx, d.deploymentId, parameters, &sdk.StartOptions{})
+	if err != nil {
+		log.Errorf("Unable to start deployment: %v", err)
+		d.HandleError(err)
+	}
+	d.createExecution(err)
+}
 
-	go func() {
-		createEventRequest := sdk.CreateEventHookRequest{
-			APIKey:   &d.apiKey,
-			Callback: &d.eventHookCallbackUrl,
-			Name:     &d.hookName,
-		}
+func (d *modmRunController) RestartStage(ctx context.Context, client sdk.Client, stageId uuid.UUID) {
+	opts := sdk.RetryOptions{}
+	opts.StageId = stageId
+	_, err := client.Retry(ctx, d.deploymentId, &opts)
+	if err != nil {
+		log.Errorf("Unable to restart stage %s: %v", stageId.String(), err)
+		d.HandleError(err)
+	}
+}
 
-		_, err := client.CreateEventHook(ctx, createEventRequest)
-		if err != nil {
-			d.HandleError(err)
-		}
-
-		_, err = client.Start(ctx, d.deploymentId, parameters, &sdk.StartOptions{})
-		if err != nil {
-			d.HandleError(err)
-		}
-
-		d.createExecution(err)
-	}()
-
-	<-d.done
+func (d *modmRunController) CancelDeployment(ctx context.Context, client sdk.Client) {
+	// TODO doesn't exist yet client.CancelDeployment(ctx, d.deploymentId)
 }
 
 func NewModmRunControllerInstance(db *gorm.DB, deploymentId int) *modmRunController {
@@ -64,9 +54,6 @@ func NewModmRunControllerInstance(db *gorm.DB, deploymentId int) *modmRunControl
 			db:                   db,
 			deploymentId:         deploymentId,
 			execution:            &model.Execution{},
-			apiKey:               config.GetEnvironment().WEB_HOOK_API_KEY,
-			hookName:             "deployment-driver-hook",
-			eventHookCallbackUrl: config.GetEnvironment().WEB_HOOK_CALLBACK_URL,
 			done:                 make(chan struct{}),
 			HandleError: func(err error) {
 				if err != nil {
@@ -100,24 +87,36 @@ func (c *modmRunController) Done(message *sdk.EventHookMessage) {
 	c.done <- struct{}{}
 }
 
+func(c *modmRunController) StageStarted(message *sdk.EventHookMessage) {
+	// Use stage ID to create execution
+	// Set to in progress
+}
+
+func(c *modmRunController) StageDone(message *sdk.EventHookMessage) {
+	// Use stage ID to look up execution
+	// Set result
+}
+
 // creates a new step execution to track the dry run
 func (c *modmRunController) createExecution(err error) error {
 	tx := c.db.Begin()
 
+	// Set status
 	status := model.Started
 
+	if err != nil {
+		status = model.Failed
+		c.execution.Error = err.Error()
+	}
+
+	c.execution.Status = status
+
+	// Set Step ID
 	step, err := c.getStep()
 	if err != nil {
 		log.Infof("Unable to get step for dry run: %v", err)
 	}
 	c.execution.StepID = step.ID
-
-	c.execution.Status = status
-
-	if err != nil {
-		c.execution.Status = model.Failed
-		c.execution.Error = err.Error()
-	}
 
 	tx.Save(&c.execution)
 
@@ -140,7 +139,6 @@ func (c *modmRunController) updateExecution(message *sdk.EventHookMessage) error
 	// Start with success
 	c.execution.Status = model.Succeeded
 	if message.Status == sdk.StatusFailed.String() {
-		// Dry run failed to run
 		c.execution.Status = model.Failed
 		c.execution.Error = message.Error
 	} 

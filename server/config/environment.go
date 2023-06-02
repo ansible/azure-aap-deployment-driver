@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"math/rand"
 	"strconv"
 	"time"
 
@@ -68,14 +69,11 @@ func GetEnvironment() envVars {
 	environment.SAVE_CONTAINER = false
 	environment.START_TIME = time.Now().Format(time.RFC3339)
 	environment.LOG_PATH = "/installerstore/engine.txt"
-<<<<<<< HEAD
 	environment.LOG_LEVEL = "info"
-=======
 	environment.MODM_ENDPOINT = "http://localhost:8080"
->>>>>>> da7773a (AAP-12191 deploy all steps via MODM)
 
 	// TODO: need to set this to a real value that's not hardcoded
-	environment.WEB_HOOK_API_KEY = "6P7Q9SATBVDWEXGZH2J4M5N6Q8"
+	environment.WEB_HOOK_API_KEY = randomApiKey()
 	environment.WEB_HOOK_CALLBACK_URL = fmt.Sprintf("http://localhost:%s/eventhook", Args.Port)
 
 	env := envs.EnvConfig{}
@@ -245,4 +243,14 @@ func GetEnvironment() envVars {
 	}
 
 	return environment
+}
+
+func randomApiKey() string {
+	rg := rand.New(rand.NewSource(time.Now().UnixMicro()))
+	const possibleChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	b := make([]byte, 26)
+	for i := range b {
+		b[i] = possibleChars[rg.Intn(len(possibleChars))]
+	}
+	return string(b)
 }
