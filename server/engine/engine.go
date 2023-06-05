@@ -71,6 +71,7 @@ func (engine *Engine) startDeploymentExecutions() {
 
 		for index, step := range stepsToRun {
 			latestExecution := engine.GetLatestExecution(step)
+			latestExecution.StepID = step.ID  // TODO not sure if needed
 			currentExecutions[index] = &latestExecution
 			switch latestExecution.Status {
 			case model.Started:

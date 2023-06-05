@@ -18,7 +18,6 @@ import (
 // Receive a POST request from the MODM webhook
 func EventHook(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	apiKey := config.GetEnvironment().WEB_HOOK_API_KEY
-	log.Infof("TODO REMOVE API KEY check [%s]", config.GetEnvironment().WEB_HOOK_API_KEY)
 
 	handler := newEventHookHandler(r, w, apiKey, db)
 	message, err := handler.getMessage()
