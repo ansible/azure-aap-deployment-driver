@@ -1,0 +1,13 @@
+FROM registry.access.redhat.com/ubi9/ubi
+
+USER root
+
+WORKDIR /opt/app-root/src/
+
+ADD ["start_modm.sh", "build/apiserver", "build/operator", "./"]
+
+RUN chmod +x ./apiserver ./operator ./start_modm.sh
+
+VOLUME [ "/installerstore" ]
+
+ENTRYPOINT ["./start_modm.sh"]
