@@ -1,14 +1,17 @@
 package engine
 
 import (
+	"fmt"
 	"server/azure"
 	"server/config"
 	"server/model"
 	"server/modm"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/microsoft/commercial-marketplace-offer-deploy/sdk"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -38,93 +41,71 @@ func (engine *Engine) Run() {
 	engine.waitBeforeEnding()
 }
 
-func ProcessEvent() {
-	// Trigger another loop of engine
-	log.Debug("Processing event")
-	eventReceived <- true
-}
-
 func (engine *Engine) startDeploymentExecutions() {
 	log.Info("Starting engine execution...")
 
 	log.Info("Ensuring that MODM is ready...")
 	modm.EnsureModmReady(engine.context, engine.modmClient)
 
-	var executionWaitGroup sync.WaitGroup
+	log.Info("Registering MODM webhook...")
+	modm.CreateEventHook(engine.context, engine.modmClient)
 
-	for ; engine.context.Err() == nil; {
+	for engine.context.Err() == nil {
 		stepsToRun := []model.Step{}
 		res := engine.database.Instance.Order("id").Find(&stepsToRun)
 		if res.RowsAffected == 0 {
-			// No steps at this order level, get out of here
-			log.Info("No deployment steps found.")
+			log.Error("No deployment steps found.")
 			break
 		}
-
-		stepNames := make([]string, len(stepsToRun))
-		for n, step := range stepsToRun {
-			stepNames[n] = step.Name
-		}
-
-		// with the slice being size of steps the elements can be null!
-		currentExecutions := make([]*model.Execution, len(stepsToRun))
-
-		for index, step := range stepsToRun {
+		for _, step := range stepsToRun {
 			latestExecution := engine.GetLatestExecution(step)
-			latestExecution.StepID = step.ID  // TODO not sure if needed
-			currentExecutions[index] = &latestExecution
+			latestExecution.StepID = step.ID // TODO not sure if needed
+			log.Debugf("Step %s execution in %s state.", step.Name, latestExecution.Status)
 			switch latestExecution.Status {
-			case model.Started:
-				log.Debugf("Step %s in Started state.", step.Name)
-				// TODO Nothing to do except to handle container restart case
+			case model.Started, model.Failed, model.Restarted, model.Canceled, model.PermanentlyFailed, model.RestartTimedOut:
+				// TODO Handle container restart case
 			case "":
-				log.Debugf("Step %s in New state.", step.Name)
-				// Start dry run, first time only
 				if step.Name == model.DryRunStepName {
-					log.Info("Starting dry run...")
-					engine.executeDryRun(step)
-					// Get result
-					latestExecution = engine.GetLatestExecution(step)
-					currentExecutions[index] = &latestExecution
-					if latestExecution.Status == model.Succeeded {
-						// Kick off deployment
-						log.Info("Starting deployment...")
-						engine.executeModmDeployment()
-					}
+					engine.executeModmDryRun(step, &latestExecution)
 				}
 			case model.Restart:
-				log.Debugf("Step %s in Restart state.", step.Name)
-				// Step to restart, mark as seen and start
-				latestExecution.Status = model.Restarted
-				engine.database.Instance.Save(&latestExecution)
-
 				if step.Name == model.DryRunStepName {
-					// Restart dry run
 					log.Info("Restarting dry run...")
-					engine.executeDryRun(step)
-					// Get result
-					latestExecution = engine.GetLatestExecution(step)
-					currentExecutions[index] = &latestExecution
-					if latestExecution.Status == model.Succeeded {
-						// Kick off deployment
-						log.Info("Starting deployment...")
-						engine.executeModmDeployment()
-					}
+					// Step to restart, mark as seen and start
+					latestExecution.Status = model.Restarted
+					engine.database.Instance.Save(&latestExecution)
+					latestExecution = model.Execution{}
+					engine.executeModmDryRun(step, &latestExecution)
 				} else {
 					// Other step to restart
-					controller := GetModmRunControllerInstance()
-					controller.RestartStage(engine.context, *engine.modmClient, stringToUuid(step.StageId))
+					engine.restartModmStage(stringToUuid(step.StageId))
 				}
-			case model.Succeeded, model.Canceled:
-				log.Debugf("Step %s in Succeeded or Canceled state.", step.Name)
-				// Nothing to do
+			case model.Succeeded:
+				if step.Name == model.DryRunStepName && !engine.deploymentStarted {
+					// Dry run is succeded, start deployment (first time)
+					if engine.executeModmDeployment() {
+						engine.deploymentStarted = true
+					}
+				}
 			}
+			time.Sleep(10 * time.Second)
 		}
 
 		restartRequired := false
+		var executionWaitGroup sync.WaitGroup
 		// if the context is not yet cancelled, check for failed executions
 		if engine.context.Err() == nil {
 			log.Info("Checking execution status of completed steps...")
+
+			stepsToCheck := []model.Step{}
+			engine.database.Instance.Order("id").Find(&stepsToCheck)
+
+			currentExecutions := make([]*model.Execution, len(stepsToCheck))
+			for index, step := range stepsToCheck {
+				latestExecution := engine.GetLatestExecution(step)
+				currentExecutions[index] = &latestExecution
+			}
+
 			// first check all executions for those that can't be restarted anymore
 			terminateMainLoop := false
 			for _, execution := range currentExecutions {
@@ -149,8 +130,10 @@ func (engine *Engine) startDeploymentExecutions() {
 			}
 			if terminateMainLoop {
 				log.Info("Will terminate main loop because steps can't be restarted or deployment is being cancelled.")
+				engine.CancelDeployment()
 				break
 			}
+
 			// check all executions for those can be restarted
 			for _, execution := range currentExecutions {
 				log.Debugf("Execution for %d is in %s state.", execution.StepID, execution.Status)
@@ -176,14 +159,11 @@ func (engine *Engine) startDeploymentExecutions() {
 				}
 				if restartTimedOut {
 					log.Info("Will terminate main loop because at least one deployment step was not restarted.")
+					engine.CancelDeployment()
 					break
 				}
 			}
 		}
-
-		// TODO Need to break loop when all steps have success
-		log.Debug("Engine waiting for event.")
-		<-eventReceived
 	}
 }
 
@@ -225,6 +205,7 @@ func (engine *Engine) waitBeforeEnding() {
 	// Start the process to delete ourself
 	if !config.GetEnvironment().SAVE_CONTAINER {
 		log.Info("Engine starting storage account and container deletion and terminating...")
+		// TODO delete service bus
 		azure.DeleteStorageAccount(config.GetEnvironment().RESOURCE_GROUP_NAME, config.GetEnvironment().STORAGE_ACCOUNT_NAME)
 		azure.DeleteContainer(config.GetEnvironment().RESOURCE_GROUP_NAME, config.GetEnvironment().CONTAINER_GROUP_NAME)
 	} else {
@@ -254,15 +235,39 @@ func (engine *Engine) GetLatestExecution(step model.Step) model.Execution {
 	return latestExecution
 }
 
-func (engine *Engine) executeDryRun(step model.Step) {
-	dryRunController := NewDryRunControllerInstance(engine.database.Instance, engine.modmDeploymentId)
-	dryRunController.Execute(engine.context, *engine.modmClient, engine.template, engine.getParamsMap())
-}
-
-func (engine *Engine) executeModmDeployment() {
+func (engine *Engine) executeModmDeployment() (started bool) {
+	started = true
 	_, err := engine.modmClient.Start(engine.context, engine.modmDeploymentId, engine.getParamsMap(), nil)
 	if err != nil {
-		log.Errorf("Failed to start MODM deployment: %v", err)
+		log.Errorf("Engine could not start modm deployment: %v", err)
+		started = false
+		return
+	}
+	return
+}
+
+func (engine *Engine) executeModmDryRun(step model.Step, execution *model.Execution) {
+	// TODO if modm sends a "start" event for dry run, then no need to create an execution here
+	execution.Status = model.Started
+	execution.StepID = step.ID
+	engine.database.Instance.Save(&execution)
+	opts := sdk.DryRunOptions{}
+	opts.Retries = 0
+	resp, err := engine.modmClient.DryRun(engine.context, engine.modmDeploymentId, engine.getParamsMap(), &opts)
+	if err != nil {
+		log.Errorf("Engine could not start dry run.")
+	}
+	if resp.Status != sdk.StatusScheduled.String() {
+		log.Errorf("Dry run did not start.  Status: %s", resp.Status)
+	}
+}
+
+func (engine *Engine) restartModmStage(stageId uuid.UUID) {
+	opts := sdk.RetryOptions{}
+	opts.StageId = stageId
+	_, err := engine.modmClient.Retry(engine.context, engine.modmDeploymentId, &opts)
+	if err != nil {
+		log.Errorf("Unable to restart stage %s: %v", stageId.String(), err)
 	}
 }
 
@@ -346,7 +351,66 @@ func stringToUuid(uuidAsString string) uuid.UUID {
 	return uid
 }
 
-func (engine *Engine) CancelStep(step model.Step) {
-	// TODO any error handling or whatever when implemented
-	GetModmRunControllerInstance().CancelDeployment(engine.context, *engine.modmClient)
+func (engine *Engine) CancelDeployment() {
+	resp, err := engine.modmClient.Cancel(engine.context, engine.modmDeploymentId)
+	if err != nil || !resp.IsCancelled {
+		log.Errorf("Unable to cancel MODM deployment: %v", err)
+	}
+}
+
+func (engine *Engine) CreateExecution(message *sdk.EventHookMessage) {
+	execution := model.Execution{}
+	switch message.Type {
+	case "dryRunStarted":
+		log.Debug("Creating Started execution for Dry Run.")
+		step := model.Step{}
+		engine.database.Instance.Where("name = ?", model.DryRunStepName).Find(&step)
+		execution.Status = model.Started
+		execution.StepID = step.ID
+		engine.database.Instance.Save(&step)
+
+		//TODO case sdk.EventTypeStageStarted.String():
+		// Create in progress execution for stage
+	}
+}
+
+func (engine *Engine) UpdateExecution(message *sdk.EventHookMessage) {
+	log.Debugf("Data for message %s: %v", message.Type, message.Data)
+	switch message.Type {
+	case sdk.EventTypeDryRunCompleted.String():
+		// Find in progress execution, set result
+		step := model.Step{}
+		engine.database.Instance.Where("name = ?", model.DryRunStepName).Find(&step)
+		execution := engine.GetLatestExecution(step)
+		data, err := message.DryRunEventData()
+		// Handle duplicate messages
+		if execution.Status != model.Started {
+			log.Errorf("Execution for dry run already updated. Ignoring event. Status: %s", execution.Status)
+		}
+		// Check result
+		if err != nil || message.Status != string(sdk.StatusSuccess) {
+			// Failed
+			execution.Status = model.Failed
+			var errString, errDetails strings.Builder
+			for _, error := range data.Errors {
+				errString.WriteString(*error.Code + ": " + *error.Message + "\n")
+				for _, detail := range error.Details {
+					errDetails.WriteString(*detail.Message + "\n")
+				}
+			}
+			execution.Error = errString.String()
+			execution.ErrorDetails = errDetails.String()
+		} else {
+			// TODO Abstract this out if it also applies to stages.
+			execution.Status = model.Succeeded
+			execution.Timestamp = data.CompletedAt
+			duration := data.CompletedAt.Sub(data.StartedAt)
+			execution.Duration = fmt.Sprintf("%.2f seconds", duration.Seconds())
+			execution.CorrelationID = "N/A"
+			engine.database.Instance.Save(&execution)
+		}
+	case sdk.EventTypeStageCompleted.String():
+		// Find in progress execution, set result
+		log.Debugf("Would update stage completion for %v", message.Data)
+	}
 }

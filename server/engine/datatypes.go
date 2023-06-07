@@ -19,4 +19,5 @@ type Engine struct {
 	maxExecutionRestarts int
 	modmClient           *sdk.Client
 	modmDeploymentId     int
+	deploymentStarted    bool
 }

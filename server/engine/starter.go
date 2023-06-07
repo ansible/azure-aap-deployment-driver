@@ -22,6 +22,7 @@ func NewEngine(ctx context.Context, db *persistence.Database, modmClient *sdk.Cl
 		status:               &model.Status{},
 		maxExecutionRestarts: config.GetEnvironment().EXECUTION_MAX_RETRY,
 		modmClient:           modmClient,
+		deploymentStarted:    false,
 	}
 	engine.initialize()
 	return engine
@@ -75,7 +76,7 @@ func (engine *Engine) initialize() {
 
 func (engine *Engine) addDryRunStep(mainTemplate map[string]any) {
 	engine.database.Instance.Create(&model.Step{
-		Name:       model.DryRunStepName,
+		Name: model.DryRunStepName,
 	})
 	log.Info("Added dry run step to database")
 }
@@ -94,7 +95,7 @@ func (engine *Engine) createModmDeployment(mainTemplate map[string]any) {
 	}
 	for _, stage := range resp.Stages {
 		step := model.Step{
-			Name: *stage.Name,
+			Name:    *stage.Name,
 			StageId: *stage.ID,
 		}
 		engine.database.Instance.Save(&step)

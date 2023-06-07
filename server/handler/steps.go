@@ -36,15 +36,7 @@ func CancelAllSteps(db *gorm.DB, engine *engine.Engine, w http.ResponseWriter, r
 			})
 		}
 	}
-	// refresh steps
-	steps = getAllSteps(db)
-	// find currently running steps and cancel them
-	for _, aStep := range steps {
-		// check status of last one, there should not be any steps with no executions
-		if engine.GetLatestExecution(aStep).Status == model.Started {
-			engine.CancelStep(aStep)
-		}
-	}
+	engine.CancelDeployment()
 }
 
 func getAllSteps(db *gorm.DB) []model.Step {

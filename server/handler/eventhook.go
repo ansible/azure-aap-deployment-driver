@@ -16,7 +16,7 @@ import (
 )
 
 // Receive a POST request from the MODM webhook
-func EventHook(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
+func EventHook(db *gorm.DB, engine *engine.Engine, w http.ResponseWriter, r *http.Request) {
 	apiKey := config.GetEnvironment().WEB_HOOK_API_KEY
 
 	handler := newEventHookHandler(r, w, apiKey, db)
@@ -28,24 +28,26 @@ func EventHook(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 
 	log.Debugf("RAW event: %s - %s - %v", message.Type, message.Subject, message.Data)
 
-	dryRunController := engine.GetDryRunControllerInstance()
-	deploymentController := engine.GetModmRunControllerInstance()
 	switch message.Type {
 	case sdk.EventTypeDeploymentCompleted.String():
 		// Overall deployment complete
 		log.Debug("Received event: Deployment completed.")
-		deploymentController.Done(message)
-	// TODO case sdk.EventTypeStageStarted.String():
-		//log.Debug("Received event: Stage started: %s", message.Subject)
-		//deploymentController.StageStarted(message)
+		//deploymentController.Done(message)
+	case "dryRunStarted":
+		log.Debugf("Received event: Dry Run started: %s", message.Subject)
+		if message.Status != string(sdk.StatusSuccess) {
+			engine.CreateExecution(message)
+		} else {
+			// TODO not sure what this actually means and what to do in this case
+			log.Errorf("Dry Run start was not successful but was: %s", message.Status)
+		}
 	case sdk.EventTypeStageCompleted.String():
 		log.Debugf("Received event: Stage completed: %s", message.Subject)
-		deploymentController.StageDone(message)
+		engine.UpdateExecution(message)
 	case sdk.EventTypeDryRunCompleted.String():
 		log.Debugf("Received event: Dry Run completed: %s", message.Subject)
-		dryRunController.Done(message)
+		engine.UpdateExecution(message)
 	}
-	engine.ProcessEvent()
 	respondJSON(w, http.StatusOK, message)
 }
 
