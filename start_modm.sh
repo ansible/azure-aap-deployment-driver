@@ -17,5 +17,11 @@ else
   exit 1
 fi
 
+# start the executable in background so its PID can be stored in a file
 echo "Starting ${EXECUTABLE}..."
-${EXECUTABLE}
+${EXECUTABLE} &
+MODM_PID=$!
+
+# store PID in a file that's not in persistent volume and wait for the process to end
+echo ${MODM_PID} > /tmp/modm_process_pid
+wait -n ${MODM_PID}
