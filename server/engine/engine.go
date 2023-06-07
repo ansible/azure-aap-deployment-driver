@@ -66,7 +66,7 @@ func (engine *Engine) startDeploymentExecutions() {
 				// TODO Handle container restart case
 			case "":
 				if step.Name == model.DryRunStepName {
-					engine.executeModmDryRun(step, &latestExecution)
+					engine.executeModmDryRun()
 				}
 			case model.Restart:
 				if step.Name == model.DryRunStepName {
@@ -75,7 +75,7 @@ func (engine *Engine) startDeploymentExecutions() {
 					latestExecution.Status = model.Restarted
 					engine.database.Instance.Save(&latestExecution)
 					latestExecution = model.Execution{}
-					engine.executeModmDryRun(step, &latestExecution)
+					engine.executeModmDryRun()
 				} else {
 					// Other step to restart
 					engine.restartModmStage(stringToUuid(step.StageId))
@@ -246,11 +246,7 @@ func (engine *Engine) executeModmDeployment() (started bool) {
 	return
 }
 
-func (engine *Engine) executeModmDryRun(step model.Step, execution *model.Execution) {
-	// TODO if modm sends a "start" event for dry run, then no need to create an execution here
-	execution.Status = model.Started
-	execution.StepID = step.ID
-	engine.database.Instance.Save(&execution)
+func (engine *Engine) executeModmDryRun() {
 	opts := sdk.DryRunOptions{}
 	opts.Retries = 0
 	resp, err := engine.modmClient.DryRun(engine.context, engine.modmDeploymentId, engine.getParamsMap(), &opts)
