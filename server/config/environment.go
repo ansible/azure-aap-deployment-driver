@@ -12,35 +12,36 @@ import (
 )
 
 type envVars struct {
-	SUBSCRIPTION               string
-	RESOURCE_GROUP_NAME        string
-	AZURE_LOCATION             string
-	CONTAINER_GROUP_NAME       string
-	STORAGE_ACCOUNT_NAME       string
-	PASSWORD                   string
-	DB_PATH                    string
-	TEMPLATE_PATH              string
-	MAIN_OUTPUTS               string
-	ENGINE_END_WAIT            int64
-	ENGINE_MAX_RUNTIME         int64
-	ENGINE_RETRY_WAIT          int64
-	EXECUTION_MAX_RETRY        int
-	AUTO_RETRY                 bool
-	AUTO_RETRY_DELAY           int
-	SESSION_COOKIE_NAME        string
-	SESSION_COOKIE_PATH        string
-	SESSION_COOKIE_DOMAIN      string
-	SESSION_COOKIE_SECURE      bool
-	SESSION_COOKIE_MAX_AGE     int
-	SAVE_CONTAINER             bool
-	SEGMENT_WRITE_KEY          string
-	APPLICATION_ID             string
-	START_TIME                 string
-	WEB_HOOK_API_KEY           string
-	WEB_HOOK_CALLBACK_URL      string
-	LOG_PATH                   string
-	LOG_LEVEL                  string
-	MODM_ENDPOINT              string
+	SUBSCRIPTION                    string
+	RESOURCE_GROUP_NAME             string
+	AZURE_LOCATION                  string
+	CONTAINER_GROUP_NAME            string
+	STORAGE_ACCOUNT_NAME            string
+	PASSWORD                        string
+	DB_PATH                         string
+	TEMPLATE_PATH                   string
+	MAIN_OUTPUTS                    string
+	ENGINE_END_WAIT                 int64
+	ENGINE_MAX_RUNTIME              int64
+	ENGINE_RETRY_WAIT               int64
+	EXECUTION_MAX_RETRY             int
+	AUTO_RETRY                      bool
+	AUTO_RETRY_DELAY                int
+	SESSION_COOKIE_NAME             string
+	SESSION_COOKIE_PATH             string
+	SESSION_COOKIE_DOMAIN           string
+	SESSION_COOKIE_SECURE           bool
+	SESSION_COOKIE_MAX_AGE          int
+	SAVE_CONTAINER                  bool
+	SEGMENT_WRITE_KEY               string
+	APPLICATION_ID                  string
+	START_TIME                      string
+	WEB_HOOK_API_KEY                string
+	WEB_HOOK_CALLBACK_URL           string
+	LOG_PATH                        string
+	LOG_LEVEL                       string
+	MODM_ENDPOINT                   string
+	MODM_AZURE_SERVICEBUS_NAMESPACE string
 }
 
 var (
@@ -102,6 +103,11 @@ func GetEnvironment() envVars {
 	environment.CONTAINER_GROUP_NAME = env.Get("CONTAINER_GROUP_NAME")
 	if environment.CONTAINER_GROUP_NAME == "" {
 		log.Fatal("CONTAINER_GROUP_NAME environment variable must be set.")
+	}
+
+	environment.MODM_AZURE_SERVICEBUS_NAMESPACE = env.Get("MODM_AZURE_SERVICEBUS_NAMESPACE")
+	if environment.MODM_AZURE_SERVICEBUS_NAMESPACE == "" {
+		log.Fatal("MODM_AZURE_SERVICEBUS_NAMESPACE environment variable must be set.")
 	}
 
 	environment.PASSWORD = env.Get("ADMIN_PASS")

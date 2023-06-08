@@ -20,4 +20,5 @@ type Engine struct {
 	modmClient           *sdk.Client
 	modmDeploymentId     int
 	deploymentStarted    bool
+	deploymentComplete   bool
 }

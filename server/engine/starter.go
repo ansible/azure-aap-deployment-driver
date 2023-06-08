@@ -23,6 +23,7 @@ func NewEngine(ctx context.Context, db *persistence.Database, modmClient *sdk.Cl
 		maxExecutionRestarts: config.GetEnvironment().EXECUTION_MAX_RETRY,
 		modmClient:           modmClient,
 		deploymentStarted:    false,
+		deploymentComplete:   false,
 	}
 	engine.initialize()
 	return engine

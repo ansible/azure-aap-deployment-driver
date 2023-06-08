@@ -11,6 +11,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/containerinstance/armcontainerinstance"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
+	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/servicebus/armservicebus"
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage"
 )
 
@@ -96,4 +97,20 @@ func DeleteContainer(resourceGroupName string, containerGroupName string) error 
 		return err
 	}
 	return err
+}
+
+// Delete Azure service bus namespace
+func DeleteServiceBusNS(resourceGroupName string, serviceBusNsName string) error {
+	serviceBusClientFactory, err := armservicebus.NewClientFactory(azureInfo.Subscription, azureInfo.Credentials, nil)
+	if err != nil {
+		return err
+	}
+	serviceBusClient := serviceBusClientFactory.NewNamespacesClient()
+
+	// Don't really care about polling for completion, since we will go away!
+	_, err = serviceBusClient.BeginDelete(context.Background(), resourceGroupName, serviceBusNsName, nil)
+	if err != nil {
+		return err
+	}
+	return nil
 }

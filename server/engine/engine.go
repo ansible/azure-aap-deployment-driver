@@ -15,8 +15,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var eventReceived chan bool
-
 func (engine *Engine) Fatalf(format string, args ...interface{}) {
 	log.Errorf(format, args...)
 
@@ -32,7 +30,6 @@ func (engine *Engine) IsFatalState() bool {
 
 func (engine *Engine) Run() {
 	if !engine.IsFatalState() {
-		eventReceived = make(chan bool)
 		engine.startDeploymentExecutions()
 	} else {
 		log.Errorln("Engine failed to start. In fatal state. Check logs.")
@@ -50,7 +47,7 @@ func (engine *Engine) startDeploymentExecutions() {
 	log.Info("Registering MODM webhook...")
 	modm.CreateEventHook(engine.context, engine.modmClient)
 
-	for engine.context.Err() == nil {
+	for engine.context.Err() == nil && !engine.deploymentComplete {
 		stepsToRun := []model.Step{}
 		res := engine.database.Instance.Order("id").Find(&stepsToRun)
 		if res.RowsAffected == 0 {
@@ -66,6 +63,7 @@ func (engine *Engine) startDeploymentExecutions() {
 				// TODO Handle container restart case
 			case "":
 				if step.Name == model.DryRunStepName {
+					log.Info("Starting dry run...")
 					engine.executeModmDryRun()
 				}
 			case model.Restart:
@@ -83,13 +81,14 @@ func (engine *Engine) startDeploymentExecutions() {
 			case model.Succeeded:
 				if step.Name == model.DryRunStepName && !engine.deploymentStarted {
 					// Dry run is succeded, start deployment (first time)
+					log.Info("Starting MODM deployment...")
 					if engine.executeModmDeployment() {
 						engine.deploymentStarted = true
 					}
 				}
 			}
-			time.Sleep(10 * time.Second)
 		}
+		time.Sleep(10 * time.Second)
 
 		restartRequired := false
 		var executionWaitGroup sync.WaitGroup
@@ -136,7 +135,6 @@ func (engine *Engine) startDeploymentExecutions() {
 
 			// check all executions for those can be restarted
 			for _, execution := range currentExecutions {
-				log.Debugf("Execution for %d is in %s state.", execution.StepID, execution.Status)
 				// check if step can be restarted
 				if execution != nil && execution.Status == model.Failed {
 					log.Debugf("Setting restart required due to execution for step ID %d", execution.StepID)
@@ -204,8 +202,8 @@ func (engine *Engine) waitBeforeEnding() {
 	}
 	// Start the process to delete ourself
 	if !config.GetEnvironment().SAVE_CONTAINER {
-		log.Info("Engine starting storage account and container deletion and terminating...")
-		// TODO delete service bus
+		log.Info("Engine starting service bus namespace, storage account, container deletion and terminating...")
+		azure.DeleteServiceBusNS(config.GetEnvironment().RESOURCE_GROUP_NAME, config.GetEnvironment().MODM_AZURE_SERVICEBUS_NAMESPACE)
 		azure.DeleteStorageAccount(config.GetEnvironment().RESOURCE_GROUP_NAME, config.GetEnvironment().STORAGE_ACCOUNT_NAME)
 		azure.DeleteContainer(config.GetEnvironment().RESOURCE_GROUP_NAME, config.GetEnvironment().CONTAINER_GROUP_NAME)
 	} else {
@@ -243,6 +241,7 @@ func (engine *Engine) executeModmDeployment() (started bool) {
 		started = false
 		return
 	}
+	log.Info("MODM deployment started.")
 	return
 }
 
@@ -256,6 +255,7 @@ func (engine *Engine) executeModmDryRun() {
 	if resp.Status != sdk.StatusScheduled.String() {
 		log.Errorf("Dry run did not start.  Status: %s", resp.Status)
 	}
+	log.Info("Dry run started.")
 }
 
 func (engine *Engine) restartModmStage(stageId uuid.UUID) {
@@ -347,6 +347,10 @@ func stringToUuid(uuidAsString string) uuid.UUID {
 	return uid
 }
 
+func (engine *Engine) CompleteDeployment() {
+	engine.deploymentComplete = true
+}
+
 func (engine *Engine) CancelDeployment() {
 	resp, err := engine.modmClient.Cancel(engine.context, engine.modmDeploymentId)
 	if err != nil || !resp.IsCancelled {
@@ -356,17 +360,39 @@ func (engine *Engine) CancelDeployment() {
 
 func (engine *Engine) CreateExecution(message *sdk.EventHookMessage) {
 	execution := model.Execution{}
+	execution.Status = model.Started
 	switch message.Type {
 	case "dryRunStarted":
 		log.Debug("Creating Started execution for Dry Run.")
 		step := model.Step{}
 		engine.database.Instance.Where("name = ?", model.DryRunStepName).Find(&step)
-		execution.Status = model.Started
+		latestExecution := engine.GetLatestExecution(step)
+		if latestExecution.Status != "" {
+			log.Errorf("Trying to create a new execution for %s when one is already in state: %s", step.Name, latestExecution.Status)
+			break
+		}
 		execution.StepID = step.ID
-		engine.database.Instance.Save(&step)
-
-		//TODO case sdk.EventTypeStageStarted.String():
-		// Create in progress execution for stage
+		engine.database.Instance.Save(&execution)
+	case sdk.EventTypeStageStarted.String():
+		// TODO remove when below implemented
+		stageData := message.Data.(map[string]interface{})
+		stageId := stageData["stageId"].(string)
+		/* TODO when implemented
+		data, err := message.StageEventData()
+		if err != nil {
+			log.Error("Unable to unmarshal stage event data from stage started message: %v", err)
+			break
+		} */
+		step := model.Step{}
+		engine.database.Instance.Where("stage_id = ?", stageId).Find(&step)
+		latestExecution := engine.GetLatestExecution(step)
+		if latestExecution.Status != "" {
+			log.Errorf("Trying to create a new execution for %s when one is already in state: %s", step.Name, latestExecution.Status)
+			break
+		}
+		log.Debug("Creating Started execution for stage %s", step.Name)
+		execution.StepID = step.ID
+		engine.database.Instance.Save(&execution)
 	}
 }
 

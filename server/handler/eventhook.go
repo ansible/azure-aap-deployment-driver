@@ -32,15 +32,13 @@ func EventHook(db *gorm.DB, engine *engine.Engine, w http.ResponseWriter, r *htt
 	case sdk.EventTypeDeploymentCompleted.String():
 		// Overall deployment complete
 		log.Debug("Received event: Deployment completed.")
-		//deploymentController.Done(message)
+		engine.CompleteDeployment()
 	case "dryRunStarted":
 		log.Debugf("Received event: Dry Run started: %s", message.Subject)
-		if message.Status != string(sdk.StatusSuccess) {
-			engine.CreateExecution(message)
-		} else {
-			// TODO not sure what this actually means and what to do in this case
-			log.Errorf("Dry Run start was not successful but was: %s", message.Status)
-		}
+		engine.CreateExecution(message)
+	case sdk.EventTypeStageStarted.String():
+		log.Debugf("Received event: Stage started: %s", message.Subject)
+		engine.CreateExecution(message)
 	case sdk.EventTypeStageCompleted.String():
 		log.Debugf("Received event: Stage completed: %s", message.Subject)
 		engine.UpdateExecution(message)
