@@ -29,14 +29,6 @@ stop() {
     kill -TERM "$SERVER_PID" 2> /dev/null
     wait "$SERVER_PID"
   fi
-  if [[ -n "$APISERVER_PID" ]]; then
-    kill -TERM "$APISERVER_PID" 2> /dev/null
-    wait "$APISERVER_PID"
-  fi
-  if [[ -n "$OPERATOR_PID" ]]; then
-    kill -TERM "$OPERATOR_PID" 2> /dev/null
-    wait "$OPERATOR_PID"
-  fi
   nginx -s quit
   waitForNginxToStop
 }
@@ -191,10 +183,6 @@ export SESSION_COOKIE_DOMAIN=${INSTALLER_DOMAIN_NAME}
 
 ./server &
 SERVER_PID=$!
-./apiserver &
-APISERVER_PID=$!
-./operator &
-OPERATOR_PID=$!
 
 NGINX_PID=$(cat /var/run/nginx.pid)
 
