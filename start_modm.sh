@@ -13,7 +13,7 @@ elif [ "${MODM_ROLE}" == "apiserver" ]; then
   echo "Role specified to run: apiserver"
   EXECUTABLE="./apiserver"
 else
-  echo "Role specified does not match neither 'apiserver' nor 'operator'."
+  echo "Unexpected value in MODM_ROLE environment variable. Expected either 'apiserver' or 'operator', got: ${MODM_ROLE}"
   exit 1
 fi
 
