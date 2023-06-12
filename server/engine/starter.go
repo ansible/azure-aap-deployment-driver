@@ -95,6 +95,7 @@ func (engine *Engine) createModmDeployment(mainTemplate map[string]any) {
 		log.Fatalf("Failed to create MODM deployment: %v", err)
 	}
 	for _, stage := range resp.Stages {
+		log.Debugf("Stage discovered by MODM: %v", *stage.Name)
 		step := model.Step{
 			Name:    *stage.Name,
 			StageId: *stage.ID,

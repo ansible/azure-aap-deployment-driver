@@ -41,7 +41,7 @@ func CancelAllSteps(db *gorm.DB, engine *engine.Engine, w http.ResponseWriter, r
 
 func getAllSteps(db *gorm.DB) []model.Step {
 	steps := []model.Step{}
-	db.Model(&model.Step{}).Preload("Executions").Find(&steps)
+	db.Model(&model.Step{}).Preload("Executions").Order("id").Find(&steps)
 	return steps
 }
 

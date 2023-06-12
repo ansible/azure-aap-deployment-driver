@@ -26,7 +26,7 @@ func EventHook(db *gorm.DB, engine *engine.Engine, w http.ResponseWriter, r *htt
 		return
 	}
 
-	log.Debugf("RAW event: %s - %s - %v", message.Type, message.Subject, message.Data)
+	log.Debugf("RAW event: type: %s - subject: %s - status: %s - data: %v", message.Type, message.Subject, message.Status, message.Data)
 
 	switch message.Type {
 	case sdk.EventTypeDeploymentCompleted.String():

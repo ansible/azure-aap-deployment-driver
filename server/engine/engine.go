@@ -356,6 +356,7 @@ func (engine *Engine) CancelDeployment() {
 	if err != nil || !resp.IsCancelled {
 		log.Errorf("Unable to cancel MODM deployment: %v", err)
 	}
+	engine.deploymentComplete = true
 }
 
 func (engine *Engine) CreateExecution(message *sdk.EventHookMessage) {
@@ -374,23 +375,19 @@ func (engine *Engine) CreateExecution(message *sdk.EventHookMessage) {
 		execution.StepID = step.ID
 		engine.database.Instance.Save(&execution)
 	case sdk.EventTypeStageStarted.String():
-		// TODO remove when below implemented
-		stageData := message.Data.(map[string]interface{})
-		stageId := stageData["stageId"].(string)
-		/* TODO when implemented
 		data, err := message.StageEventData()
 		if err != nil {
 			log.Error("Unable to unmarshal stage event data from stage started message: %v", err)
 			break
-		} */
+		}
 		step := model.Step{}
-		engine.database.Instance.Where("stage_id = ?", stageId).Find(&step)
+		engine.database.Instance.Where("stage_id = ?", data.StageId).Find(&step)
 		latestExecution := engine.GetLatestExecution(step)
 		if latestExecution.Status != "" {
 			log.Errorf("Trying to create a new execution for %s when one is already in state: %s", step.Name, latestExecution.Status)
 			break
 		}
-		log.Debug("Creating Started execution for stage %s", step.Name)
+		log.Debugf("Creating Started execution for stage %s", step.Name)
 		execution.StepID = step.ID
 		engine.database.Instance.Save(&execution)
 	}
@@ -405,10 +402,13 @@ func (engine *Engine) UpdateExecution(message *sdk.EventHookMessage) {
 		engine.database.Instance.Where("name = ?", model.DryRunStepName).Find(&step)
 		execution := engine.GetLatestExecution(step)
 		data, err := message.DryRunEventData()
+
 		// Handle duplicate messages
 		if execution.Status != model.Started {
 			log.Errorf("Execution for dry run already updated. Ignoring event. Status: %s", execution.Status)
+			return
 		}
+		log.Debugf("Updating execution status for dry run")
 		// Check result
 		if err != nil || message.Status != string(sdk.StatusSuccess) {
 			// Failed
@@ -425,14 +425,51 @@ func (engine *Engine) UpdateExecution(message *sdk.EventHookMessage) {
 		} else {
 			// TODO Abstract this out if it also applies to stages.
 			execution.Status = model.Succeeded
-			execution.Timestamp = data.CompletedAt
-			duration := data.CompletedAt.Sub(data.StartedAt)
+			execution.Timestamp = *data.CompletedAt
+			duration := data.CompletedAt.Sub(*data.StartedAt)
 			execution.Duration = fmt.Sprintf("%.2f seconds", duration.Seconds())
 			execution.CorrelationID = "N/A"
 			engine.database.Instance.Save(&execution)
 		}
 	case sdk.EventTypeStageCompleted.String():
-		// Find in progress execution, set result
-		log.Debugf("Would update stage completion for %v", message.Data)
+		data, err := message.StageEventData()
+		if err != nil {
+			log.Errorf("Unable to extract stage event data from message.  Ignoring event: %v", err)
+			return
+		}
+		step := model.Step{}
+		engine.database.Instance.Where("stage_id = ?", data.StageId).Find(&step)
+		log.Debugf("Updating execution for stage %s with status %s", step.Name, message.Status)
+		execution := engine.GetLatestExecution(step)
+		// Handle duplicate messages
+		if execution.Status != model.Started {
+			log.Errorf("Execution for dry run already updated. Ignoring event. Status: %s", execution.Status)
+			return
+		}
+		if message.Status != string(sdk.StatusSuccess) {
+			log.Debugf("Stage %s has failed, updating execution ID %d.", step.Name, execution.ID)
+			execution.Status = model.Failed
+			execution.Timestamp = *data.CompletedAt
+			duration := data.CompletedAt.Sub(*data.StartedAt)
+			execution.Duration = fmt.Sprintf("%.2f seconds", duration.Seconds())
+			execution.CorrelationID = data.CorrelationId.String()
+			execution.Error = message.Error
+			log.Debugf("Storing execution: %v", execution)
+			engine.database.Instance.Save(&execution)
+		} else {
+			log.Debugf("Stage %s has passed, updating execution ID %d.", step.Name, execution.ID)
+			execution.Status = model.Succeeded
+			execution.Timestamp = *data.CompletedAt
+			duration := data.CompletedAt.Sub(*data.StartedAt)
+			execution.Duration = fmt.Sprintf("%.2f seconds", duration.Seconds())
+			execution.CorrelationID = data.CorrelationId.String()
+			log.Debugf("Storing execution: %v", execution)
+			tx := engine.database.Instance.Save(&execution)
+			log.Debugf("Execution update affected %d rows", tx.RowsAffected)
+			err = tx.Error
+			if err != nil {
+				log.Errorf("Error updating execution: %v", err)
+			}
+		}
 	}
 }
