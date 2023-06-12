@@ -8,7 +8,7 @@ IMAGE_TAG ?= latest
 MODM_REPOSITORY_NAME := commercial-marketplace-offer-deploy
 MODM_BUILD_DIR := build/${MODM_REPOSITORY_NAME}
 MODM_REPOSITORY_URL := https://github.com/microsoft/${MODM_REPOSITORY_NAME}.git
-MODM_VERSION := v1.3.1
+MODM_VERSION := v1.3.2
 MODM_IMAGE_NAME ?= modm
 MODM_IMAGE_TAG ?= ${MODM_VERSION}
 
