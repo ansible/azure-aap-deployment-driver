@@ -426,7 +426,7 @@ func (engine *Engine) UpdateExecution(message *sdk.EventHookMessage) {
 			// TODO Abstract this out if it also applies to stages.
 			execution.Status = model.Succeeded
 			execution.Timestamp = *data.CompletedAt
-			duration := data.CompletedAt.Sub(*data.StartedAt)
+			duration := (*data.CompletedAt).Sub(*data.StartedAt)
 			execution.Duration = fmt.Sprintf("%.2f seconds", duration.Seconds())
 			execution.CorrelationID = "N/A"
 			engine.database.Instance.Save(&execution)
@@ -450,9 +450,12 @@ func (engine *Engine) UpdateExecution(message *sdk.EventHookMessage) {
 			log.Debugf("Stage %s has failed, updating execution ID %d.", step.Name, execution.ID)
 			execution.Status = model.Failed
 			execution.Timestamp = *data.CompletedAt
-			duration := data.CompletedAt.Sub(*data.StartedAt)
+			duration := (*data.CompletedAt).Sub(*data.StartedAt)
 			execution.Duration = fmt.Sprintf("%.2f seconds", duration.Seconds())
-			execution.CorrelationID = data.CorrelationId.String()
+			corrId := data.CorrelationId
+			if corrId != nil {
+				execution.CorrelationID = corrId.String()
+			}
 			execution.Error = message.Error
 			log.Debugf("Storing execution: %v", execution)
 			engine.database.Instance.Save(&execution)
@@ -460,9 +463,12 @@ func (engine *Engine) UpdateExecution(message *sdk.EventHookMessage) {
 			log.Debugf("Stage %s has passed, updating execution ID %d.", step.Name, execution.ID)
 			execution.Status = model.Succeeded
 			execution.Timestamp = *data.CompletedAt
-			duration := data.CompletedAt.Sub(*data.StartedAt)
+			duration := (*data.CompletedAt).Sub(*data.StartedAt)
 			execution.Duration = fmt.Sprintf("%.2f seconds", duration.Seconds())
-			execution.CorrelationID = data.CorrelationId.String()
+			corrId := data.CorrelationId
+			if corrId != nil {
+				execution.CorrelationID = corrId.String()
+			}
 			log.Debugf("Storing execution: %v", execution)
 			tx := engine.database.Instance.Save(&execution)
 			log.Debugf("Execution update affected %d rows", tx.RowsAffected)
