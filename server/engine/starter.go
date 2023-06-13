@@ -32,15 +32,23 @@ func (engine *Engine) initialize() {
 	engine.database.Instance.Find(engine.status)
 
 	if !engine.status.TemplatesLoaded {
-		// Load templates into database
 		templatePath := config.GetEnvironment().TEMPLATE_PATH
+		// Load main template
+		mainTemplate, mainParameters, err := templates.GetMainTemplateAndParameters(templatePath)
+		if err != nil {
+			engine.Fatalf("Unable to read in main template and parameters files")
+		}
+
+		engine.createWhatIfStep(mainTemplate, mainParameters)
+
+		// Load templates into database
 		templateOrderArray, err := templates.DiscoverTemplateOrder(templatePath)
 
 		if err != nil {
 			engine.Fatalf("Unable to import ARM templates: %v", err)
 		}
 
-		stepCount := 0
+		stepCount := 1
 		for i, templateBatch := range templateOrderArray {
 			for _, templateName := range templateBatch {
 				if engine.IsFatalState() {
@@ -56,7 +64,7 @@ func (engine *Engine) initialize() {
 					engine.Fatalf("Unable to read in template file for [%s]", templateName)
 				}
 				engine.database.Instance.Create(&model.Step{
-					Priority:   uint(i),
+					Priority:   uint(i + 1),
 					Name:       templateName,
 					Template:   templateContent,
 					Parameters: parametersContent,
@@ -95,4 +103,13 @@ func (engine *Engine) initialize() {
 	// Allways read the main outputs from DB
 	engine.mainOutputs = &model.Output{}
 	engine.database.Instance.Find(engine.mainOutputs, model.Output{ModuleName: ""})
+}
+
+func (engine *Engine) createWhatIfStep(mainTemplate map[string]interface{}, mainParams map[string]interface{}) {
+	engine.database.Instance.Create(&model.Step{
+		Name:       model.WHAT_IF_STEP_NAME,
+		Template:   mainTemplate,
+		Parameters: mainParams,
+		Priority:   0,
+	})
 }

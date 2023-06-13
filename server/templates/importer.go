@@ -7,6 +7,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const MainTemplateName = "mainTemplate"
+
 func DiscoverTemplateOrder(templateBasePath string) ([][]string, error) {
 	log.Infof("Starting deployment template discovery in location: %s", templateBasePath)
 
@@ -48,4 +50,17 @@ func ReadJSONTemplate(templateBasePath string, templateName string) (map[string]
 
 func ReadJSONTemplateParameters(templateBasePath string, templateName string) (map[string]interface{}, error) {
 	return readJSON(filepath.Join(templateBasePath, templateName, templateName+".parameters.json"))
+}
+
+func GetMainTemplateAndParameters(templateBasePath string) (map[string]any, map[string]any, error) {
+	mainTemplate, err := readJSON(filepath.Join(templateBasePath, MainTemplateName+".json"))
+	if err != nil {
+		return nil, nil, err
+	}
+	mainParameters, err := readJSON(filepath.Join(templateBasePath, MainTemplateName+".parameters.json"))
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return mainTemplate, mainParameters, nil
 }

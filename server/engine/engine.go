@@ -2,6 +2,7 @@ package engine
 
 import (
 	"context"
+	"fmt"
 	"server/azure"
 	"server/config"
 	"server/model"
@@ -289,6 +290,41 @@ func (engine *Engine) waitForStepRestart(execution *model.Execution, waitGroup *
 
 func (engine *Engine) runStep(step model.Step, execution *model.Execution, waitGroup *sync.WaitGroup) {
 	defer waitGroup.Done()
+
+	// Deployment pre-check
+	if step.Name == model.WHAT_IF_STEP_NAME {
+		start := time.Now()
+		execution.CorrelationID = "N/A"
+		whatIf, err := azure.StartWhatIf(engine.context, engine.deploymentsClient, step.Name, step.Template, step.Parameters)
+		if err != nil {
+			log.Printf("Failed to start [%s]: %v", step.Name, err)
+			model.UpdateExecution(execution, nil, model.GetAzureErrorJSONString(err))
+			engine.database.Instance.Save(&execution)
+			return
+		}
+		log.Printf("Started [%s]", step.Name)
+
+		whatIfResponse, err := azure.WaitForWhatIf(engine.context, step.Name, whatIf)
+		end := time.Now()
+		duration := end.Sub(start)
+		execution.Duration = fmt.Sprintf("%.2f seconds", duration.Seconds())
+
+		if err != nil {
+			if err == context.Canceled {
+				log.Printf("Completion of [%s] interrupted by shutdown.", step.Name)
+				return
+			}
+			log.Printf("Step [%s] failed: %v", step.Name, err)
+			execution.Error = "Deployment readiness check failed"
+			execution.ErrorDetails = *whatIfResponse.Error.Message
+			engine.database.Instance.Save(&execution)
+			return
+		}
+		log.Printf("Step [%s] complete", step.Name)
+		execution.Status = model.Succeeded
+		engine.database.Instance.Save(&execution)
+		return
+	}
 
 	// Check if this is an interrupted/restarted deployment
 	resumeToken := ""

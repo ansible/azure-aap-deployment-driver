@@ -174,3 +174,27 @@ func DeleteContainer(resourceGroupName string, containerGroupName string) error 
 	}
 	return err
 }
+
+func StartWhatIf(ctx context.Context, client *armresources.DeploymentsClient, name string, template map[string]interface{}, parameters map[string]interface{}) (*runtime.Poller[armresources.DeploymentsClientWhatIfResponse], error) {
+	props := armresources.DeploymentWhatIfProperties{}
+	props.Template = template
+	props.Mode = to.Ptr(armresources.DeploymentModeIncremental)
+	props.Parameters = parameters
+	params := armresources.DeploymentWhatIf{}
+	params.Properties = to.Ptr(props)
+	deploy, err := client.BeginWhatIf(ctx, config.GetEnvironment().RESOURCE_GROUP_NAME, name, params, nil)
+	if err != nil {
+		return nil, err
+	}
+	return deploy, nil
+}
+
+func WaitForWhatIf(ctx context.Context, name string, deployment *runtime.Poller[armresources.DeploymentsClientWhatIfResponse]) (*armresources.WhatIfOperationResult, error) {
+	log.Tracef("Starting polling until what if of [%s] is done...", name)
+	resp, err := deployment.PollUntilDone(ctx, &runtime.PollUntilDoneOptions{Frequency: time.Duration(config.GetEnvironment().AZURE_POLLING_FREQ_SECONDS) * time.Second})
+	if err != nil {
+		return nil, err
+	}
+	log.Tracef("Finished polling, what if of [%s] is done.", name)
+	return &resp.WhatIfOperationResult, nil
+}

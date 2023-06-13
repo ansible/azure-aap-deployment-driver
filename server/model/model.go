@@ -11,6 +11,8 @@ import (
 	"gorm.io/gorm"
 )
 
+const WHAT_IF_STEP_NAME string = "Deployment__Readiness__Check"
+
 // Replicate GORM base model, hiding times from json
 type BaseModel struct {
 	ID        uint      `gorm:"primary_key"`
