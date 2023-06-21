@@ -1,7 +1,6 @@
 package engine
 
 import (
-	"fmt"
 	"server/azure"
 	"server/config"
 	"server/model"
@@ -427,8 +426,7 @@ func (engine *Engine) UpdateExecution(message *sdk.EventHookMessage) {
 			// TODO Abstract this out if it also applies to stages.
 			execution.Status = model.Succeeded
 			execution.Timestamp = *data.CompletedAt
-			duration := (*data.CompletedAt).Sub(*data.StartedAt)
-			execution.Duration = fmt.Sprintf("%.2f seconds", duration.Seconds())
+			execution.Duration = (*data.CompletedAt).Sub(*data.StartedAt).Round(time.Second).String()
 			execution.CorrelationID = "N/A"
 			engine.database.Instance.Save(&execution)
 		}
@@ -451,8 +449,7 @@ func (engine *Engine) UpdateExecution(message *sdk.EventHookMessage) {
 			log.Debugf("Stage %s has failed, updating execution ID %d.", step.Name, execution.ID)
 			execution.Status = model.Failed
 			execution.Timestamp = *data.CompletedAt
-			duration := (*data.CompletedAt).Sub(*data.StartedAt)
-			execution.Duration = fmt.Sprintf("%.2f seconds", duration.Seconds())
+			execution.Duration = (*data.CompletedAt).Sub(*data.StartedAt).Round(time.Second).String()
 			corrId := data.CorrelationId
 			if corrId != nil {
 				execution.CorrelationID = corrId.String()
@@ -464,8 +461,7 @@ func (engine *Engine) UpdateExecution(message *sdk.EventHookMessage) {
 			log.Debugf("Stage %s has passed, updating execution ID %d.", step.Name, execution.ID)
 			execution.Status = model.Succeeded
 			execution.Timestamp = *data.CompletedAt
-			duration := (*data.CompletedAt).Sub(*data.StartedAt)
-			execution.Duration = fmt.Sprintf("%.2f seconds", duration.Seconds())
+			execution.Duration = (*data.CompletedAt).Sub(*data.StartedAt).Round(time.Second).String()
 			corrId := data.CorrelationId
 			if corrId != nil {
 				execution.CorrelationID = corrId.String()
