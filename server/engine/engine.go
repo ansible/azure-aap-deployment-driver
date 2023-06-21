@@ -234,6 +234,7 @@ func (engine *Engine) GetLatestExecution(step model.Step) model.Execution {
 }
 
 func (engine *Engine) executeModmDeployment() (started bool) {
+	// TODO this should check if the deployment is already in progress and not start it in that case (container restart)
 	started = true
 	_, err := engine.modmClient.Start(engine.context, engine.modmDeploymentId, engine.getParamsMap(), nil)
 	if err != nil {
