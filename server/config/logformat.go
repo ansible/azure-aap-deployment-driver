@@ -34,7 +34,7 @@ func ConfigureLogging() {
 	formatter.CallerPrettyfier = CallerFormattingFunc
 	log.SetFormatter(UTCTextFormatter{formatter})
 	log.SetReportCaller(true)
-	log.SetLevel(getLogLevel(GetEnvironment().LOG_LEVEL))
+	log.SetLevel(getLogLevel(GetEnvironment().ENGINE_LOG_LEVEL))
 }
 
 func getLogLevel(level string) log.Level {
