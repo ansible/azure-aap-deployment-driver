@@ -18,7 +18,13 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: '^1.19.4' # The Go version to download (if necessary) and use.
+      - name: Install go linter
+        run: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
       - name: Run make in server directory
         run: |
           cd server
           make
+      - name: Run Go linter
+        run: |
+          cd server
+          golangci-lint run
