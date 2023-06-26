@@ -2,7 +2,7 @@ package test
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"server/config"
@@ -50,7 +50,7 @@ func MockDeploymentResult(name string, provisioningState armresources.Provisioni
 			return &http.Response{
 				StatusCode: 200,
 				Request:    req,
-				Body:       ioutil.NopCloser(strings.NewReader(string(statusJson))),
+				Body:       io.NopCloser(strings.NewReader(string(statusJson))),
 				Header:     headers,
 			}
 		} else {
@@ -58,7 +58,7 @@ func MockDeploymentResult(name string, provisioningState armresources.Provisioni
 			return &http.Response{
 				StatusCode: 200,
 				Request:    req,
-				Body:       ioutil.NopCloser(strings.NewReader(responseJson)),
+				Body:       io.NopCloser(strings.NewReader(responseJson)),
 				Header:     headers,
 			}
 		}
@@ -73,7 +73,7 @@ func MockGetDeployment() DoFunc {
 		return &http.Response{
 			StatusCode: 200,
 			Request:    req,
-			Body:       ioutil.NopCloser(strings.NewReader(finalJson)),
+			Body:       io.NopCloser(strings.NewReader(finalJson)),
 			Header:     headers,
 		}
 	})
@@ -97,14 +97,14 @@ func MockGetResourceGroupFailThenPass() DoFunc {
 			return &http.Response{
 				StatusCode: 200,
 				Request:    req,
-				Body:       ioutil.NopCloser(strings.NewReader(passed)),
+				Body:       io.NopCloser(strings.NewReader(passed)),
 			}
 		} else {
 			count.incrCounterVal()
 			return &http.Response{
 				StatusCode: 404,
 				Request:    req,
-				Body:       ioutil.NopCloser(strings.NewReader(failed)),
+				Body:       io.NopCloser(strings.NewReader(failed)),
 			}
 		}
 	})
@@ -117,7 +117,7 @@ func MockTemplateFailed() DoFunc {
 		return &http.Response{
 			StatusCode: 400,
 			Request:    req,
-			Body:       ioutil.NopCloser(strings.NewReader(templateFail)),
+			Body:       io.NopCloser(strings.NewReader(templateFail)),
 		}
 	})
 }

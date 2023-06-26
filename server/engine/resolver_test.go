@@ -16,7 +16,10 @@ var outputs map[string]map[string]interface{} // this will contain output values
 func TestResolveReferencesToParameters(t *testing.T) {
 	resolver := NewResolver(SUB_ID, RG_NAME)
 	resolver.ResolveReferencesToParameters(parameters, values)
-	resolver.ResolveReferencesToOutputs(parameters, outputs)
+	err := resolver.ResolveReferencesToOutputs(parameters, outputs)
+	if err != nil {
+		t.Errorf("Error while calling resolve outputs: %v", err)
+	}
 
 	verifyParameterValue(t, parameters, "name", getExpectedParameterValue("aapName"))
 	verifyParameterValue(t, parameters, "location", getExpectedParameterValue("location"))

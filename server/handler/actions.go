@@ -41,5 +41,8 @@ func Terminate(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	}
 	log.Printf("Terminating execution due to API request.  Bye!")
 	respondOk(w)
-	controllers.NewExitController().Stop()
+	err := controllers.NewExitController().Stop()
+	if err != nil {
+		log.Errorf("Error while calling Stop on exit controller: %v", err)
+	}
 }
