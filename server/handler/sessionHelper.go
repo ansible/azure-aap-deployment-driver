@@ -74,6 +74,7 @@ func (s *SessionHelper) SetupSession(r *http.Request, w http.ResponseWriter) err
 	err = aSession.Save(r, w)
 	if err != nil {
 		log.Errorf("Error while saving http session: %v", err)
+		return err
 	}
 	return nil
 }

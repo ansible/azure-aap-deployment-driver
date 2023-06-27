@@ -316,6 +316,9 @@ func (engine *Engine) runStep(step model.Step, execution *model.Execution, waitG
 	err := engine.resolver.ResolveReferencesToOutputs(step.Parameters, outputValues)
 	if err != nil {
 		log.Errorf("Error while calling resolve outputs for step %s: %v", step.Name, err)
+		model.UpdateExecution(execution, nil, model.GetAzureErrorJSONString(err))
+		engine.database.Instance.Save(&execution)
+		return
 	}
 	// Create the deployment
 	deployment, err := azure.StartDeployARMTemplate(engine.context, engine.deploymentsClient, step.Name, step.Template, step.Parameters, resumeToken)

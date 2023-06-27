@@ -37,7 +37,7 @@ func DiscoverTemplateOrder(templateBasePath string) ([][]string, error) {
 			for _, entryValue := range fileContent {
 				err = dependenciesGraph.AddDependency(name, entryValue)
 				if err != nil {
-					log.Errorf("Error while adding template dir to dependency graph: %v", err)
+					log.Errorf("Error while adding %s to dependency graph as a dependency of %s: %v", entryValue, name, err)
 				}
 			}
 		}

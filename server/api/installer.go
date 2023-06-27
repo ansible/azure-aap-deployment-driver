@@ -112,7 +112,7 @@ func (a *Installer) Run() {
 	a.httpServer.Handler = a.router
 	err := controllers.AddCancelHandler("API Server", a.stopServer)
 	if err != nil {
-		log.Errorf("Error while adding cancel handler to API server: %v", err)
+		log.Fatalf("Error while adding cancel handler to API server: %v", err)
 	}
 	runServer(a)
 }

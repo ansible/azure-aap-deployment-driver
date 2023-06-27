@@ -4,7 +4,7 @@ $(error "No go in $(PATH), can't go anywhere...")
 endif
 GOVERSION := $(shell go version)
 
-.PHONY: build test test-with-coverage print-version
+.PHONY: build test test-with-coverage lint print-version
 
 all: test build
 
@@ -19,3 +19,7 @@ test: print-version
 
 test-with-coverage: print-version
 	go test -coverpkg=./... -coverprofile=coverage.txt -count=1 ./...
+
+lint: print-version
+	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
+	$(GOPATH)/bin/golangci-lint run -v
