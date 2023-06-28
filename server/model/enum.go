@@ -26,6 +26,7 @@ const (
 	DeployStatus  DeploymentMetric = "deploystatus"
 	Errors        DeploymentMetric = "errors"
 	Retries       DeploymentMetric = "retries"
+	UserLogins    DeploymentMetric = "userlogins"
 )
 
 type TelemetryStatus string

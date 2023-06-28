@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"server/config"
 	"server/model"
+	"strconv"
 	"time"
 
 	"github.com/segmentio/analytics-go/v3"
@@ -115,6 +116,22 @@ func SetFinalMetrics(db *gorm.DB) {
 	StoreMetricFromMainOutputs(db)
 	storeMetricsPerStep(db)
 
+}
+
+func UpdateLogInMetrics(db *gorm.DB) {
+	loginsCount := "1" // default value for case if no logins were recorded yet
+
+	// get existing logins telemetry
+	telemetry := model.Metric(db, model.UserLogins)
+	// if any logins were already recorded, set logins value incremented by 1
+	if telemetry.MetricValue != "" {
+		n, err := strconv.Atoi(telemetry.MetricValue)
+		if err == nil {
+			loginsCount = strconv.Itoa(n + 1)
+		}
+	}
+	// store new logins count
+	model.SetMetric(db, model.UserLogins, loginsCount, "")
 }
 
 func PublishToSegment(db *gorm.DB) {
