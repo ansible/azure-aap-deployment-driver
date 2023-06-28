@@ -16,7 +16,7 @@ type loginData struct {
 
 func GetLoginHandler() HandleFuncWithDB {
 	// initialization of the expected credentials
-	userName := "admin"
+	const userName = "admin"
 	userPassword := config.GetEnvironment().PASSWORD
 
 	return func(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
