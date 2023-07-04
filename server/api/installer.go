@@ -110,7 +110,10 @@ func (a *Installer) Run() {
 	a.httpServer = &http.Server{}
 	a.httpServer.Addr = fmt.Sprintf("%s:%s", config.Args.Host, config.Args.Port)
 	a.httpServer.Handler = a.router
-	controllers.AddCancelHandler("API Server", a.stopServer)
+	err := controllers.AddCancelHandler("API Server", a.stopServer)
+	if err != nil {
+		log.Fatalf("Error while adding cancel handler to API server: %v", err)
+	}
 	runServer(a)
 }
 

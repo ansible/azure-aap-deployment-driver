@@ -16,7 +16,10 @@ func testDb(t *testing.T, db *persistence.Database) {
 		gorm.Model
 		Value string
 	}
-	db.Instance.AutoMigrate(&Entity{})
+	err := db.Instance.AutoMigrate(&Entity{})
+	if err != nil {
+		t.Errorf("Error while auto-migrating db: %v", err)
+	}
 	testData := Entity{
 		Value: "test",
 	}
@@ -41,12 +44,10 @@ func TestInMemoryDatabase(t *testing.T) {
 	testDb(t, db)
 }
 func TestTelemetryTable(t *testing.T) {
-
 	db := persistence.NewInMemoryDB()
 	model.SetMetric(db.Instance, model.DeployStatus, "SUCCESS", "")
 	model.SetMetric(db.Instance, model.AccessType, "PRIVATE", "")
-	retrieved := model.Telemetry{}
-	retrieved = model.Metric(db.Instance, model.DeployStatus)
+	retrieved := model.Metric(db.Instance, model.DeployStatus)
 	assert.Equal(t, "SUCCESS", retrieved.MetricValue)
 	retrieved = model.Metric(db.Instance, model.ApplicationId)
 	assert.Equal(t, "", retrieved.MetricValue)

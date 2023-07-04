@@ -1,0 +1,194 @@
+openapi: 3.0.0
+info:
+  title: AAP on Azure - Deployment Driver API
+  version: "1.0"
+paths:
+  /status:
+    get:
+      summary: Return status of deployment driver
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/Status"
+  /login:
+    post:
+      summary: Log into API (get cookie)
+      responses:
+        "200":
+          description: OK
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: madd_session=<token>; Path=/; HttpOnly; Secure
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/LoginStatus"
+        "401":
+          description: Invalid user ID or password
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/Error"
+  /logout:
+    post:
+      summary: Log out
+      responses:
+        "200":
+          description: OK
+  /step:
+    get:
+      summary: Get a list of steps
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Step"
+  "/step/{stepId}":
+    get:
+      summary: Get the specified step
+      parameters:
+        - in: path
+          name: stepId
+          description: Step ID to get
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/Step"
+  /execution:
+    get:
+      summary: Get a list of executions
+      parameters:
+        - in: query
+          name: stepId
+          required: false
+          description: Filter executions by step ID
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Execution"
+  "/execution/{executionId}":
+    get:
+      summary: Get the specified execution
+      parameters:
+        - in: path
+          name: executionId
+          description: Execution ID to get
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/Execution"
+  "/execution/{executionId}/restart":
+    post:
+      summary: Restart this execution
+      parameters:
+        - in: path
+          name: executionId
+          description: Execution ID to restart
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+  /cancelAllSteps:
+    post:
+      summary: Cancel currently executing and all future steps
+      responses:
+        "200":
+          description: OK
+  /terminate:
+    post:
+      summary: Stop the deployment driver
+      responses:
+        "200":
+          description: OK
+  /deleteContainer:
+    post:
+      summary: Remove the installation container instance
+      responses:
+        "200":
+          description: OK
+servers:
+  - url: /api
+components:
+  schemas:
+    Status:
+      properties:
+        status:
+          type: string
+          enum: [DEPLOYING, CANCELED, FAILED, DONE]
+    LoginStatus:
+      properties:
+        status:
+          type: string
+          enum: [OK]
+    Step:
+      properties:
+        ID:
+          type: integer
+        name:
+          type: string
+        order:
+          description: Order of execution
+          type: integer
+        executions:
+          description: Executions for this step
+          type: array
+          items:
+            $ref: "#/components/schemas/Execution"
+    Execution:
+      properties:
+        ID:
+          type: integer
+        status:
+          type: string
+        stepId:
+          type: integer
+        error:
+          type: string
+        errorDetails:
+          type: string
+        code:
+          type: string
+        provisioningState:
+          type: string
+        details:
+          type: string
+        timestamp:
+          type: string
+        duration:
+          type: string
+        correlationId:
+          type: string
+    Error:
+      properties:
+        error:
+          type: string

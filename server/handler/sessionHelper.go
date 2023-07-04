@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/gorilla/sessions"
+	log "github.com/sirupsen/logrus"
 )
 
 var (
@@ -70,7 +71,11 @@ func (s *SessionHelper) SetupSession(r *http.Request, w http.ResponseWriter) err
 		return err
 	}
 	aSession.Options.HttpOnly = true
-	aSession.Save(r, w)
+	err = aSession.Save(r, w)
+	if err != nil {
+		log.Errorf("Error while saving http session: %v", err)
+		return err
+	}
 	return nil
 }
 

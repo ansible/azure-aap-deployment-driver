@@ -22,3 +22,9 @@ jobs:
         run: |
           cd server
           make
+      - name: Run Go linter
+        env:
+          GOPATH: /home/runner/go
+        run: |
+          cd server
+          make lint

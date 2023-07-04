@@ -191,8 +191,14 @@ func (engine *Engine) waitBeforeEnding() {
 	// Start the process to delete ourself
 	if !config.GetEnvironment().SAVE_CONTAINER {
 		log.Info("Engine starting storage account and container deletion and terminating...")
-		azure.DeleteStorageAccount(config.GetEnvironment().RESOURCE_GROUP_NAME, config.GetEnvironment().STORAGE_ACCOUNT_NAME)
-		azure.DeleteContainer(config.GetEnvironment().RESOURCE_GROUP_NAME, config.GetEnvironment().CONTAINER_GROUP_NAME)
+		err := azure.DeleteStorageAccount(config.GetEnvironment().RESOURCE_GROUP_NAME, config.GetEnvironment().STORAGE_ACCOUNT_NAME)
+		if err != nil {
+			log.Errorf("Error while calling storage account deletion: %v", err)
+		}
+		err = azure.DeleteContainer(config.GetEnvironment().RESOURCE_GROUP_NAME, config.GetEnvironment().CONTAINER_GROUP_NAME)
+		if err != nil {
+			log.Errorf("Error while calling container deletion: %v", err)
+		}
 	} else {
 		log.Info("Engine terminating...")
 	}
@@ -307,8 +313,13 @@ func (engine *Engine) runStep(step model.Step, execution *model.Execution, waitG
 			outputValues[v.ModuleName] = v.Values
 		}
 	}
-	engine.resolver.ResolveReferencesToOutputs(step.Parameters, outputValues)
-
+	err := engine.resolver.ResolveReferencesToOutputs(step.Parameters, outputValues)
+	if err != nil {
+		log.Errorf("Error while calling resolve outputs for step %s: %v", step.Name, err)
+		model.UpdateExecution(execution, nil, model.GetAzureErrorJSONString(err))
+		engine.database.Instance.Save(&execution)
+		return
+	}
 	// Create the deployment
 	deployment, err := azure.StartDeployARMTemplate(engine.context, engine.deploymentsClient, step.Name, step.Template, step.Parameters, resumeToken)
 	if err != nil {

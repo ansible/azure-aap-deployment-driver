@@ -161,10 +161,13 @@ func PublishToSegment(db *gorm.DB) {
 	}
 
 	client := analytics.New(writeKey)
-	client.Enqueue(analytics.Track{
+	err := client.Enqueue(analytics.Track{
 		UserId:     config.GetEnvironment().SUBSCRIPTION,
 		Event:      eventName,
 		Properties: propertiesMap,
 	})
+	if err != nil {
+		log.Errorf("Error while enqueuing telemetry packet: %v", err)
+	}
 	client.Close()
 }

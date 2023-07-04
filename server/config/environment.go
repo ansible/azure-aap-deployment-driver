@@ -37,8 +37,7 @@ type envVars struct {
 }
 
 var (
-	environment       envVars
-	environmentErrors error
+	environment envVars
 )
 
 func GetEnvironment() envVars {
