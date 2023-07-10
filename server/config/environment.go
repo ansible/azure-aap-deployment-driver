@@ -34,6 +34,7 @@ type envVars struct {
 	SEGMENT_WRITE_KEY          string
 	APPLICATION_ID             string
 	START_TIME                 string
+	DRY_RUN                    bool
 }
 
 var (
@@ -63,6 +64,7 @@ func GetEnvironment() envVars {
 	environment.SESSION_COOKIE_MAX_AGE = 0 // 0 to make it a session cookie
 	environment.SAVE_CONTAINER = false
 	environment.START_TIME = time.Now().Format(time.RFC3339)
+	environment.DRY_RUN = false
 
 	env := envs.EnvConfig{}
 	env.ReadEnvs()
@@ -203,6 +205,13 @@ func GetEnvironment() envVars {
 		log.Warnf("SAVE_CONTAINER has unrecognized value, please set to true or false. Using default: %t", environment.SAVE_CONTAINER)
 	} else {
 		environment.SAVE_CONTAINER = saveContainer
+	}
+
+	dryRun, err := strconv.ParseBool(env.Get("DRY_RUN", "false"))
+	if err != nil {
+		log.Warnf("DRY_RUN has unrecognized value, please set to true or false. Using default: %t", environment.DRY_RUN)
+	} else {
+		environment.DRY_RUN = dryRun
 	}
 
 	environment.SEGMENT_WRITE_KEY = env.Get("SEGMENT_WRITE_KEY")

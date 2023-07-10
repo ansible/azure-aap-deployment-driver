@@ -38,8 +38,13 @@ func (engine *Engine) initialize() {
 		if err != nil {
 			engine.Fatalf("Unable to read in main template and parameters files")
 		}
-
-		engine.createWhatIfStep(mainTemplate, mainParameters)
+		stepCount := 0
+		initialPriority := 0
+		if config.GetEnvironment().DRY_RUN {
+			engine.createWhatIfStep(mainTemplate, mainParameters)
+			stepCount++
+			initialPriority = 1
+		}
 
 		// Load templates into database
 		templateOrderArray, err := templates.DiscoverTemplateOrder(templatePath)
@@ -48,7 +53,6 @@ func (engine *Engine) initialize() {
 			engine.Fatalf("Unable to import ARM templates: %v", err)
 		}
 
-		stepCount := 1
 		for i, templateBatch := range templateOrderArray {
 			for _, templateName := range templateBatch {
 				if engine.IsFatalState() {
@@ -64,7 +68,7 @@ func (engine *Engine) initialize() {
 					engine.Fatalf("Unable to read in template file for [%s]", templateName)
 				}
 				engine.database.Instance.Create(&model.Step{
-					Priority:   uint(i + 1),
+					Priority:   uint(i + initialPriority),
 					Name:       templateName,
 					Template:   templateContent,
 					Parameters: parametersContent,

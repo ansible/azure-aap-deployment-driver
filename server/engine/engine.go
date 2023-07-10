@@ -291,8 +291,8 @@ func (engine *Engine) waitForStepRestart(execution *model.Execution, waitGroup *
 func (engine *Engine) runStep(step model.Step, execution *model.Execution, waitGroup *sync.WaitGroup) {
 	defer waitGroup.Done()
 
-	// Deployment pre-check
-	if step.Name == model.WHAT_IF_STEP_NAME {
+	// Deployment pre-check if enabled
+	if config.GetEnvironment().DRY_RUN && step.Name == model.WHAT_IF_STEP_NAME {
 		start := time.Now()
 		execution.CorrelationID = "N/A"
 		whatIf, err := azure.StartWhatIf(engine.context, engine.deploymentsClient, step.Name, step.Template, step.Parameters)
