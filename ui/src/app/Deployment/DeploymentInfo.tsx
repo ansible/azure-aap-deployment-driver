@@ -22,7 +22,7 @@ export const DeploymentInfo = ({closeHandler}: IDeploymentInfoProps) => {
       }
     >
       <p>To use Ansible Automation Platform on Azure, you must have a valid subscription for Ansible Automation Platform in your Red Hat account.</p>
-      <p>You can click on <a href='https://console.redhat.com' target='_blank' rel="noreferrer">this link</a> to setup your Ansible Automation Platform subscription as well as your Red Hat, account if needed.</p>
+      <p>You can set up your Ansible Automation Platform subscription and your Red Hat account on the </p> <a href='https://console.redhat.com' target='_blank' rel="noreferrer">Red Hat Hybrid Cloud Console</a>.
     </Alert>
 	)
 }
