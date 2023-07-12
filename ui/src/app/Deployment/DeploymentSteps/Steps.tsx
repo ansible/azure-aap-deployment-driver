@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bullseye, Stack, StackItem, PageSection, PageSectionVariants, TextContent, Text, Title, List } from '@patternfly/react-core';
 import { DeploymentStep } from "./Step";
 import { DeploymentStepData } from '@app/apis/types';
@@ -13,10 +13,27 @@ interface IDeploymentStepsProps {
 
 export const DeploymentSteps = ({ stepsData }: IDeploymentStepsProps, ) => {
 
-  // TODO: Persist this value somewhere in current user's session
-  const [showDeploymentInfo, setShowDeploymentInfo] = useState<Boolean>(true)
+  // Persist this value browser's session (each tab has its own)
+  const [showDeploymentInfo, setShowDeploymentInfo] = useState<Boolean>(()=>{
+    let storageItem = sessionStorage.getItem('showDeploymentInfo');
+    if (storageItem === null) {
+      // store initial value of true and return it
+      sessionStorage.setItem('showDeploymentInfo',String(true));
+      return true;
+    } else {
+      // return stored value
+      return storageItem.toLowerCase() === 'true'
+    }
+  })
 
-  const closeDeploymentInfo = ()=> {
+  useEffect(()=>{
+    // update the value is browser session when changed
+    sessionStorage.setItem('showDeploymentInfo',String(showDeploymentInfo));
+  },[showDeploymentInfo])
+
+
+
+  const closeDeploymentInfo = () => {
     setShowDeploymentInfo(!showDeploymentInfo);
   }
 
