@@ -17,12 +17,12 @@ export const DeploymentInfo = ({closeHandler}: IDeploymentInfoProps) => {
       actionLinks={
         <React.Fragment>
           {/* <AlertActionLink onClick={() => alert('Clicked on View details')}>Go to console.redhat.com</AlertActionLink> */}
-          <AlertActionLink onClick={closeHandler}>Dismiss, I already have it all setup</AlertActionLink>
+          <AlertActionLink onClick={closeHandler}>Dismiss: my account and subscription are set up</AlertActionLink>
         </React.Fragment>
       }
     >
       <p>To use Ansible Automation Platform on Azure, you must have a valid subscription for Ansible Automation Platform in your Red Hat account.</p>
-      <p>You can set up your Ansible Automation Platform subscription and your Red Hat account on the </p> <a href='https://console.redhat.com' target='_blank' rel="noreferrer">Red Hat Hybrid Cloud Console</a>.
+      <p>You can set up your Ansible Automation Platform subscription and your Red Hat account on the <a href='https://console.redhat.com' target='_blank' rel="noreferrer">Red Hat Hybrid Cloud Console</a>.</p>
     </Alert>
 	)
 }
