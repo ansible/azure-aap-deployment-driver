@@ -27,7 +27,7 @@ export const DeploymentSteps = ({ stepsData }: IDeploymentStepsProps, ) => {
   })
 
   useEffect(()=>{
-    // update the value is browser session when changed
+    // update the value in browser session when changed
     sessionStorage.setItem('showDeploymentInfo',String(showDeploymentInfo));
   },[showDeploymentInfo])
 
