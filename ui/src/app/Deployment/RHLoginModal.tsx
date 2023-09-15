@@ -26,9 +26,9 @@ export const RHLoginModal = ({isModalShown, actionHandler}: IRHLoginProps) => {
 					onClick={()=>{actionHandler(false)}}
 					>Dismiss: my account and subscription are set up</Button>
         ]}
-      ><p>To use Ansible Automation Platform on Azure, you must have a valid subscription for Ansible Automation Platform in your Red Hat account.</p>
+      ><p>To use Ansible Automation Platform on Azure, you MUST have a valid subscription for Ansible Automation Platform in your Red Hat account.</p>
 			<br />
-			<p>You can set up your Ansible Automation Platform subscription and your Red Hat account on the Red Hat Hybrid Cloud Console by clicking the button below.</p>
+			<p>You can set up your Ansible Automation Platform subscription and your Red Hat account by clicking the button below.</p>
 		</Modal>
 	)
 }
