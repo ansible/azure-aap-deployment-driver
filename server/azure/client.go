@@ -48,7 +48,7 @@ func EnsureAzureLogin(client *armresources.ResourceGroupsClient) {
 	if client == nil {
 		client = NewResourceGroupsClient(nil)
 	}
-	const MAX_ATTEMPTS = 5
+	const MAX_ATTEMPTS = 10
 	for attempt := 1; true; attempt++ {
 		_, err := client.Get(context.Background(), config.GetEnvironment().RESOURCE_GROUP_NAME, nil)
 		if err == nil {
