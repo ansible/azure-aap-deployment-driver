@@ -42,7 +42,7 @@ curl -s --fail-with-body ${INSTALLER_TEMPLATE_URL} -o /installerstore/templates.
 
 RC=$?
 if [ ${RC} -ne 0 ]; then
-  log "Failed to fetch templates zip file located at ${INSTALLER_TEMPLATE_URL%\?*}, aborting."
+  log "Failed to fetch templates zip file from ${INSTALLER_TEMPLATE_URL%\?*}, aborting."
   exit ${RC}
 fi
 
