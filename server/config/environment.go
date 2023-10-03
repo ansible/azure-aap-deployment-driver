@@ -34,6 +34,8 @@ type envVars struct {
 	SEGMENT_WRITE_KEY          string
 	APPLICATION_ID             string
 	START_TIME                 string
+	LOG_PATH                   string
+	LOG_LEVEL                  string
 }
 
 var (
@@ -62,6 +64,8 @@ func GetEnvironment() envVars {
 	environment.SESSION_COOKIE_MAX_AGE = 0 // 0 to make it a session cookie
 	environment.SAVE_CONTAINER = false
 	environment.START_TIME = time.Now().Format(time.RFC3339)
+	environment.LOG_PATH = "/installerstore/engine.txt"
+	environment.LOG_LEVEL = "info"
 
 	env := envs.EnvConfig{}
 	env.ReadEnvs()
@@ -129,6 +133,16 @@ func GetEnvironment() envVars {
 	dbPath := env.Get("DB_PATH")
 	if len(dbPath) > 0 {
 		environment.DB_PATH = dbPath
+	}
+
+	logPath := env.Get("LOG_PATH")
+	if len(logPath) > 0 {
+		environment.LOG_PATH = logPath
+	}
+
+	logLevel := env.Get("LOG_LEVEL")
+	if len(logLevel) > 0 {
+		environment.LOG_LEVEL = logLevel
 	}
 
 	templatePath := env.Get("TEMPLATE_PATH")
