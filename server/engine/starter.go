@@ -3,6 +3,7 @@ package engine
 import (
 	"context"
 	"encoding/json"
+	"path/filepath"
 
 	"server/config"
 	"server/model"
@@ -33,7 +34,7 @@ func (engine *Engine) initialize() {
 
 	if !engine.status.TemplatesLoaded {
 		// Load templates into database
-		templatePath := config.GetEnvironment().BASE_PATH + config.GetEnvironment().TEMPLATE_REL_PATH
+		templatePath := filepath.Join(config.GetEnvironment().BASE_PATH, config.GetEnvironment().TEMPLATE_REL_PATH)
 		templateOrderArray, err := templates.DiscoverTemplateOrder(templatePath)
 
 		if err != nil {

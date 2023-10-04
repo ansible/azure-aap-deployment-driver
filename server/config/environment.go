@@ -55,8 +55,8 @@ func GetEnvironment() envVars {
 	environment.ENGINE_MAX_RUNTIME = 7200 // 2 hours max run time for everything (including restarts)
 	environment.EXECUTION_MAX_RETRY = 10  // 10 executions in total allowed
 	environment.BASE_PATH = "/installerstore"
-	environment.DB_REL_PATH = "/installer.db"    // on top of BASE_PATH
-	environment.TEMPLATE_REL_PATH = "/templates" // on top of BASE_PATH
+	environment.DB_REL_PATH = "installer.db"    // on top of BASE_PATH
+	environment.TEMPLATE_REL_PATH = "templates" // on top of BASE_PATH
 	environment.AZURE_POLLING_FREQ_SECONDS = 5
 	environment.AUTO_RETRY = false
 	environment.AUTO_RETRY_DELAY = 60 // Retry after 60 seconds if AUTO_RETRY set
@@ -67,7 +67,7 @@ func GetEnvironment() envVars {
 	environment.SESSION_COOKIE_MAX_AGE = 0 // 0 to make it a session cookie
 	environment.SAVE_CONTAINER = false
 	environment.START_TIME = time.Now().Format(time.RFC3339)
-	environment.LOG_REL_PATH = "/engine.txt" // on top of BASE_PATH
+	environment.LOG_REL_PATH = "engine.txt" // on top of BASE_PATH
 	environment.LOG_LEVEL = "info"
 	environment.AZURE_LOGIN_RETRIES = 10
 
