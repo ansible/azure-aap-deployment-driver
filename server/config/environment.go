@@ -67,7 +67,7 @@ func GetEnvironment() envVars {
 	environment.SESSION_COOKIE_MAX_AGE = 0 // 0 to make it a session cookie
 	environment.SAVE_CONTAINER = false
 	environment.START_TIME = time.Now().Format(time.RFC3339)
-	environment.LOG_REL_PATH = "engine.txt" // on top of BASE_PATH
+	environment.LOG_REL_PATH = "engine.log" // on top of BASE_PATH
 	environment.LOG_LEVEL = "info"
 	environment.AZURE_LOGIN_RETRIES = 10
 
