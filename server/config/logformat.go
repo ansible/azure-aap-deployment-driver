@@ -21,7 +21,7 @@ func (u UTCTextFormatter) Format(e *log.Entry) ([]byte, error) {
 }
 
 func ConfigureLogging() {
-	logFile, err := os.OpenFile(GetEnvironment().LOG_PATH, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	logFile, err := os.OpenFile(GetEnvironment().BASE_PATH+GetEnvironment().LOG_REL_PATH, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err == nil {
 		bothPlaces := io.MultiWriter(os.Stdout, logFile)
 		log.SetOutput(bothPlaces)

@@ -13,7 +13,7 @@ func main() {
 	config.ConfigureLogging()
 	config.ParseArgs()
 
-	db := persistence.NewPersistentDB(config.GetEnvironment().DB_PATH)
+	db := persistence.NewPersistentDB(config.GetEnvironment().BASE_PATH + config.GetEnvironment().DB_REL_PATH)
 	// TODO store first start up in DB so we can determine max allowed run time for installer
 
 	// Instantiate Azure clients and session

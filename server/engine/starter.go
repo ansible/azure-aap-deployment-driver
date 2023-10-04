@@ -33,7 +33,7 @@ func (engine *Engine) initialize() {
 
 	if !engine.status.TemplatesLoaded {
 		// Load templates into database
-		templatePath := config.GetEnvironment().TEMPLATE_PATH
+		templatePath := config.GetEnvironment().BASE_PATH + config.GetEnvironment().TEMPLATE_REL_PATH
 		templateOrderArray, err := templates.DiscoverTemplateOrder(templatePath)
 
 		if err != nil {

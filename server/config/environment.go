@@ -15,8 +15,9 @@ type envVars struct {
 	CONTAINER_GROUP_NAME       string
 	STORAGE_ACCOUNT_NAME       string
 	PASSWORD                   string
-	DB_PATH                    string
-	TEMPLATE_PATH              string
+	BASE_PATH                  string
+	DB_REL_PATH                string
+	TEMPLATE_REL_PATH          string
 	MAIN_OUTPUTS               string
 	ENGINE_END_WAIT            int64
 	ENGINE_MAX_RUNTIME         int64
@@ -34,8 +35,9 @@ type envVars struct {
 	SEGMENT_WRITE_KEY          string
 	APPLICATION_ID             string
 	START_TIME                 string
-	LOG_PATH                   string
+	LOG_REL_PATH               string
 	LOG_LEVEL                  string
+	AZURE_LOGIN_RETRIES        int
 }
 
 var (
@@ -52,8 +54,9 @@ func GetEnvironment() envVars {
 	environment.ENGINE_RETRY_WAIT = 1800  // 30 minutes wait for a step to be restarted
 	environment.ENGINE_MAX_RUNTIME = 7200 // 2 hours max run time for everything (including restarts)
 	environment.EXECUTION_MAX_RETRY = 10  // 10 executions in total allowed
-	environment.DB_PATH = "/installerstore/installer.db"
-	environment.TEMPLATE_PATH = "/installerstore/templates"
+	environment.BASE_PATH = "/installerstore"
+	environment.DB_REL_PATH = "/installer.db"    // on top of BASE_PATH
+	environment.TEMPLATE_REL_PATH = "/templates" // on top of BASE_PATH
 	environment.AZURE_POLLING_FREQ_SECONDS = 5
 	environment.AUTO_RETRY = false
 	environment.AUTO_RETRY_DELAY = 60 // Retry after 60 seconds if AUTO_RETRY set
@@ -64,8 +67,9 @@ func GetEnvironment() envVars {
 	environment.SESSION_COOKIE_MAX_AGE = 0 // 0 to make it a session cookie
 	environment.SAVE_CONTAINER = false
 	environment.START_TIME = time.Now().Format(time.RFC3339)
-	environment.LOG_PATH = "/installerstore/engine.txt"
+	environment.LOG_REL_PATH = "/engine.txt" // on top of BASE_PATH
 	environment.LOG_LEVEL = "info"
+	environment.AZURE_LOGIN_RETRIES = 10
 
 	env := envs.EnvConfig{}
 	env.ReadEnvs()
@@ -130,14 +134,26 @@ func GetEnvironment() envVars {
 		environment.SESSION_COOKIE_MAX_AGE = int(sessionCookieMaxAge)
 	}
 
-	dbPath := env.Get("DB_PATH")
-	if len(dbPath) > 0 {
-		environment.DB_PATH = dbPath
+	azureLoginRetries, err := strconv.ParseInt(env.Get("AZURE_LOGIN_RETRIES", "0"), 10, 32)
+	if err != nil {
+		log.Warnf("AZURE_LOGIN_RETRIES environment variable is not a number, will use default of %d", environment.AZURE_LOGIN_RETRIES)
+	} else if azureLoginRetries != 0 {
+		environment.AZURE_LOGIN_RETRIES = int(azureLoginRetries)
 	}
 
-	logPath := env.Get("LOG_PATH")
+	basePath := env.Get("BASE_PATH")
+	if len(basePath) > 0 {
+		environment.BASE_PATH = basePath
+	}
+
+	dbPath := env.Get("DB_REL_PATH")
+	if len(dbPath) > 0 {
+		environment.DB_REL_PATH = dbPath
+	}
+
+	logPath := env.Get("LOG_REL_PATH")
 	if len(logPath) > 0 {
-		environment.LOG_PATH = logPath
+		environment.LOG_REL_PATH = logPath
 	}
 
 	logLevel := env.Get("LOG_LEVEL")
@@ -145,9 +161,9 @@ func GetEnvironment() envVars {
 		environment.LOG_LEVEL = logLevel
 	}
 
-	templatePath := env.Get("TEMPLATE_PATH")
+	templatePath := env.Get("TEMPLATE_REL_PATH")
 	if len(templatePath) > 0 {
-		environment.TEMPLATE_PATH = templatePath
+		environment.TEMPLATE_REL_PATH = templatePath
 	}
 
 	// using empty string as default to force error condition and use of default when env variable not set
