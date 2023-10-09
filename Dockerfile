@@ -14,11 +14,11 @@ RUN yum -y --repo ubi-9-appstream-rpms install socat && \
   echo "ACME=${ACME_RELEASE_TAG}" >> versions && echo "DRIVER=${DRIVER_RELEASE_TAG}" >> versions
 
 ADD ["nginx", "/etc/nginx/"]
-ADD ["start.sh", "build/server", "./"]
+ADD ["start.sh", "entry.sh", "build/server", "./"]
 ADD ["build/public", "/var/www/aapinstaller/public"]
 
-RUN chmod +x ./acme.sh ./server && chmod +x ./start.sh
+RUN chmod +x ./acme.sh ./server ./start.sh ./entry.sh
 
 VOLUME [ "/installerstore" ]
 
-ENTRYPOINT ["./start.sh"]
+ENTRYPOINT ["./entry.sh"]
