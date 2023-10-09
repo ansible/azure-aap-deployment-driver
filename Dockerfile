@@ -17,7 +17,7 @@ ADD ["nginx", "/etc/nginx/"]
 ADD ["start.sh", "entry.sh", "build/server", "./"]
 ADD ["build/public", "/var/www/aapinstaller/public"]
 
-RUN chmod +x ./acme.sh ./server && chmod +x ./start.sh && chmod +x ./entry.sh
+RUN chmod +x ./acme.sh ./server ./start.sh ./entry.sh
 
 VOLUME [ "/installerstore" ]
 
