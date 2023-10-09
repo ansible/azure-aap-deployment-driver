@@ -345,7 +345,7 @@ func (engine *Engine) runStep(step model.Step, execution *model.Execution, waitG
 	}
 
 	// Finish deployment and wait for result
-	deployResponse, err := azure.WaitForDeployARMTemplate(engine.context, step.Name, deployment)
+	deployResponse, err := azure.WaitForDeployARMTemplate(engine.context, step.Name, engine.deploymentsClient, deployment)
 	if err != nil {
 		if err == context.Canceled {
 			log.Printf("Completion of step [%s] deployment interrupted by shutdown.", step.Name)
@@ -370,7 +370,7 @@ func (engine *Engine) runStep(step model.Step, execution *model.Execution, waitG
 }
 
 func (engine *Engine) CancelStep(step model.Step) {
-	err := azure.CancelDeployment(engine.context, engine.deploymentsClient, step.Name)
+	_, err := azure.CancelDeployment(engine.context, engine.deploymentsClient, step.Name)
 	if err != nil {
 		log.Errorf("Couldn't cancel deployment: %v", err)
 	}
