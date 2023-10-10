@@ -9,9 +9,9 @@ on:
   pull_request:
     branches:
       - main
-    paths: # Only applicable if any go code was changed
-      - 'server/**/*.go'
-      - 'server/*.go'
+        #paths: # Only applicable if any go code was changed
+        #- 'server/**/*.go'
+        #- 'server/*.go'
 jobs:
   Build-Test-and-Analyze-Server:
     runs-on: ubuntu-latest
@@ -29,3 +29,9 @@ jobs:
           SONAR_PROJECT_TOKEN: ${{ secrets.SONAR_PROJECT_TOKEN }}
         if: ${{ github.event_name == 'push' && github.repository == 'ansible/azure-aap-deployment-driver' }}
         run: tools/run_sonarqube.sh server
+      - name: Run gosec security checker
+        env:
+          GO111MODULE: on
+        uses: securego/gosec@v2.18.0
+        with:
+          args: server/...
