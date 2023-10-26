@@ -29,6 +29,11 @@ type HttpResponse struct {
 	Body       []byte
 }
 
+func NewHttpRequester() *HttpRequester {
+	// client
+	return newRequester(nil)
+}
+
 func NewHttpRequesterWithCertificate(certPEMString, privkeyPEMString string) (*HttpRequester, error) {
 	cert, err := tls.X509KeyPair([]byte(certPEMString), []byte(privkeyPEMString))
 	if err != nil {
@@ -44,12 +49,16 @@ func NewHttpRequesterWithCertificate(certPEMString, privkeyPEMString string) (*H
 		TLSClientConfig: tlsConfig,
 	}
 	// client
+	return newRequester(httpTransport), nil
+}
+
+func newRequester(transport *http.Transport) *HttpRequester {
 	return &HttpRequester{
 		client: &http.Client{
-			Transport: httpTransport,
+			Transport: transport,
 			Timeout:   30 * time.Second,
 		},
-	}, nil
+	}
 }
 
 func (requester *HttpRequester) MakeJSONRequest(ctx context.Context, request HttpRequest) (*HttpResponse, error) {
