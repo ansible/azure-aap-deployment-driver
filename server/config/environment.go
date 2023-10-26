@@ -59,7 +59,7 @@ func GetEnvironment() envVars {
 	environment.DB_REL_PATH = "installer.db"    // on top of BASE_PATH
 	environment.TEMPLATE_REL_PATH = "templates" // on top of BASE_PATH
 	environment.AZURE_POLLING_FREQ_SECONDS = 5
-	environment.AZURE_DEPLOYMENT_TIMEOUT_MIN = 5
+	environment.AZURE_DEPLOYMENT_TIMEOUT_MIN = 30
 	environment.AUTO_RETRY = false
 	environment.AUTO_RETRY_DELAY = 60 // Retry after 60 seconds if AUTO_RETRY set
 	environment.SESSION_COOKIE_NAME = "madd_session"
