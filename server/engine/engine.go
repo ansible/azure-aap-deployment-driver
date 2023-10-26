@@ -356,7 +356,8 @@ func (engine *Engine) runStep(step model.Step, execution *model.Execution, waitG
 			// Parent context canceled, shutdown
 			log.Printf("Completion of step [%s] deployment interrupted by shutdown.", step.Name)
 			return
-		} else if errors.Is(err, context.DeadlineExceeded) {
+		}
+		if errors.Is(err, context.DeadlineExceeded) {
 			// Child context timed out
 			log.Errorf("Max step execution time reached for step [%s], Canceling.", step.Name)
 			engine.CancelFutureSteps()
