@@ -110,50 +110,16 @@ func StartDeployARMTemplate(ctx context.Context, client *armresources.Deployment
 	return deploy, err
 }
 
-type DepResultWithErr struct {
-	response armresources.DeploymentsClientCreateOrUpdateResponse
-	err      error
-}
-
 // Pass the deployment poller from StartDeployARMTemplate to await its completion and result
 // Returns model.DeploymentResult and error if any
-func WaitForDeployARMTemplate(ctx context.Context, name string, client *armresources.DeploymentsClient, deployment *runtime.Poller[armresources.DeploymentsClientCreateOrUpdateResponse]) (*model.DeploymentResult, error) {
+func WaitForDeployARMTemplate(ctx context.Context, name string, deployment *runtime.Poller[armresources.DeploymentsClientCreateOrUpdateResponse]) (*model.DeploymentResult, error) {
 	log.Tracef("Starting polling until deployment of [%s] is done...", name)
-
-	timeout := time.Duration(time.Duration(config.GetEnvironment().AZURE_DEPLOYMENT_TIMEOUT_MIN) * time.Minute)
-	pollFreq := time.Duration(time.Duration(config.GetEnvironment().AZURE_POLLING_FREQ_SECONDS) * time.Second)
-	tChan := make(chan DepResultWithErr)
-
-	go func() {
-		for {
-			log.Tracef("Polling for status of step [%s]", name)
-			_, err := deployment.Poll(ctx)
-			if err != nil {
-				log.Errorf("Error while polling for status of step [%s]: %v", name, err)
-				r, _ := deployment.Result(ctx)
-				tChan <- DepResultWithErr{response: r, err: err}
-			}
-			if deployment.Done() {
-				r, err2 := deployment.Result(ctx)
-				tChan <- DepResultWithErr{response: r, err: err2}
-			}
-			time.Sleep(pollFreq)
-		}
-	}()
-
-	select {
-	case result := <-tChan:
-		log.Tracef("Finished polling, deployment of [%s] is done.", name)
-		return model.NewDeploymentResult(result.response.DeploymentExtended), nil
-	case <-time.After(timeout):
-		log.Errorf("Max step execution time reached for step [%s], Canceling.", name)
-		res, err := CancelDeployment(ctx, client, name)
-		if err != nil {
-			log.Errorf("Error while canceling step [%s]: %v", name, err)
-			return nil, err
-		}
-		return res, err
+	resp, err := deployment.PollUntilDone(ctx, &runtime.PollUntilDoneOptions{Frequency: time.Duration(config.GetEnvironment().AZURE_POLLING_FREQ_SECONDS) * time.Second})
+	if err != nil {
+		return nil, err
 	}
+	log.Tracef("Finished polling, deployment of [%s] is done.", name)
+	return model.NewDeploymentResult(resp.DeploymentExtended), nil
 }
 
 func GetDeployment(ctx context.Context, client *armresources.DeploymentsClient, name string) (*model.DeploymentResult, error) {
@@ -171,19 +137,12 @@ func GetDeployment(ctx context.Context, client *armresources.DeploymentsClient, 
 	return model.NewDeploymentResult(details.DeploymentExtended), err
 }
 
-func CancelDeployment(ctx context.Context, client *armresources.DeploymentsClient, name string) (*model.DeploymentResult, error) {
+func CancelDeployment(ctx context.Context, client *armresources.DeploymentsClient, name string) error {
 	_, err := client.Cancel(ctx, config.GetEnvironment().RESOURCE_GROUP_NAME, name, &armresources.DeploymentsClientCancelOptions{})
 	if err != nil {
-		return nil, err
+		return err
 	}
-	for {
-		result, _ := GetDeployment(ctx, client, name)
-		if result.ProvisioningState == string(armresources.ProvisioningStateCanceled) {
-			return result, nil
-		}
-		log.Tracef("%s in %s state, waiting for cancelation.", name, result.ProvisioningState)
-		time.Sleep(time.Duration(config.GetEnvironment().AZURE_POLLING_FREQ_SECONDS) * time.Second)
-	}
+	return nil
 }
 
 // Delete Azure storage account

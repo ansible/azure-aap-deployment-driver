@@ -26,25 +26,8 @@ func GetStep(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 }
 
 func CancelAllSteps(db *gorm.DB, engine *engine.Engine, w http.ResponseWriter, r *http.Request) {
-	steps := getAllSteps(db)
-	// first mark all non executing steps as cancelled
-	for _, aStep := range steps {
-		if len(aStep.Executions) == 0 {
-			db.Save(&model.Execution{
-				Status: model.Canceled,
-				StepID: aStep.ID,
-			})
-		}
-	}
-	// refresh steps
-	steps = getAllSteps(db)
-	// find currently running steps and cancel them
-	for _, aStep := range steps {
-		// check status of last one, there should not be any steps with no executions
-		if engine.GetLatestExecution(aStep).Status == model.Started {
-			engine.CancelStep(aStep)
-		}
-	}
+	engine.CancelAllSteps()
+	respondOk(w)
 }
 
 func getAllSteps(db *gorm.DB) []model.Step {

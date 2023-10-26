@@ -2,6 +2,7 @@ package engine
 
 import (
 	"context"
+	"errors"
 	"server/azure"
 	"server/config"
 	"server/model"
@@ -344,11 +345,25 @@ func (engine *Engine) runStep(step model.Step, execution *model.Execution, waitG
 		log.Printf("Failed to update execution in DB with resume token: %v", err)
 	}
 
-	// Finish deployment and wait for result
-	deployResponse, err := azure.WaitForDeployARMTemplate(engine.context, step.Name, engine.deploymentsClient, deployment)
+	// Finish deployment and wait for result (with timeout)
+	timeout := time.Duration(config.GetEnvironment().AZURE_DEPLOYMENT_TIMEOUT_MIN) * time.Minute
+	ctxWithTimeout, cancel := context.WithTimeout(engine.context, timeout)
+	defer cancel()
+
+	deployResponse, err := azure.WaitForDeployARMTemplate(ctxWithTimeout, step.Name, deployment)
 	if err != nil {
-		if err == context.Canceled {
+		if errors.Is(err, context.Canceled) {
+			// Parent context canceled, shutdown
 			log.Printf("Completion of step [%s] deployment interrupted by shutdown.", step.Name)
+			return
+		} else if errors.Is(err, context.DeadlineExceeded) {
+			// Child context timed out
+			log.Errorf("Max step execution time reached for step [%s], Canceling.", step.Name)
+			engine.CancelAllSteps()
+			execution.Status = model.Failed
+			execution.Error = "Timeout"
+			execution.ErrorDetails = "Azure deployment step did not complete within the maximum allowed time, please re-deploy."
+			engine.database.Instance.Save(&execution)
 			return
 		}
 		log.Printf("Deployment of step [%s] failed: %v", step.Name, err)
@@ -370,8 +385,30 @@ func (engine *Engine) runStep(step model.Step, execution *model.Execution, waitG
 }
 
 func (engine *Engine) CancelStep(step model.Step) {
-	_, err := azure.CancelDeployment(engine.context, engine.deploymentsClient, step.Name)
+	err := azure.CancelDeployment(engine.context, engine.deploymentsClient, step.Name)
 	if err != nil {
 		log.Errorf("Couldn't cancel deployment: %v", err)
+	}
+}
+
+func (engine *Engine) CancelAllSteps() {
+	steps := []model.Step{}
+	engine.database.Instance.Model(&model.Step{}).Preload("Executions").Find(&steps)
+	// first mark all non executing steps as cancelled
+	for _, aStep := range steps {
+		if len(aStep.Executions) == 0 {
+			engine.database.Instance.Save(&model.Execution{
+				Status: model.Canceled,
+				StepID: aStep.ID,
+			})
+		}
+	}
+	// refresh steps
+	engine.database.Instance.Model(&model.Step{}).Preload("Executions").Find(&steps) // find currently running steps and cancel them
+	for _, aStep := range steps {
+		// check status of last one, there should not be any steps with no executions
+		if engine.GetLatestExecution(aStep).Status == model.Started {
+			engine.CancelStep(aStep)
+		}
 	}
 }
