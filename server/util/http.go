@@ -79,20 +79,51 @@ func EncodeAsWWWFormURLEncoding(body map[string]string) (*bytes.Buffer, error) {
 	return bytes.NewBufferString(values.Encode()), nil
 }
 
+func (requester *HttpRequester) MakeRequestWithJSONBody(ctx context.Context, method string, url string, headers map[string]string, body interface{}) (*HttpResponse, error) {
+	bodyEncoded, err := EncodeAsJSON(body)
+	if err != nil {
+		log.Fatalf("Could not encode body as JSON. %v", err)
+	}
+	if headers == nil {
+		headers = make(map[string]string)
+	}
+	headers["Content-Type"] = "application/json"
+	return requester.MakeRequest(ctx, HttpRequest{
+		Method:  method,
+		Url:     url,
+		Headers: headers,
+		Body:    bodyEncoded,
+	})
+}
+
+func (requester *HttpRequester) MakeRequestWithWWWFormUrlEncodedBody(ctx context.Context, method string, url string, headers map[string]string, body map[string]string) (*HttpResponse, error) {
+	bodyEncoded, err := EncodeAsWWWFormURLEncoding(body)
+	if err != nil {
+		log.Fatalf("Could not encode body as WWW Form Url Encoded. %v", err)
+	}
+	if headers == nil {
+		headers = make(map[string]string)
+	}
+	headers["Content-Type"] = "application/x-www-form-urlencoded"
+	return requester.MakeRequest(ctx, HttpRequest{
+		Method:  method,
+		Url:     url,
+		Headers: headers,
+		Body:    bodyEncoded,
+	})
+}
+
 func (requester *HttpRequester) MakeRequest(ctx context.Context, request HttpRequest) (*HttpResponse, error) {
 	httpRequest, err := http.NewRequestWithContext(ctx, request.Method, request.Url, request.Body)
 	if err != nil {
 		log.Printf("Couldn't prepare HTTP request. %v\n", err)
 		return nil, err
 	}
-	// add or update content type header
-	if request.Headers == nil {
-		request.Headers = make(map[string]string)
-		log.Warn("No headers were set for the request, at least Content-Type should be set.")
-	}
-	// add all header to request
-	for h, v := range request.Headers {
-		httpRequest.Header.Add(h, v)
+	// if there are headers add them all to request
+	if request.Headers != nil {
+		for h, v := range request.Headers {
+			httpRequest.Header.Add(h, v)
+		}
 	}
 	// this following block can be wrapped in go routine if this was not supposed to be blocking
 	httpResponse, err := requester.client.Do(httpRequest)
