@@ -359,7 +359,7 @@ func (engine *Engine) runStep(step model.Step, execution *model.Execution, waitG
 		} else if errors.Is(err, context.DeadlineExceeded) {
 			// Child context timed out
 			log.Errorf("Max step execution time reached for step [%s], Canceling.", step.Name)
-			engine.CancelAllSteps()
+			engine.CancelFutureSteps()
 			execution.Status = model.Failed
 			execution.Error = "Timeout"
 			execution.ErrorDetails = "Azure deployment step did not complete within the maximum allowed time, please re-deploy."
@@ -384,14 +384,7 @@ func (engine *Engine) runStep(step model.Step, execution *model.Execution, waitG
 	engine.database.Instance.Save(&execution)
 }
 
-func (engine *Engine) CancelStep(step model.Step) {
-	err := azure.CancelDeployment(engine.context, engine.deploymentsClient, step.Name)
-	if err != nil {
-		log.Errorf("Couldn't cancel deployment: %v", err)
-	}
-}
-
-func (engine *Engine) CancelAllSteps() {
+func (engine *Engine) CancelFutureSteps() {
 	steps := []model.Step{}
 	engine.database.Instance.Model(&model.Step{}).Preload("Executions").Find(&steps)
 	// first mark all non executing steps as cancelled
@@ -403,12 +396,18 @@ func (engine *Engine) CancelAllSteps() {
 			})
 		}
 	}
-	// refresh steps
+}
+
+func (engine *Engine) CancelRunningStep() {
+	steps := []model.Step{}
 	engine.database.Instance.Model(&model.Step{}).Preload("Executions").Find(&steps) // find currently running steps and cancel them
 	for _, aStep := range steps {
 		// check status of last one, there should not be any steps with no executions
 		if engine.GetLatestExecution(aStep).Status == model.Started {
-			engine.CancelStep(aStep)
+			err := azure.CancelDeployment(engine.context, engine.deploymentsClient, aStep.Name)
+			if err != nil {
+				log.Errorf("Couldn't cancel deployment: %v", err)
+			}
 		}
 	}
 }

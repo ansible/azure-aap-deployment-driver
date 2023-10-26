@@ -26,7 +26,8 @@ func GetStep(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 }
 
 func CancelAllSteps(db *gorm.DB, engine *engine.Engine, w http.ResponseWriter, r *http.Request) {
-	engine.CancelAllSteps()
+	engine.CancelFutureSteps()
+	engine.CancelRunningStep()
 	respondOk(w)
 }
 
