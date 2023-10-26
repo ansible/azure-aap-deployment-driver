@@ -361,6 +361,7 @@ func (engine *Engine) runStep(step model.Step, execution *model.Execution, waitG
 			// Child context timed out
 			log.Errorf("Max step execution time reached for step [%s], Canceling.", step.Name)
 			engine.CancelFutureSteps()
+			engine.CancelRunningStep()
 			execution.Status = model.Failed
 			execution.Error = "Timeout"
 			execution.ErrorDetails = "Azure deployment step did not complete within the maximum allowed time, please re-deploy."
