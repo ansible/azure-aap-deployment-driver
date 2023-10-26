@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"net/url"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -20,7 +21,7 @@ type HttpRequest struct {
 	Method  string
 	Url     string
 	Headers map[string]string
-	Body    interface{}
+	Body    *bytes.Buffer
 }
 
 type HttpResponse struct {
@@ -61,14 +62,25 @@ func newRequester(transport *http.Transport) *HttpRequester {
 	}
 }
 
-func (requester *HttpRequester) MakeJSONRequest(ctx context.Context, request HttpRequest) (*HttpResponse, error) {
-	// create body
+func EncodeAsJSON(body interface{}) (*bytes.Buffer, error) {
 	var bodyBuffer bytes.Buffer
-	if err := json.NewEncoder(&bodyBuffer).Encode(request.Body); err != nil {
+	if err := json.NewEncoder(&bodyBuffer).Encode(body); err != nil {
 		log.Printf("Couldn't encode body. %v\n", err)
 		return nil, err
 	}
-	httpRequest, err := http.NewRequestWithContext(ctx, request.Method, request.Url, &bodyBuffer)
+	return &bodyBuffer, nil
+}
+
+func EncodeAsWWWFormURLEncoding(body map[string]string) (*bytes.Buffer, error) {
+	values := url.Values{}
+	for n, v := range body {
+		values.Add(n, v)
+	}
+	return bytes.NewBufferString(values.Encode()), nil
+}
+
+func (requester *HttpRequester) MakeRequest(ctx context.Context, request HttpRequest) (*HttpResponse, error) {
+	httpRequest, err := http.NewRequestWithContext(ctx, request.Method, request.Url, request.Body)
 	if err != nil {
 		log.Printf("Couldn't prepare HTTP request. %v\n", err)
 		return nil, err
@@ -76,8 +88,8 @@ func (requester *HttpRequester) MakeJSONRequest(ctx context.Context, request Htt
 	// add or update content type header
 	if request.Headers == nil {
 		request.Headers = make(map[string]string)
+		log.Warn("No headers were set for the request, at least Content-Type should be set.")
 	}
-	request.Headers["Content-Type"] = "application/json"
 	// add all header to request
 	for h, v := range request.Headers {
 		httpRequest.Header.Add(h, v)
