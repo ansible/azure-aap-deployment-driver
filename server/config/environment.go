@@ -10,35 +10,35 @@ import (
 )
 
 type envVars struct {
-	SUBSCRIPTION                 string
-	RESOURCE_GROUP_NAME          string
-	CONTAINER_GROUP_NAME         string
-	STORAGE_ACCOUNT_NAME         string
-	PASSWORD                     string
-	BASE_PATH                    string
-	DB_REL_PATH                  string
-	TEMPLATE_REL_PATH            string
-	MAIN_OUTPUTS                 string
-	ENGINE_END_WAIT              int64
-	ENGINE_MAX_RUNTIME           int64
-	ENGINE_RETRY_WAIT            int64
-	EXECUTION_MAX_RETRY          int
-	AZURE_POLLING_FREQ_SECONDS   int
-	AZURE_DEPLOYMENT_TIMEOUT_MIN int
-	AUTO_RETRY                   bool
-	AUTO_RETRY_DELAY             int
-	SESSION_COOKIE_NAME          string
-	SESSION_COOKIE_PATH          string
-	SESSION_COOKIE_DOMAIN        string
-	SESSION_COOKIE_SECURE        bool
-	SESSION_COOKIE_MAX_AGE       int
-	SAVE_CONTAINER               bool
-	SEGMENT_WRITE_KEY            string
-	APPLICATION_ID               string
-	START_TIME                   string
-	LOG_REL_PATH                 string
-	LOG_LEVEL                    string
-	AZURE_LOGIN_RETRIES          int
+	SUBSCRIPTION                      string
+	RESOURCE_GROUP_NAME               string
+	CONTAINER_GROUP_NAME              string
+	STORAGE_ACCOUNT_NAME              string
+	PASSWORD                          string
+	BASE_PATH                         string
+	DB_REL_PATH                       string
+	TEMPLATE_REL_PATH                 string
+	MAIN_OUTPUTS                      string
+	ENGINE_END_WAIT                   int64
+	ENGINE_MAX_RUNTIME                int64
+	ENGINE_RETRY_WAIT                 int64
+	EXECUTION_MAX_RETRY               int
+	AZURE_POLLING_FREQ_SECONDS        int
+	AZURE_DEPLOYMENT_STEP_TIMEOUT_MIN int
+	AUTO_RETRY                        bool
+	AUTO_RETRY_DELAY                  int
+	SESSION_COOKIE_NAME               string
+	SESSION_COOKIE_PATH               string
+	SESSION_COOKIE_DOMAIN             string
+	SESSION_COOKIE_SECURE             bool
+	SESSION_COOKIE_MAX_AGE            int
+	SAVE_CONTAINER                    bool
+	SEGMENT_WRITE_KEY                 string
+	APPLICATION_ID                    string
+	START_TIME                        string
+	LOG_REL_PATH                      string
+	LOG_LEVEL                         string
+	AZURE_LOGIN_RETRIES               int
 }
 
 var (
@@ -59,7 +59,7 @@ func GetEnvironment() envVars {
 	environment.DB_REL_PATH = "installer.db"    // on top of BASE_PATH
 	environment.TEMPLATE_REL_PATH = "templates" // on top of BASE_PATH
 	environment.AZURE_POLLING_FREQ_SECONDS = 5
-	environment.AZURE_DEPLOYMENT_TIMEOUT_MIN = 30
+	environment.AZURE_DEPLOYMENT_STEP_TIMEOUT_MIN = 5
 	environment.AUTO_RETRY = false
 	environment.AUTO_RETRY_DELAY = 60 // Retry after 60 seconds if AUTO_RETRY set
 	environment.SESSION_COOKIE_NAME = "madd_session"
@@ -143,11 +143,11 @@ func GetEnvironment() envVars {
 		environment.AZURE_LOGIN_RETRIES = int(azureLoginRetries)
 	}
 
-	azureStepTimeoutMin, err := strconv.ParseInt(env.Get("AZURE_DEPLOYMENT_TIMEOUT_MIN", "0"), 10, 32)
+	azureStepTimeoutMin, err := strconv.ParseInt(env.Get("AZURE_DEPLOYMENT_STEP_TIMEOUT_MIN", "0"), 10, 32)
 	if err != nil {
-		log.Warnf("AZURE_DEPLOYMENT_TIMEOUT_MIN environment variable is not a number, will use default of %d", environment.AZURE_DEPLOYMENT_TIMEOUT_MIN)
+		log.Warnf("AZURE_DEPLOYMENT_STEP_TIMEOUT_MIN environment variable is not a number, will use default of %d", environment.AZURE_DEPLOYMENT_STEP_TIMEOUT_MIN)
 	} else if azureStepTimeoutMin != 0 {
-		environment.AZURE_DEPLOYMENT_TIMEOUT_MIN = int(azureStepTimeoutMin)
+		environment.AZURE_DEPLOYMENT_STEP_TIMEOUT_MIN = int(azureStepTimeoutMin)
 	}
 
 	basePath := env.Get("BASE_PATH")

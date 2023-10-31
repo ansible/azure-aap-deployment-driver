@@ -347,7 +347,7 @@ func (engine *Engine) runStep(step model.Step, execution *model.Execution, waitG
 	}
 
 	// Finish deployment and wait for result (with timeout)
-	timeout := time.Duration(config.GetEnvironment().AZURE_DEPLOYMENT_TIMEOUT_MIN) * time.Minute
+	timeout := time.Duration(config.GetEnvironment().AZURE_DEPLOYMENT_STEP_TIMEOUT_MIN) * time.Minute
 	ctxWithTimeout, cancel := context.WithTimeout(engine.context, timeout)
 	defer cancel()
 
@@ -364,7 +364,7 @@ func (engine *Engine) runStep(step model.Step, execution *model.Execution, waitG
 			engine.CancelFutureSteps()
 			engine.CancelRunningStep()
 			execution.Status = model.Failed
-			execution.Duration = fmt.Sprintf("> %d minutes", config.GetEnvironment().AZURE_DEPLOYMENT_TIMEOUT_MIN)
+			execution.Duration = fmt.Sprintf("> %d minutes", config.GetEnvironment().AZURE_DEPLOYMENT_STEP_TIMEOUT_MIN)
 			execution.Error = "Timeout"
 			execution.ErrorDetails = "Azure deployment step did not complete within the maximum allowed time, please re-deploy."
 			engine.database.Instance.Save(&execution)
