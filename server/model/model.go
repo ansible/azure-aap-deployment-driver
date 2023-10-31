@@ -70,6 +70,21 @@ type Telemetry struct {
 	Step        string
 }
 
+type RedHatEntitlements struct {
+	BaseModel
+	Sku                string
+	SubscriptionNumber string
+}
+
+type AzureMarketplaceEntitlement struct {
+	BaseModel
+	AzureSubscriptionId string
+	AzureCustomerId     string
+	RHEntitlements      []RedHatEntitlements `gorm:"foreignKey:ID"`
+	RedHatAccountId     string
+	Status              string
+}
+
 func UpdateExecution(execution *Execution, result *DeploymentResult, errJson string) {
 	execution.ResumeToken = ""
 
