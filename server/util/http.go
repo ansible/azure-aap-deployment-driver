@@ -31,8 +31,7 @@ type HttpResponse struct {
 }
 
 func NewHttpRequester() *HttpRequester {
-	// client
-	return newRequester(nil)
+	return newRequester(&http.Transport{})
 }
 
 func NewHttpRequesterWithCertificate(certPEMString, privkeyPEMString string) (*HttpRequester, error) {
@@ -49,7 +48,7 @@ func NewHttpRequesterWithCertificate(certPEMString, privkeyPEMString string) (*H
 	httpTransport := &http.Transport{
 		TLSClientConfig: tlsConfig,
 	}
-	// client
+
 	return newRequester(httpTransport), nil
 }
 
@@ -82,7 +81,8 @@ func EncodeAsWWWFormURLEncoding(body map[string]string) (*bytes.Buffer, error) {
 func (requester *HttpRequester) MakeRequestWithJSONBody(ctx context.Context, method string, url string, headers map[string]string, body interface{}) (*HttpResponse, error) {
 	bodyEncoded, err := EncodeAsJSON(body)
 	if err != nil {
-		log.Fatalf("Could not encode body as JSON. %v", err)
+		log.Errorf("Could not encode body as JSON. %v", err)
+		return nil, err
 	}
 	if headers == nil {
 		headers = make(map[string]string)
@@ -99,7 +99,8 @@ func (requester *HttpRequester) MakeRequestWithJSONBody(ctx context.Context, met
 func (requester *HttpRequester) MakeRequestWithWWWFormUrlEncodedBody(ctx context.Context, method string, url string, headers map[string]string, body map[string]string) (*HttpResponse, error) {
 	bodyEncoded, err := EncodeAsWWWFormURLEncoding(body)
 	if err != nil {
-		log.Fatalf("Could not encode body as WWW Form Url Encoded. %v", err)
+		log.Errorf("Could not encode body as WWW Form Url Encoded. %v", err)
+		return nil, err
 	}
 	if headers == nil {
 		headers = make(map[string]string)
