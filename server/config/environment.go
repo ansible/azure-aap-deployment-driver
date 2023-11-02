@@ -39,6 +39,10 @@ type envVars struct {
 	LOG_REL_PATH                      string
 	LOG_LEVEL                         string
 	AZURE_LOGIN_RETRIES               int
+	SW_SUB_API_PRIVATEKEY             string
+	SW_SUB_API_CERTIFICATE            string
+	SW_SUB_API_URL                    string
+	SW_SUB_VENDOR_PRODUCT_CODE        string
 }
 
 var (
@@ -72,6 +76,10 @@ func GetEnvironment() envVars {
 	environment.LOG_REL_PATH = "engine.log" // on top of BASE_PATH
 	environment.LOG_LEVEL = "info"
 	environment.AZURE_LOGIN_RETRIES = 10
+	environment.SW_SUB_API_CERTIFICATE = ""
+	environment.SW_SUB_API_PRIVATEKEY = ""
+	environment.SW_SUB_API_URL = "https://ibm-entitlement-gateway.api.redhat.com/v1/partnerSubscriptions"
+	environment.SW_SUB_VENDOR_PRODUCT_CODE = "rhaapomsa"
 
 	env := envs.EnvConfig{}
 	env.ReadEnvs()
@@ -254,6 +262,28 @@ func GetEnvironment() envVars {
 	environment.START_TIME = env.Get("START_TIME")
 	if environment.START_TIME == "" {
 		log.Warn("START_TIME environment variable is either unset or is an empty string, telemetry will contain start time of deployment driver engine")
+	}
+
+	environment.SW_SUB_API_CERTIFICATE = env.Get("SW_SUB_API_CERTIFICATE")
+	if environment.SW_SUB_API_CERTIFICATE == "" {
+		log.Warn("SW_SUB_API_CERTIFICATE environment variable is either unset or is an empty string, engine will not be able to make API call for SW subscriptions")
+	}
+
+	environment.SW_SUB_API_PRIVATEKEY = env.Get("SW_SUB_API_PRIVATEKEY")
+	if environment.SW_SUB_API_PRIVATEKEY == "" {
+		log.Warn("SW_SUB_API_PRIVATEKEY environment variable is either unset or is an empty string, engine will not be able to make API call for SW subscriptions")
+	}
+
+	swSubApiUrl := env.Get("SW_SUB_API_URL")
+	if swSubApiUrl != "" {
+		environment.SW_SUB_API_URL = swSubApiUrl
+		log.Infof("SW subscription API calls will use URL: %s", swSubApiUrl)
+	}
+
+	vendorProductCode := env.Get("SW_SUB_VENDOR_PRODUCT_CODE")
+	if vendorProductCode != "" {
+		environment.SW_SUB_VENDOR_PRODUCT_CODE = vendorProductCode
+		log.Infof("SW subscription API calls will use vendor product code: %s", vendorProductCode)
 	}
 
 	return environment

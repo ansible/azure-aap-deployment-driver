@@ -6,6 +6,7 @@ import (
 	"server/azure"
 	"server/config"
 	"server/controllers"
+	"server/controllers/entitlement"
 	"server/engine"
 	"server/persistence"
 )
@@ -17,12 +18,15 @@ func main() {
 	db := persistence.NewPersistentDB(filepath.Join(config.GetEnvironment().BASE_PATH, config.GetEnvironment().DB_REL_PATH))
 	// TODO store first start up in DB so we can determine max allowed run time for installer
 
+	// Graceful exit handler
+	exit := controllers.NewExitController()
+
+	entitlement := entitlement.NewEntitlementController(exit.Context(), db)
+	entitlement.FetchSubscriptions()
+
 	// Instantiate Azure clients and session
 	azure.EnsureAzureLogin(nil)
 	deploymentsClient := azure.NewDeploymentsClient(nil)
-
-	// Graceful exit handler
-	exit := controllers.NewExitController()
 
 	engine := engine.NewEngine(exit.Context(), db, deploymentsClient)
 
