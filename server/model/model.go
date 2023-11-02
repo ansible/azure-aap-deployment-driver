@@ -83,6 +83,7 @@ type AzureMarketplaceEntitlement struct {
 	RHEntitlements      []RedHatEntitlements `gorm:"foreignKey:ID"`
 	RedHatAccountId     string
 	Status              string
+	ErrorMessage        string
 }
 
 func UpdateExecution(execution *Execution, result *DeploymentResult, errJson string) {

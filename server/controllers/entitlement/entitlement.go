@@ -95,18 +95,18 @@ func (controller *EntitlementAPIController) FetchSubscriptions() {
 			)
 			if err != nil {
 				log.Warnf("Failed to get response from subscription API: %v", err)
+				storeError(controller.database, err)
 				return
 			}
 
 			response := APIResponse{}
 			if err := json.Unmarshal(resp.Body, &response); err != nil {
-				log.Errorf("Couldn't unmarshal JSON response. %v", err)
+				log.Warnf("Couldn't unmarshal JSON response. %v", err)
+				storeError(controller.database, err)
 				return
 			}
 
-			if err := storeEntitlements(controller.database, &response); err != nil {
-				log.Errorf("Couldn't persist entitlements in database. %v", err)
-			}
+			storeEntitlements(controller.database, &response)
 
 			return
 		}
@@ -114,9 +114,18 @@ func (controller *EntitlementAPIController) FetchSubscriptions() {
 	}()
 }
 
-func storeEntitlements(db *persistence.Database, data *APIResponse) error {
+func storeError(db *persistence.Database, err error) {
+	if err != nil {
+		entitlement := model.AzureMarketplaceEntitlement{
+			ErrorMessage: err.Error(),
+		}
+		persistRecord(db, &entitlement)
+	}
+}
+
+func storeEntitlements(db *persistence.Database, data *APIResponse) {
 	if len(data.Content) == 0 {
-		return nil
+		return
 	}
 
 	for _, c := range data.Content {
@@ -140,21 +149,24 @@ func storeEntitlements(db *persistence.Database, data *APIResponse) error {
 			}
 			for _, rhe := range c.RhEntitlements {
 				var sku, subNum string
-				var exists bool
-				if sku, exists = rhe["sku"]; !exists {
-					sku = ""
+				var skuExists, subNumExists bool
+				sku, skuExists = rhe["sku"]
+				subNum, subNumExists = rhe["subscriptionNumber"]
+				if skuExists && subNumExists {
+					entitlement.RHEntitlements = append(entitlement.RHEntitlements, model.RedHatEntitlements{
+						Sku:                sku,
+						SubscriptionNumber: subNum,
+					})
 				}
-				if subNum, exists = rhe["subscriptionNumber"]; !exists {
-					subNum = ""
-				}
-				entitlement.RHEntitlements = append(entitlement.RHEntitlements, model.RedHatEntitlements{
-					Sku:                sku,
-					SubscriptionNumber: subNum,
-				})
 			}
-			log.Printf("%v", entitlement)
-			db.Instance.Save(&entitlement)
+			persistRecord(db, &entitlement)
 		}
 	}
-	return nil
+}
+
+func persistRecord(db *persistence.Database, entitlement *model.AzureMarketplaceEntitlement) {
+	tx := db.Instance.Save(entitlement)
+	if tx.Error != nil {
+		log.Warnf("Failed to persist Azure Marketplace Entitlement record: %v", tx.Error.Error())
+	}
 }
