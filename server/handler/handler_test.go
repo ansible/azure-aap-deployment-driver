@@ -122,6 +122,36 @@ func TestStatus(t *testing.T) {
 	assert.Equal(t, 200, rec.Code)
 }
 
+func TestEntitlement(t *testing.T) {
+	rec := testHttpRoute(t, "GET", "/azmarketplaceentitlementscount", nil)
+	assert.Equal(t, 200, rec.Code)
+	var entitlementResponse map[string]interface{}
+	if err := json.Unmarshal(rec.Body.Bytes(), &entitlementResponse); err != nil {
+		t.Error(err.Error())
+	}
+	// json treats all numbers as floats, hence .(float64) to get the number and then convert to int
+	assert.Equal(t, 3, int(entitlementResponse["count"].(float64)))
+	assert.Equal(t, "", entitlementResponse["error"].(string))
+}
+
+func TestErrorMessageInEntitlements(t *testing.T) {
+	t.Cleanup(func() {
+		database.Instance.Delete("error_message != ''")
+	})
+	database.Instance.Save(&model.AzureMarketplaceEntitlement{
+		ErrorMessage: "Failed to reach Red Hat API",
+	})
+	rec := testHttpRoute(t, "GET", "/azmarketplaceentitlementscount", nil)
+	assert.Equal(t, 200, rec.Code)
+	var entitlementResponse map[string]interface{}
+	if err := json.Unmarshal(rec.Body.Bytes(), &entitlementResponse); err != nil {
+		t.Error(err.Error())
+	}
+	// json treats all numbers as floats, hence .(float64) to get the number and then convert to int
+	assert.Equal(t, 0, int(entitlementResponse["count"].(float64)))
+	assert.Equal(t, "Failed to reach Red Hat API", entitlementResponse["error"].(string))
+}
+
 func testHttpRoute(t *testing.T, method string, path string, body io.Reader) *httptest.ResponseRecorder {
 	req, err := http.NewRequest(method, path, body)
 	if err != nil {
@@ -185,6 +215,30 @@ func TestMain(m *testing.M) {
 
 	database.Instance.Save(&execution1)
 	database.Instance.Save(&execution2)
+
+	database.Instance.Save(&model.AzureMarketplaceEntitlement{
+		AzureSubscriptionId: "subscription1",
+		AzureCustomerId:     "customer1",
+		RHEntitlements:      make([]model.RedHatEntitlements, 0),
+		RedHatAccountId:     "",
+		Status:              "SUBSCRIBED",
+	})
+
+	database.Instance.Save(&model.AzureMarketplaceEntitlement{
+		AzureSubscriptionId: "subscription2",
+		AzureCustomerId:     "customer1",
+		RHEntitlements:      make([]model.RedHatEntitlements, 0),
+		RedHatAccountId:     "",
+		Status:              "SUBSCRIBED",
+	})
+
+	database.Instance.Save(&model.AzureMarketplaceEntitlement{
+		AzureSubscriptionId: "subscription3",
+		AzureCustomerId:     "customer1",
+		RHEntitlements:      make([]model.RedHatEntitlements, 0),
+		RedHatAccountId:     "",
+		Status:              "SUBSCRIBED",
+	})
 
 	m.Run()
 }
