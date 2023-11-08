@@ -122,7 +122,7 @@ func (engine *Engine) startDeploymentExecutions() {
 			// check all executions for those can be restarted
 			for _, execution := range currentExecutions {
 				// check if step can be restarted
-				if execution != nil && execution.Status != model.Succeeded && execution.Status != model.Canceled {
+				if execution != nil && execution.Status != model.Succeeded && execution.Status != model.Canceled && execution.Status != model.PermanentlyFailed {
 					restartRequired = true
 					engine.startWaitingForRestart(execution, &executionWaitGroup)
 				}
