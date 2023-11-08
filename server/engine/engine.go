@@ -363,7 +363,7 @@ func (engine *Engine) runStep(step model.Step, execution *model.Execution, waitG
 			log.Errorf("Max step execution time reached for step [%s], Canceling.", step.Name)
 			engine.CancelFutureSteps()
 			engine.CancelRunningStep()
-			execution.Status = model.Failed
+			execution.Status = model.PermanentlyFailed
 			execution.Duration = fmt.Sprintf("> %d minutes", config.GetEnvironment().AZURE_DEPLOYMENT_STEP_TIMEOUT_MIN)
 			execution.Error = "Timeout"
 			execution.ErrorDetails = "Azure deployment step did not complete within the maximum allowed time, please re-deploy."
