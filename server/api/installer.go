@@ -82,6 +82,7 @@ func (a *Installer) setRouters() {
 	a.Post("/cancelAllSteps", handler.EnsureAuthenticated(a.WrapHandlerWithDBAndEngine(handler.CancelAllSteps)))
 	a.Post("/deleteContainer", handler.EnsureAuthenticated(a.WrapHandlerWithDB(handler.DeleteContainer)))
 	a.Post("/terminate", handler.EnsureAuthenticated(a.WrapHandlerWithDB(handler.Terminate)))
+	a.Get("/azmarketplaceentitlementscount", handler.EnsureAuthenticated(a.WrapHandlerWithDB(handler.GetNumOfAzureMarketplaceEntitlements)))
 }
 
 func (a *Installer) Get(path string, f func(w http.ResponseWriter, r *http.Request)) {
