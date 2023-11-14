@@ -8,7 +8,11 @@ import (
 	"server/controllers"
 	"server/controllers/entitlement"
 	"server/engine"
+	"server/handler"
 	"server/persistence"
+	"server/sso"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -28,9 +32,22 @@ func main() {
 	azure.EnsureAzureLogin(nil)
 	deploymentsClient := azure.NewDeploymentsClient(nil)
 
+	// Fallback in case SSO setup fails
+	var loginManager handler.LoginManager = handler.CredentialsHandler{}
+
+	if config.GetEnvironment().AUTH_TYPE == "SSO" {
+		ssoManager, err := sso.NewSsoManager(exit.Context(), db)
+		if err != nil {
+			log.Errorf("Unable to set up SSO, falling back to credentials login: %v", err)
+		} else {
+			loginManager = ssoManager.SsoHandler
+			defer ssoManager.DeleteAcsClient()
+		}
+	}
+
 	engine := engine.NewEngine(exit.Context(), db, deploymentsClient)
 
-	app := api.NewApp(db, engine)
+	app := api.NewApp(db, engine, loginManager)
 
 	// Start listening for shutdown signal
 	exit.Start()

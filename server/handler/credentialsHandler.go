@@ -9,12 +9,14 @@ import (
 	"gorm.io/gorm"
 )
 
+type CredentialsHandler struct{}
+
 type loginData struct {
 	Username string `json:"uid"`
 	Password string `json:"pwd"`
 }
 
-func GetLoginHandler() HandleFuncWithDB {
+func (a CredentialsHandler) GetLoginHandler() HandleFuncWithDB {
 	// initialization of the expected credentials
 	const userName = "admin"
 	userPassword := config.GetEnvironment().PASSWORD

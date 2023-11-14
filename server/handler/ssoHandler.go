@@ -1,0 +1,72 @@
+package handler
+
+import (
+	"context"
+	"crypto/rand"
+	"encoding/base64"
+	"fmt"
+	"net/http"
+	"server/config"
+	"server/model"
+
+	"gorm.io/gorm"
+)
+
+type SsoHandler struct {
+	Auth  *Authenticator
+	State string
+}
+
+var handler *SsoHandler
+
+func GetSsoHandler(auth *Authenticator) *SsoHandler {
+	handler = &SsoHandler{Auth: auth}
+	return handler
+}
+
+func (s *SsoHandler) GetLoginHandler() HandleFuncWithDB {
+	return func(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
+		// Redirect to SSO, setting new nonce/state value for each login
+		s.rollState()
+		http.Redirect(w, r, s.Auth.Config.AuthCodeURL(s.State), http.StatusTemporaryRedirect)
+	}
+}
+
+func (s *SsoHandler) SsoRedirect(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
+	code := r.URL.Query().Get("code")
+	state := r.URL.Query().Get("state")
+	if state != s.State {
+		respondError(w, http.StatusUnauthorized, "SSO state values do not match.")
+	}
+	// TODO Seems this is needed only for later verifying the SSO session,
+	// for instance to ensure the user has not logged out.  Not sure we need it.
+	_ = r.URL.Query().Get("session_state")
+
+	oauth2Token, err := s.Auth.Config.Exchange(context.Background(), code)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, err.Error())
+	}
+	// Load SSO client credentials from db
+	ssoStore := model.GetSsoStore()
+	ssoCredentials, err := ssoStore.GetSsoClientCredentials()
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, err.Error())
+	}
+	_, err = s.Auth.VerifyToken(oauth2Token, ssoCredentials.ClientId)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, err.Error())
+	}
+	// TODO Store SSO details in session for use by UI?
+	sessionHelper, err := getSessionHelper()
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, err.Error())
+	}
+	sessionHelper.SetupSession(r, w)
+	http.Redirect(w, r, fmt.Sprintf("https://%s", config.GetEnvironment().INSTALLER_DOMAIN_NAME), http.StatusTemporaryRedirect)
+}
+
+func (s *SsoHandler) rollState() {
+	b := make([]byte, 32)
+	rand.Read(b)
+	s.State = base64.StdEncoding.EncodeToString(b)
+}

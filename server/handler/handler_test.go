@@ -160,7 +160,7 @@ func testHttpRoute(t *testing.T, method string, path string, body io.Reader) *ht
 	handler.ConfigureAuthenticationForTesting(true)
 	rec := httptest.NewRecorder()
 
-	installer := api.NewApp(database, nil)
+	installer := api.NewApp(database, nil, handler.CredentialsHandler{})
 	installer.GetRouter().ServeHTTP(rec, req)
 
 	return rec
