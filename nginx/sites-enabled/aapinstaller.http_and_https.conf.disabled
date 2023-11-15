@@ -55,7 +55,7 @@ server {
     # SSO Callback location, forwards to backend
     location /ssocallback {
         # If the request came with SSO data, send to backend
-        if ($arg_session_state != "") {return 302 /api/callback$is_args$args; }
+        if ($arg_session_state != "") {return 302 /api/ssocallback$is_args$args; }
 
         # Otherwise redirect to home page
         return 302 /;

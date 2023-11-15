@@ -28,7 +28,9 @@ func (s *SsoHandler) GetLoginHandler() HandleFuncWithDB {
 	return func(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		// Redirect to SSO, setting new nonce/state value for each login
 		err := s.rollState()
-		respondError(w, http.StatusInternalServerError, fmt.Errorf("unable to generate single use SSO state value: %v", err).Error())
+		if err != nil {
+			respondError(w, http.StatusInternalServerError, fmt.Errorf("unable to generate single use SSO state value: %v", err).Error())
+		}
 		http.Redirect(w, r, s.Auth.Config.AuthCodeURL(s.State), http.StatusTemporaryRedirect)
 	}
 }
