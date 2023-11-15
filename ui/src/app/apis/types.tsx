@@ -1,5 +1,3 @@
-import { type } from "os"
-
 export enum StepStatuses {
 	PENDING,
 	STARTED,
