@@ -1,3 +1,5 @@
+import { type } from "os"
+
 export enum StepStatuses {
 	PENDING,
 	STARTED,
@@ -120,6 +122,24 @@ export class DeploymentData {
 			this.progress = new DeploymentProgressData(this.steps)
 		} else {
 			this.progress = new DeploymentProgressData()
+		}
+	}
+}
+
+export class EntitlementsCount {
+	count:number = 0
+	error:string = ""
+	constructor(entitlementCount) {
+		if (entitlementCount) {
+			if ('count' in entitlementCount && typeof entitlementCount.count === "number") {
+				this.count = entitlementCount.count
+			}
+			if ('error' in entitlementCount && typeof entitlementCount.error === "string") {
+				this.error = entitlementCount.error
+				if (this.error.length > 0 ){
+					this.count = 0
+				}
+			}
 		}
 	}
 }
