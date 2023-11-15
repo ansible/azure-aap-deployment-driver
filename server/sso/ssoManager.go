@@ -61,7 +61,10 @@ func (s *SsoManager) initialize() error {
 func (s *SsoManager) DeleteAcsClient() {
 	acsClient := GetAcsClient(s.Context)
 	credentials, _ := model.GetSsoStore().GetSsoClientCredentials()
-	acsClient.DeleteACSClient(credentials.ClientId)
+	_, err := acsClient.DeleteACSClient(credentials.ClientId)
+	if err != nil {
+		log.Errorf("failure to delete ACS client: %v", err)
+	}
 }
 
 func createAndStoreSsoCredentials(ctx context.Context, db *persistence.Database) (*model.SsoCredentials, error) {
@@ -71,7 +74,11 @@ func createAndStoreSsoCredentials(ctx context.Context, db *persistence.Database)
 		log.Errorf("Unable to create SSO client, fall back to credentials login: %v", err)
 		return nil, err
 	} else {
-		model.InitSsoStore(db.Instance).SetSsoClientCredentials(credentials.ClientId, credentials.ClientSecret)
+		err := model.InitSsoStore(db.Instance).SetSsoClientCredentials(credentials.ClientId, credentials.ClientSecret)
+		if err != nil {
+			log.Errorf("Unable to store SSO credentials in DB: %v", err)
+			return nil, err
+		}
 	}
 	return credentials, nil
 }
