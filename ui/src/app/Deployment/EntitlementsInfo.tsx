@@ -13,35 +13,44 @@ const AlertContent = {
 	"existing": {
 		"variant": AlertVariant.info,
 		"title":"You currently have a subscription to Ansible Automation Platform",
-		"content": "To manage or setup new subscription, visit the" // followed by a link
+		"message": "To manage or setup new subscription, visit the", // followed by a link
+		"linkTitle": "Red Hat Hybrid Cloud Console",
+		"linkURL":"https://console.redhat.com/",
+		"linkInLine": true
 	},
 	"pending": {
 		"variant": AlertVariant.info,
 		"title": "Your Ansible Automation Platform subscription is pending",
-		"content": "Your subscription is being entitled and deployed, and will be ready for use shortly. " +
-		"In the meantime, you can manage your subscription from the" //followed by a link
+		"message": "You do not have an Ansible Automation Platform subscription or your subscription is being entitled. " +
+			"Click on the following link to enable your Ansible Automation Platform subscription and to access Red Hat support. This is a required step in order to access the Ansible Automation Platform once it is deployed.", //followed by a link
+		"linkTitle": "Red Hat Hybrid Cloud Console",
+		"linkURL":"https://console.redhat.com/?azure-ansible-activation",
+		"linkInLine": false
 	},
 	"error": {
 		"variant": AlertVariant.danger,
 		"title": "We're temporarily unable to fetch your subscription information",
-		"content": "In the meantime, you can manage your subscription from the" //followed by a link
+		"message": "Click on the following link to enable your Ansible Automation Platform subscription and to access Red Hat support. This is a required step in order to access the Ansible Automation Platform once it is deployed.", //followed by a link
+		"linkTitle": "Red Hat Hybrid Cloud Console",
+		"linkURL":"https://console.redhat.com/",
+		"linkInLine": false
 	}
 }
 
 export const EntitlementsInfo = ({entitlementsCount}:IEntitlementsInfoProps) => {
-	let alert: any
+	let alertContent: any
 
 	if (entitlementsCount.error) {
-		alert = AlertContent.error
+		alertContent = AlertContent.error
 	} else {
-		alert = (entitlementsCount.count > 0) ? AlertContent.existing : AlertContent.pending
+		alertContent = (entitlementsCount.count > 0) ? AlertContent.existing : AlertContent.pending
 	}
 
 	return(
-		<Alert variant={alert.variant} isInline={true} title={alert.title} className='entitlements-info'>
-			<Text component={TextVariants.p}>{alert.content} <Button variant="link" component="a" isInline
+		<Alert variant={alertContent.variant} isInline={true} title={alertContent.title} className='entitlements-info'>
+			<Text component={TextVariants.p}>{alertContent.message} {!alertContent.linkInLine && <br/>}<Button variant="link" component="a" isInline={alertContent.linkInLine}
 				icon={<ExternalLinkSquareAltIcon />} iconPosition="right"
-				href="https://console.redhat.com/" target="_blank">Red Hat Hybrid Cloud Console</Button>
+				href={alertContent.linkURL} target="_blank">{alertContent.linkTitle}</Button>
 			</Text>
 		</Alert>
 	)

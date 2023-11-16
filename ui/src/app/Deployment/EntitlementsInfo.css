@@ -1,3 +1,7 @@
 .entitlements-info {
 	font-size: 16px;
 }
+
+.entitlements-info div a {
+	padding-left: 0px;
+}
