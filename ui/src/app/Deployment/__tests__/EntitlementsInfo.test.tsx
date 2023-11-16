@@ -10,7 +10,7 @@ test("Subscriptions pending", () => {
 	}
 	render(<EntitlementsInfo entitlementsCount={noEntitlements}></EntitlementsInfo>)
 	const alertTitle = screen.getByText("Your Ansible Automation Platform subscription is pending")
-	const alertContent = screen.getByText(/Your subscription is being entitled and deployed,.+/i)
+	const alertContent = screen.getByText(/You do not have an Ansible Automation Platform subscription or your subscription is being entitled\..+/i)
 	expect(alertTitle).toBeInTheDocument()
 	expect(alertTitle).toBeVisible()
 	expect(alertContent).toBeInTheDocument()
@@ -38,7 +38,7 @@ test("Coudln't fetch subscriptions", () => {
 	}
 	render(<EntitlementsInfo entitlementsCount={noEntitlements}></EntitlementsInfo>)
 	const alertTitle = screen.getByText("We're temporarily unable to fetch your subscription information")
-	const alertContent = screen.getByText(/In the meantime, you can manage your subscription.+/i)
+	const alertContent = screen.getByText(/Click on the following link to enable your Ansible Automation Platform subscription and to access Red Hat support\..+/i)
 	expect(alertTitle).toBeInTheDocument()
 	expect(alertTitle).toBeVisible()
 	expect(alertContent).toBeInTheDocument()
