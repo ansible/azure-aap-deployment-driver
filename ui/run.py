@@ -148,6 +148,13 @@ steps = """
 ]
 """
 
+entitlementCount = """
+{
+    "count": 0,
+    "error": ""
+}
+"""
+
 api = flask.Flask('installer')
 
 CORS(api)
@@ -160,5 +167,9 @@ def getSteps():
 def postExecution(id):
     print("restarted")
     return "restarted", 200
+
+@api.route('/azmarketplaceentitlementscount', methods=['GET'])
+def getEntitlementsCount():
+    return entitlementCount, 200, {'Content-Type': 'application/json'}
 
 api.run(host='0.0.0.0', port='55080')

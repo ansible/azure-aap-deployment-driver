@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { DeploymentSteps } from './DeploymentSteps/Steps';
 import { DeploymentProgress } from './DeploymentProgress/DeploymentProgress';
-import { RHLoginModal } from './RHLoginModal';
 import { getSteps } from '../apis/deployment';
-import { DeploymentStepData, DeploymentProgressData } from '../apis/types';
+import { getEntitlementsCount } from '../apis/entitlements';
+import { DeploymentStepData, DeploymentProgressData, EntitlementsCount } from '../apis/types';
+import { RHLoginModal } from './RHLoginModal';
+import { EntitlementsInfo } from './EntitlementsInfo';
 
 const SHOW_RH_LOGIN_SESSION_STORAGE_KEY = "showRHLogin"
 
@@ -23,6 +25,7 @@ export const Deployment = () => {
       return storageItem.toLowerCase() === 'true'
     }
   })
+  const [entitlementsCount, setEntitlementsCount] = useState<EntitlementsCount>()
 
   const fetchData = async () => {
     try {
@@ -31,6 +34,15 @@ export const Deployment = () => {
       setProgressData(data.progress)
     } catch (error) {
       console.log("Could not fetch steps data.", error)
+    }
+  }
+
+  const fetchEntitlementsData = async () => {
+    try {
+      const entitlementsData = await getEntitlementsCount()
+      setEntitlementsCount(entitlementsData)
+    } catch(error) {
+      console.log("Could not fetch entitlements data.", error)
     }
   }
 
@@ -55,10 +67,17 @@ export const Deployment = () => {
     setShowRHLogin(false)
   }
 
+  useEffect(()=>{
+    fetchEntitlementsData()
+  },[])
+
   return (
     <>
       { <RHLoginModal isModalShown={showRHLogin} actionHandler={handleRHLoginModalAction}/> }
       {/* TODO Add some place holder for case when data is not available */}
+
+      {entitlementsCount && <EntitlementsInfo entitlementsCount={entitlementsCount}></EntitlementsInfo> }
+
       {stepsData &&<DeploymentSteps stepsData={stepsData}></DeploymentSteps>}
       {progressData  && <DeploymentProgress progressData={progressData}></DeploymentProgress>}
     </>

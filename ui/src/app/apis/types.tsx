@@ -123,3 +123,21 @@ export class DeploymentData {
 		}
 	}
 }
+
+export class EntitlementsCount {
+	count:number = 0
+	error:string = ""
+	constructor(entitlementCount) {
+		if (entitlementCount) {
+			if ('count' in entitlementCount && typeof entitlementCount.count === "number") {
+				this.count = entitlementCount.count
+			}
+			if ('error' in entitlementCount && typeof entitlementCount.error === "string") {
+				this.error = entitlementCount.error
+				if (this.error.length > 0 ){
+					this.count = 0
+				}
+			}
+		}
+	}
+}
