@@ -180,6 +180,13 @@ func (engine *Engine) waitBeforeEnding() {
 	SetFinalMetrics(engine.database.Instance)
 	log.Info("Sending telemetry for this deployment to Segment")
 	PublishToSegment(engine.database.Instance)
+
+	// Send deployment identification to Azure function
+	err := SendDeploymentIdentification(engine.context)
+	if err != nil {
+		log.Errorf("Unable to send deployment identification event to Azure function: %v", err)
+	}
+
 	// if the context is not yet cancelled, check for failed executions
 	if engine.context.Err() == nil {
 		waitTime := time.Duration(config.GetEnvironment().ENGINE_END_WAIT) * time.Second

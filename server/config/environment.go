@@ -10,39 +10,42 @@ import (
 )
 
 type envVars struct {
-	SUBSCRIPTION                      string
-	RESOURCE_GROUP_NAME               string
-	CONTAINER_GROUP_NAME              string
-	STORAGE_ACCOUNT_NAME              string
-	PASSWORD                          string
-	BASE_PATH                         string
-	DB_REL_PATH                       string
-	TEMPLATE_REL_PATH                 string
-	MAIN_OUTPUTS                      string
-	ENGINE_END_WAIT                   int64
-	ENGINE_MAX_RUNTIME                int64
-	ENGINE_RETRY_WAIT                 int64
-	EXECUTION_MAX_RETRY               int
-	AZURE_POLLING_FREQ_SECONDS        int
-	AZURE_DEPLOYMENT_STEP_TIMEOUT_MIN int
-	AUTO_RETRY                        bool
-	AUTO_RETRY_DELAY                  int
-	SESSION_COOKIE_NAME               string
-	SESSION_COOKIE_PATH               string
-	SESSION_COOKIE_DOMAIN             string
-	SESSION_COOKIE_SECURE             bool
-	SESSION_COOKIE_MAX_AGE            int
-	SAVE_CONTAINER                    bool
-	SEGMENT_WRITE_KEY                 string
-	APPLICATION_ID                    string
-	START_TIME                        string
-	LOG_REL_PATH                      string
-	LOG_LEVEL                         string
-	AZURE_LOGIN_RETRIES               int
-	SW_SUB_API_PRIVATEKEY             string
-	SW_SUB_API_CERTIFICATE            string
-	SW_SUB_API_URL                    string
-	SW_SUB_VENDOR_PRODUCT_CODE        string
+	SUBSCRIPTION                        string
+	RESOURCE_GROUP_NAME                 string
+	CONTAINER_GROUP_NAME                string
+	STORAGE_ACCOUNT_NAME                string
+	PASSWORD                            string
+	BASE_PATH                           string
+	DB_REL_PATH                         string
+	TEMPLATE_REL_PATH                   string
+	MAIN_OUTPUTS                        string
+	ENGINE_END_WAIT                     int64
+	ENGINE_MAX_RUNTIME                  int64
+	ENGINE_RETRY_WAIT                   int64
+	EXECUTION_MAX_RETRY                 int
+	AZURE_POLLING_FREQ_SECONDS          int
+	AZURE_DEPLOYMENT_STEP_TIMEOUT_MIN   int
+	AUTO_RETRY                          bool
+	AUTO_RETRY_DELAY                    int
+	SESSION_COOKIE_NAME                 string
+	SESSION_COOKIE_PATH                 string
+	SESSION_COOKIE_DOMAIN               string
+	SESSION_COOKIE_SECURE               bool
+	SESSION_COOKIE_MAX_AGE              int
+	SAVE_CONTAINER                      bool
+	SEGMENT_WRITE_KEY                   string
+	APPLICATION_ID                      string
+	START_TIME                          string
+	LOG_REL_PATH                        string
+	LOG_LEVEL                           string
+	AZURE_LOGIN_RETRIES                 int
+	SW_SUB_API_PRIVATEKEY               string
+	SW_SUB_API_CERTIFICATE              string
+	SW_SUB_API_URL                      string
+	SW_SUB_VENDOR_PRODUCT_CODE          string
+	AZURE_TENANT_ID                     string
+	AZURE_MARKETPLACE_FUNCTION_BASE_URL string
+	AZURE_MARKETPLACE_FUNCTION_KEY      string
 }
 
 var (
@@ -80,6 +83,7 @@ func GetEnvironment() envVars {
 	environment.SW_SUB_API_PRIVATEKEY = ""
 	environment.SW_SUB_API_URL = "https://ibm-entitlement-gateway.api.redhat.com/v1/partnerSubscriptions"
 	environment.SW_SUB_VENDOR_PRODUCT_CODE = "rhaapomsa"
+	environment.AZURE_MARKETPLACE_FUNCTION_BASE_URL = "https://marketplace-notification.azurewebsites.net/api/resource"
 
 	env := envs.EnvConfig{}
 	env.ReadEnvs()
@@ -87,6 +91,11 @@ func GetEnvironment() envVars {
 	environment.SUBSCRIPTION = env.Get("AZURE_SUBSCRIPTION_ID")
 	if environment.SUBSCRIPTION == "" {
 		log.Fatal("AZURE_SUBSCRIPTION_ID environment variable must be set.")
+	}
+
+	environment.AZURE_TENANT_ID = env.Get("AZURE_TENANT_ID")
+	if environment.AZURE_TENANT_ID == "" {
+		log.Fatal("AZURE_TENANT_ID environment variable must be set.")
 	}
 
 	environment.RESOURCE_GROUP_NAME = env.Get("RESOURCE_GROUP_NAME")
@@ -255,6 +264,12 @@ func GetEnvironment() envVars {
 	if environment.SEGMENT_WRITE_KEY == "" {
 		log.Warn("SEGMENT_WRITE_KEY environment variable is either unset or is an empty string, deployment telemetry will not be published to Segment")
 	}
+
+	environment.AZURE_MARKETPLACE_FUNCTION_KEY = env.Get("AZURE_MARKETPLACE_FUNCTION_KEY")
+	if environment.AZURE_MARKETPLACE_FUNCTION_KEY == "" {
+		log.Warn("AZURE_MARKETPLACE_FUNCTION_KEY environment variable is either unset or is an empty string, deployment identification event will not be published")
+	}
+
 	environment.APPLICATION_ID = env.Get("APPLICATION_ID")
 	if environment.APPLICATION_ID == "" {
 		log.Warn("APPLICATION_ID environment variable is either unset or is an empty string, deployment telemetry will not contain the applicationid property")
