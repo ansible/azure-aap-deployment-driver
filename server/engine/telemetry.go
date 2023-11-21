@@ -17,6 +17,10 @@ import (
 )
 
 func SendDeploymentIdentification(ctx context.Context) error {
+	if config.GetEnvironment().AZURE_MARKETPLACE_FUNCTION_KEY == "" {
+		log.Warn("Azure marketplace function key not available, deployment identification will not be sent.")
+		return nil
+	}
 	azureFunctionUrl := strings.Join([]string{config.GetEnvironment().AZURE_MARKETPLACE_FUNCTION_BASE_URL, config.GetEnvironment().AZURE_MARKETPLACE_FUNCTION_KEY}, "?code=")
 	req := util.NewHttpRequester()
 	body := make(map[string]interface{})
