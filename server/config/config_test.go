@@ -21,7 +21,7 @@ func TestArgs(t *testing.T) {
 
 func TestEnvironment(t *testing.T) {
 	envs := config.GetEnvironment()
-	assert.Equal(t, "3f7e29ba-24e0-42f6-8d9c-5149a14bda37", envs.SUBSCRIPTION)
+	assert.Equal(t, "12345678-90ab-cdef-0123-4567890abcde", envs.SUBSCRIPTION)
 }
 
 func TestLogging(t *testing.T) {
