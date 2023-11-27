@@ -2,8 +2,10 @@ package sso
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"server/config"
+	"server/controllers"
 	"server/handler"
 	"server/model"
 	"server/persistence"
@@ -20,16 +22,21 @@ type SsoManager struct {
 	Db            *persistence.Database
 }
 
-func NewSsoManager(ctx context.Context, db *persistence.Database) (*SsoManager, error) {
+func NewSsoManager(ctx context.Context, db *persistence.Database, loginManager *handler.LoginManager) {
+	if config.GetEnvironment().AUTH_TYPE != "SSO" {
+		log.Infof("SSO not enabled, skipping setup.")
+		return
+	}
 	ssoManager = &SsoManager{
 		Context: ctx,
 		Db:      db,
 	}
 	err := ssoManager.initialize()
 	if err != nil {
-		return nil, fmt.Errorf("failed to initialize SSO manager: %v", err)
+		log.Errorf("Failed to initialize SSO manager, will use credentials login: %v", err)
 	}
-	return ssoManager, nil
+	controllers.AddCancelHandler("SSO Client Cleanup", ssoManager.DeleteAcsClient)
+	*loginManager = ssoManager.SsoHandler
 }
 
 func (s *SsoManager) initialize() error {
@@ -69,6 +76,9 @@ func (s *SsoManager) DeleteAcsClient() {
 
 func createAndStoreSsoCredentials(ctx context.Context, db *persistence.Database) (*model.SsoCredentials, error) {
 	acsClient := GetAcsClient(ctx)
+	if acsClient == nil {
+		return nil, errors.New("unable to create ACS client")
+	}
 	credentials, err := acsClient.GetClientCredentials(handler.GetRedirectUrl())
 	if err != nil {
 		log.Errorf("Unable to create SSO client, fall back to credentials login: %v", err)

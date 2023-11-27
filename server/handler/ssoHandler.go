@@ -9,6 +9,7 @@ import (
 	"server/config"
 	"server/model"
 
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -30,6 +31,7 @@ func (s *SsoHandler) GetLoginHandler() HandleFuncWithDB {
 		err := s.rollState()
 		if err != nil {
 			respondError(w, http.StatusInternalServerError, fmt.Errorf("unable to generate single use SSO state value: %v", err).Error())
+			return
 		}
 		http.Redirect(w, r, s.Auth.Config.AuthCodeURL(s.State), http.StatusTemporaryRedirect)
 	}
@@ -39,34 +41,43 @@ func (s *SsoHandler) SsoRedirect(db *gorm.DB, w http.ResponseWriter, r *http.Req
 	code := r.URL.Query().Get("code")
 	state := r.URL.Query().Get("state")
 	if state != s.State {
+		log.Errorf("SSO state mismatch..  Sent: %s, Received: %s", s.State, state)
 		respondError(w, http.StatusUnauthorized, "SSO state values do not match.")
+		return
 	}
-	// TODO Seems this is needed only for later verifying the SSO session,
-	// for instance to ensure the user has not logged out.  Not sure we need it.
-	_ = r.URL.Query().Get("session_state")
+	sessionState := r.URL.Query().Get("session_state")
 
 	oauth2Token, err := s.Auth.Config.Exchange(context.Background(), code)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
+		return
 	}
 	// Load SSO client credentials from db
 	ssoStore := model.GetSsoStore()
 	ssoCredentials, err := ssoStore.GetSsoClientCredentials()
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
+		return
 	}
 	_, err = s.Auth.VerifyToken(oauth2Token, ssoCredentials.ClientId)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
+		return
 	}
-	// TODO Store SSO details in session for use by UI?
 	sessionHelper, err := getSessionHelper()
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
+		return
 	}
-	err = sessionHelper.SetupSession(r, w)
+	err = model.GetSsoStore().CreateSession(sessionState, code)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	err = sessionHelper.SetupSession(r, w, sessionState)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, err.Error())
+		return
 	}
 	http.Redirect(w, r, fmt.Sprintf("https://%s", config.GetEnvironment().INSTALLER_DOMAIN_NAME), http.StatusTemporaryRedirect)
 }

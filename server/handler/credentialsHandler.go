@@ -38,7 +38,7 @@ func (a CredentialsHandler) GetLoginHandler() HandleFuncWithDB {
 		}
 
 		if data.Username == userName && data.Password == userPassword {
-			if err := sessionHelper.SetupSession(r, w); err != nil {
+			if err := sessionHelper.SetupSession(r, w, "credentials"); err != nil {
 				respondError(w, http.StatusInternalServerError, "Could not setup session")
 			}
 			respondJSON(w, http.StatusOK, map[string]string{"status": "success"})

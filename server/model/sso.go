@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sync"
 
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -11,6 +12,9 @@ type SsoStore interface {
 	SetSsoClientCredentials(string, string) error
 	GetSsoClientCredentials() (*SsoCredentials, error)
 	RemoveSsoClientCredentials()
+	CreateSession(string, string) error
+	RemoveSession(string) error
+	ValidSession(string) bool
 }
 
 var once sync.Once
@@ -19,6 +23,11 @@ var Store SsoStore
 type SsoCredentials struct {
 	ClientId     string
 	ClientSecret string
+}
+
+type SsoSession struct {
+	Code  string
+	State string
 }
 
 type ssoStore struct {
@@ -58,4 +67,36 @@ func (s ssoStore) GetSsoClientCredentials() (*SsoCredentials, error) {
 func (s ssoStore) RemoveSsoClientCredentials() {
 	// Clear table
 	s.db.Exec("DELETE FROM sso_credentials")
+}
+
+func (s ssoStore) CreateSession(sessionState string, code string) error {
+	session := SsoSession{State: sessionState, Code: code}
+	if err := s.db.Save(session).Error; err != nil {
+		log.Errorf("Unable to store SSO session: %v", err)
+		return err
+	}
+	return nil
+}
+
+func (s ssoStore) RemoveSession(sessionState string) error {
+	if err := s.db.Delete(SsoSession{State: sessionState}).Error; err != nil {
+		log.Errorf("Unable to remove SSO session: %v", err)
+		return err
+	}
+	return nil
+}
+
+func (s ssoStore) ValidSession(sessionState string) bool {
+	sessions := []SsoSession{}
+	if err := s.db.Find(&sessions).Error; err != nil {
+		log.Errorf("Unable to load SSO sessions from DB, rejecting validation: %v", err)
+		return false
+	}
+
+	for _, sess := range sessions {
+		if sess.State == sessionState {
+			return true
+		}
+	}
+	return false
 }

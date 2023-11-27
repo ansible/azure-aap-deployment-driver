@@ -11,8 +11,6 @@ import (
 	"server/handler"
 	"server/persistence"
 	"server/sso"
-
-	log "github.com/sirupsen/logrus"
 )
 
 func main() {
@@ -35,17 +33,10 @@ func main() {
 	// Fallback in case SSO setup fails
 	var loginManager handler.LoginManager = handler.CredentialsHandler{}
 
-	if config.GetEnvironment().AUTH_TYPE == "SSO" {
-		ssoManager, err := sso.NewSsoManager(exit.Context(), db)
-		if err != nil {
-			log.Errorf("Unable to set up SSO, falling back to credentials login: %v", err)
-		} else {
-			loginManager = ssoManager.SsoHandler
-			defer ssoManager.DeleteAcsClient()
-		}
-	}
-
 	engine := engine.NewEngine(exit.Context(), db, deploymentsClient)
+
+	// Set up SSO (if configured)
+	sso.NewSsoManager(exit.Context(), db, &loginManager)
 
 	app := api.NewApp(db, engine, loginManager)
 
