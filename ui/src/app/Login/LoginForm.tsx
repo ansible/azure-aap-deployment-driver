@@ -21,7 +21,7 @@ export function FormLogin() {
         setShowHelperText(true);
       } else {
         setIsValidPassword(true)
-        navigate('/');
+        navigate('/welcome');
       }
     } catch (err: any) {
       console.log('Got exception from logging in.', err);

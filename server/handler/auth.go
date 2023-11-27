@@ -16,7 +16,8 @@ func EnsureAuthenticated(next http.HandlerFunc) http.HandlerFunc {
 			respondError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
-		hasSession, err := sessionHelper.ValidSession(r)
+		//hasSession, err := sessionHelper.ValidSession(r)
+		hasSession, err := sessionHelper.HasSession(r)
 		if err != nil {
 			// TODO add logging
 			respondError(w, http.StatusInternalServerError, "Could not find or establish session.")
@@ -28,4 +29,47 @@ func EnsureAuthenticated(next http.HandlerFunc) http.HandlerFunc {
 		}
 		next.ServeHTTP(w, r)
 	})
+}
+
+func GetAuthCheckHandler(checkSSO bool) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		sessionHelper, err := getSessionHelper()
+		if err != nil {
+			respondError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+		var hasSession bool
+		if checkSSO {
+			hasSession, err = sessionHelper.ValidSession(r)
+		} else {
+			hasSession, err = sessionHelper.HasSession(r)
+		}
+		if err != nil {
+			respondError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+		if hasSession {
+			respondOk(w)
+			return
+		}
+		respondError(w, http.StatusUnauthorized, "Not authenticated.")
+	})
+}
+
+func CheckAuthenticated(w http.ResponseWriter, r *http.Request) {
+	sessionHelper, err := getSessionHelper()
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	hasSession, err := sessionHelper.HasSession(r)
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	if hasSession {
+		respondOk(w)
+		return
+	}
+	respondError(w, http.StatusUnauthorized, "Not authenticated.")
 }

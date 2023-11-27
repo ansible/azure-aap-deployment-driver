@@ -52,11 +52,33 @@ const routes = [
 		element: <PlainLayout />,
 		children: [
 			{
-				path: "/login",
+				path: "/",
 				element: <Login />
 			}
 		]
 	},
+	{
+		element: <AppLayout navigation={appNavigation} />,
+		children: [
+			{
+				path: "/welcome",
+				element: <Deployment showLoginDialog={true} />
+			}
+		]
+	},
+	{
+		element: <AppLayout navigation={appNavigation} />,
+		children: [
+			{
+				path: "/deployment",
+				element: <Deployment showLoginDialog={false}/>
+			},
+			{
+				path: "/documentation",
+				element: <Documentation />
+			}
+		]
+	}
 
 ]
 
