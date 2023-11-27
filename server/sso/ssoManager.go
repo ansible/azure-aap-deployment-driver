@@ -35,7 +35,10 @@ func NewSsoManager(ctx context.Context, db *persistence.Database, loginManager *
 	if err != nil {
 		log.Errorf("Failed to initialize SSO manager, will use credentials login: %v", err)
 	}
-	controllers.AddCancelHandler("SSO Client Cleanup", ssoManager.DeleteAcsClient)
+	err = controllers.AddCancelHandler("SSO Client Cleanup", ssoManager.DeleteAcsClient)
+	if err != nil {
+		log.Errorf("Unable to add exit controller cancel handler for ACS client cleanup: %v", err)
+	}
 	*loginManager = ssoManager.SsoHandler
 }
 
