@@ -39,6 +39,7 @@ func NewSsoManager(ctx context.Context, db *persistence.Database, loginManager *
 	if err != nil {
 		log.Errorf("Unable to add exit controller cancel handler for ACS client cleanup: %v", err)
 	}
+	config.EnableSso()
 	*loginManager = ssoManager.SsoHandler
 }
 

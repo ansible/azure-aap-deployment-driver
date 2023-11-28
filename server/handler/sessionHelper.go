@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"server/config"
 	"server/model"
+	"server/util"
 	"sync"
 
 	"github.com/gorilla/sessions"
@@ -67,7 +68,7 @@ func (s *SessionHelper) ValidSession(r *http.Request) (bool, error) {
 		return false, nil
 	}
 	// For SSO, verify state
-	if config.GetEnvironment().AUTH_TYPE == "SSO" {
+	if config.IsSsoEnabled() {
 		state := aSession.Values["state"]
 		if !model.GetSsoStore().ValidSession(state.(string)) {
 			return false, nil
@@ -82,7 +83,7 @@ func (s *SessionHelper) SetupSession(r *http.Request, w http.ResponseWriter, sta
 	if err != nil {
 		return err
 	}
-	aSession.Values["state"] = state
+	aSession.Values["state"] = util.HashThisString(state)
 	aSession.Options.HttpOnly = true
 	err = aSession.Save(r, w)
 	if err != nil {

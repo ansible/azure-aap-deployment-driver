@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"server/util"
 	"sync"
 
 	log "github.com/sirupsen/logrus"
@@ -26,6 +27,7 @@ type SsoCredentials struct {
 }
 
 type SsoSession struct {
+	BaseModel
 	Code  string
 	State string
 }
@@ -71,7 +73,7 @@ func (s ssoStore) RemoveSsoClientCredentials() {
 
 func (s ssoStore) CreateSession(sessionState string, code string) error {
 	session := SsoSession{State: sessionState, Code: code}
-	if err := s.db.Save(session).Error; err != nil {
+	if err := s.db.Create(&session).Error; err != nil {
 		log.Errorf("Unable to store SSO session: %v", err)
 		return err
 	}
@@ -86,7 +88,7 @@ func (s ssoStore) RemoveSession(sessionState string) error {
 	return nil
 }
 
-func (s ssoStore) ValidSession(sessionState string) bool {
+func (s ssoStore) ValidSession(sessionStateHash string) bool {
 	sessions := []SsoSession{}
 	if err := s.db.Find(&sessions).Error; err != nil {
 		log.Errorf("Unable to load SSO sessions from DB, rejecting validation: %v", err)
@@ -94,7 +96,8 @@ func (s ssoStore) ValidSession(sessionState string) bool {
 	}
 
 	for _, sess := range sessions {
-		if sess.State == sessionState {
+		stateHash := util.HashThisString(sess.State)
+		if stateHash == sessionStateHash {
 			return true
 		}
 	}

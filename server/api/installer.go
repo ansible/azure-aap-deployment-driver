@@ -86,7 +86,7 @@ func (a *Installer) setRouters() {
 	a.Post("/deleteContainer", handler.EnsureAuthenticated(a.WrapHandlerWithDB(handler.DeleteContainer)))
 	a.Post("/terminate", handler.EnsureAuthenticated(a.WrapHandlerWithDB(handler.Terminate)))
 	a.Get("/azmarketplaceentitlementscount", handler.EnsureAuthenticated(a.WrapHandlerWithDB(handler.GetNumOfAzureMarketplaceEntitlements)))
-	if config.GetEnvironment().AUTH_TYPE == "SSO" {
+	if config.IsSsoEnabled() {
 		ssoClient, ok := a.loginMgr.(*handler.SsoHandler)
 		if ok {
 			// Could have failed, in which case loginMgr is a credentials login handler and these aren't needed
