@@ -10,6 +10,7 @@
     "react-router-dom": "^6.4.3"
   },
   "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^14.4.3",
@@ -52,12 +53,17 @@
       "/node_modules/(?!@patternfly/react-icons).+\\.js$"
     ]
   },
-  "watch":{
-    "build":{
-      "patterns":["src"],
+  "watch": {
+    "build": {
+      "patterns": [
+        "src"
+      ],
       "extensions": "tsx,css",
-      "ignore":["**/*.test.tsx","*Tests.tsx"],
-      "delay":5000
+      "ignore": [
+        "**/*.test.tsx",
+        "*Tests.tsx"
+      ],
+      "delay": 5000
     }
   },
   "homepage": "/"
