@@ -36,7 +36,7 @@ func main() {
 	engine := engine.NewEngine(exit.Context(), db, deploymentsClient)
 
 	// Set up SSO (if configured)
-	sso.NewSsoManager(exit.Context(), db, &loginManager)
+	sso.NewSsoManager(db, &loginManager)
 
 	app := api.NewApp(db, engine, loginManager)
 

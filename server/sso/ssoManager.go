@@ -22,14 +22,14 @@ type SsoManager struct {
 	Db            *persistence.Database
 }
 
-func NewSsoManager(ctx context.Context, db *persistence.Database, loginManager *handler.LoginManager) {
+func NewSsoManager(db *persistence.Database, loginManager *handler.LoginManager) {
 	if config.GetEnvironment().AUTH_TYPE != "SSO" {
 		log.Infof("SSO not enabled, skipping setup.")
 		return
 	}
 	model.InitSsoStore(db.Instance)
 	ssoManager = &SsoManager{
-		Context: ctx,
+		Context: context.Background(),
 		Db:      db,
 	}
 	err := ssoManager.initialize()
@@ -48,17 +48,17 @@ func (s *SsoManager) initialize() error {
 	store := model.GetSsoStore()
 	var credentials *model.SsoCredentials
 	var err error
-	if store == nil {
-		// Create dynamic client, get credentials
-		credentials, err = createAndStoreSsoCredentials(s.Context, s.Db)
-		if err != nil {
-			return fmt.Errorf("unable to create client and get credentials: %v", err)
-		}
-	} else {
+	if store.SsoCredentialsExist() {
 		// Fetch from db
 		credentials, err = model.GetSsoStore().GetSsoClientCredentials()
 		if err != nil {
 			return fmt.Errorf("unable to load existing SSO credentials from db: %v", err)
+		}
+	} else {
+		// Create dynamic client, get credentials
+		credentials, err = createAndStoreSsoCredentials(s.Context, s.Db)
+		if err != nil {
+			return fmt.Errorf("unable to create client and get credentials: %v", err)
 		}
 	}
 
