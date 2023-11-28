@@ -98,8 +98,10 @@ func (s ssoStore) ValidSession(sessionStateHash string) bool {
 	for _, sess := range sessions {
 		stateHash := util.HashThisString(sess.State)
 		if stateHash == sessionStateHash {
+			log.Trace("Validated SSO session hash.")
 			return true
 		}
 	}
+	log.Trace("Rejecting SSO session validation.  No matching sessions found.")
 	return false
 }

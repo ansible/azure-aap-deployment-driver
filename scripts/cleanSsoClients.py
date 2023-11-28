@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import argparse
 import math
 import requests
 import time
@@ -14,7 +15,18 @@ DEFAULT_URL = f"https://{DEFAULT_HOST}"
 TOKEN_PATH = "auth/realms/redhat-external/protocol/openid-connect/token"
 API_PATH = "auth/realms/redhat-external/apis/beta/acs/v1"
 CLIENT_ID = "aoc-client-manager"
-CLIENT_SECRET = "***REMOVED***"  # TODO Move to secure area
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Remove extraneous SSO dynamic clients older than 4 hours.")
+
+    parser.add_argument(
+        "-s",
+        "--secret",
+        help="Client secret",
+        required=True,
+    )
+    return parser.parse_args()
 
 
 def load_clients(token):
@@ -44,7 +56,7 @@ def clean_clients(token, clients):
             print(f"Not deleting client ID {client_id} since it is less than 4 hours old")
 
 
-def get_oauth_token():
+def get_oauth_token(secret):
     url = urllib.parse.urljoin(DEFAULT_URL, TOKEN_PATH)
     headers = {}
     headers["Host"] = DEFAULT_HOST
@@ -53,7 +65,7 @@ def get_oauth_token():
     data["grant_type"] = "client_credentials"
     data["scope"] = "api.iam.clients.aoc"
     data["client_id"] = CLIENT_ID
-    data["client_secret"] = CLIENT_SECRET
+    data["client_secret"] = secret
     resp = requests.post(url, headers=headers, data=data)
     resp.raise_for_status()
     body = resp.json()
@@ -61,7 +73,8 @@ def get_oauth_token():
 
 
 if __name__ == "__main__":
-    token = get_oauth_token()
+    args = parse_args()
+    token = get_oauth_token(args.secret)
     clients = load_clients(token)
     if not clients:
         print(f"No clients currently exist in org {DEFAULT_ORG}")
