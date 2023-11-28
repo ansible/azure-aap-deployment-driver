@@ -13,13 +13,14 @@ type SsoStore interface {
 	SetSsoClientCredentials(string, string) error
 	GetSsoClientCredentials() (*SsoCredentials, error)
 	RemoveSsoClientCredentials()
+	SsoCredentialsExist() bool
 	CreateSession(string, string) error
 	RemoveSession(string) error
 	ValidSession(string) bool
 }
 
 var once sync.Once
-var Store SsoStore
+var store SsoStore
 
 type SsoCredentials struct {
 	ClientId     string
@@ -38,15 +39,15 @@ type ssoStore struct {
 
 func InitSsoStore(db *gorm.DB) SsoStore {
 	once.Do(func() {
-		Store = ssoStore{
+		store = ssoStore{
 			db: db,
 		}
 	})
-	return Store
+	return store
 }
 
 func GetSsoStore() SsoStore {
-	return Store
+	return store
 }
 
 func (s ssoStore) SetSsoClientCredentials(clientId string, clientSecret string) error {
@@ -64,6 +65,13 @@ func (s ssoStore) GetSsoClientCredentials() (*SsoCredentials, error) {
 		return nil, fmt.Errorf("unable to load SSO credentials from DB: %v", err)
 	}
 	return creds, nil
+}
+
+func (s ssoStore) SsoCredentialsExist() bool {
+	if err := s.db.First(&SsoCredentials{}).Error; err != nil {
+		return false
+	}
+	return true
 }
 
 func (s ssoStore) RemoveSsoClientCredentials() {

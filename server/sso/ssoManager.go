@@ -27,6 +27,7 @@ func NewSsoManager(ctx context.Context, db *persistence.Database, loginManager *
 		log.Infof("SSO not enabled, skipping setup.")
 		return
 	}
+	model.InitSsoStore(db.Instance)
 	ssoManager = &SsoManager{
 		Context: ctx,
 		Db:      db,

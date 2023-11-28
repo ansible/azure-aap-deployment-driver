@@ -104,6 +104,15 @@ func (c *AcsClient) getToken() (string, error) {
 }
 
 func (c *AcsClient) GetClientCredentials(redirectUrl string) (*model.SsoCredentials, error) {
+	// Use stored credentials if they exist
+	ssoStore := model.GetSsoStore()
+	if ssoStore.SsoCredentialsExist() {
+		creds, err := ssoStore.GetSsoClientCredentials()
+		if err != nil {
+			return nil, err
+		}
+		return creds, nil
+	}
 	resp, err := c.createACSClient(SSO_CLIENT_NAME, redirectUrl, SSO_ORG_ID)
 	if err != nil {
 		log.Errorf("unable to create SSO client: %v", err)
