@@ -75,7 +75,7 @@ func (a *Installer) configureSessionHelper() {
 func (a *Installer) setRouters() {
 	a.Get("/status", a.WrapHandlerWithDB(handler.Status))
 	a.Get("/authtype", handler.AuthType)
-	a.Post("/login", a.WrapHandlerWithDB(a.loginMgr.GetLoginHandler())) // GetLoginHandler() must be executed to do its initialization
+	a.Post("/login", a.WrapHandlerWithDB(handler.CredentialsHandler{}.GetLoginHandler())) // GetLoginHandler() must be executed to do its initialization
 	a.Post("/logout", handler.EnsureAuthenticated(handler.Logout))
 	a.Get("/step", handler.EnsureAuthenticated(a.WrapHandlerWithDB(handler.GetAllSteps)))
 	a.Get("/step/{id}", handler.EnsureAuthenticated(a.WrapHandlerWithDB(handler.GetStep)))
