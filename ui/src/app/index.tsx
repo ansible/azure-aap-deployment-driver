@@ -11,7 +11,7 @@ import './app.css'
 // Navigation links are built from this array
 const appNavigation = [
   {
-    path: "/",
+    path: "/deployment",
     label: "Deployment"
   },
   {
@@ -31,14 +31,19 @@ const routes = [
 		children: [
 			{
 				path: "/",
+				element: <Deployment showLoginDialog={true} />
+			}
+		]
+	},
+	{
+		element: <AppLayout navigation={appNavigation} />,
+		children: [
+			{
+				path: "/deployment",
 				element: <Deployment showLoginDialog={false}/>
 			},
 			{
-				path: "welcome",
-				element: <Deployment showLoginDialog={true} />
-			},
-			{
-				path: "documentation",
+				path: "/documentation",
 				element: <Documentation />
 			}
 		]
