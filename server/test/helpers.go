@@ -30,7 +30,8 @@ func (f DoFunc) Do(req *http.Request) (*http.Response, error) {
 }
 
 func SetEnvironment() {
-	os.Setenv("AZURE_SUBSCRIPTION_ID", "3f7e29ba-24e0-42f6-8d9c-5149a14bda37")
+	os.Setenv("AZURE_SUBSCRIPTION_ID", "12345678-90ab-cdef-0123-4567890abcde")
+	os.Setenv("AZURE_TENANT_ID", "12345678-90ab-cdef-0123-4567890abcde")
 	os.Setenv("RESOURCE_GROUP_NAME", "dummy")
 	os.Setenv("CONTAINER_GROUP_NAME", "dummy")
 	os.Setenv("STORAGE_ACCOUNT_NAME", "dummy")

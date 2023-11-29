@@ -1,16 +1,43 @@
 package engine
 
 import (
+	"context"
 	"fmt"
+	"net/http"
 	"server/config"
 	"server/model"
+	"server/util"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/segmentio/analytics-go/v3"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
+
+func SendDeploymentIdentification(ctx context.Context) error {
+	if config.GetEnvironment().AZURE_MARKETPLACE_FUNCTION_KEY == "" {
+		log.Warn("Azure marketplace function key not available, deployment identification will not be sent.")
+		return nil
+	}
+	azureFunctionUrl := strings.Join([]string{config.GetEnvironment().AZURE_MARKETPLACE_FUNCTION_BASE_URL, config.GetEnvironment().AZURE_MARKETPLACE_FUNCTION_KEY}, "?code=")
+	req := util.NewHttpRequester()
+	body := make(map[string]interface{})
+	body["subscriptionId"] = config.GetEnvironment().SUBSCRIPTION
+	body["tenantId"] = config.GetEnvironment().AZURE_TENANT_ID
+	body["applicationId"] = config.GetEnvironment().APPLICATION_ID
+	body["eventType"] = "IDENTIFICATION"    // Needed for marketplace notification function
+	body["provisioningState"] = "Succeeded" // ditto
+	resp, err := req.MakeRequestWithJSONBody(ctx, http.MethodPost, azureFunctionUrl, nil, body)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("invalid status code: %d, body: %s", resp.StatusCode, resp.Body)
+	}
+	return nil
+}
 
 func GetEvent(propertiesMap analytics.Properties) string {
 
