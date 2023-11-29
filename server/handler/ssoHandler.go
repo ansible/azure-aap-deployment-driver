@@ -41,12 +41,13 @@ func (s *SsoHandler) SsoRedirect(db *gorm.DB, w http.ResponseWriter, r *http.Req
 	code := r.URL.Query().Get("code")
 	state := r.URL.Query().Get("state")
 	if state != s.State {
-		log.Errorf("SSO state mismatch..  Sent: %s, Received: %s", s.State, state)
+		log.Errorf("SSO state mismatch. Sent: %s, Received: %s", s.State, state)
 		respondError(w, http.StatusUnauthorized, "SSO state values do not match.")
 		return
 	}
 	sessionState := r.URL.Query().Get("session_state")
 
+	log.Trace("Performing SSO exchange.")
 	oauth2Token, err := s.Auth.Config.Exchange(context.Background(), code)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
@@ -59,6 +60,7 @@ func (s *SsoHandler) SsoRedirect(db *gorm.DB, w http.ResponseWriter, r *http.Req
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
+	log.Trace("Verifying SSO token/extracting ID token.")
 	_, err = s.Auth.VerifyToken(oauth2Token, ssoCredentials.ClientId)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
@@ -69,20 +71,24 @@ func (s *SsoHandler) SsoRedirect(db *gorm.DB, w http.ResponseWriter, r *http.Req
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
+	log.Trace("Creating new SSO session.")
 	err = model.GetSsoStore().CreateSession(sessionState, code)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
+	log.Trace("Creating session cookie.")
 	err = sessionHelper.SetupSession(r, w, sessionState)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
+	log.Trace("Redirecting to deployment driver home.")
 	http.Redirect(w, r, fmt.Sprintf("https://%s", config.GetEnvironment().INSTALLER_DOMAIN_NAME), http.StatusTemporaryRedirect)
 }
 
 func (s *SsoHandler) rollState() error {
+	log.Trace("Rolling SSO one time code.")
 	b := make([]byte, 32)
 	_, err := rand.Read(b)
 	if err != nil {

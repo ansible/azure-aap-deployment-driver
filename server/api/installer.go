@@ -89,6 +89,7 @@ func (a *Installer) setRouters() {
 	if config.IsSsoEnabled() {
 		ssoClient, ok := a.loginMgr.(*handler.SsoHandler)
 		if ok {
+			log.Trace("Configuring SSO API endpoints.")
 			// Could have failed, in which case loginMgr is a credentials login handler and these aren't needed
 			a.Get(handler.REDIRECT_PATH, a.WrapHandlerWithDB(ssoClient.SsoRedirect))
 			// GET handling for /login due to nginx forwarding here

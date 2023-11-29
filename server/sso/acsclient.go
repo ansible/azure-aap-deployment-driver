@@ -67,7 +67,7 @@ func GetAcsClient(ctx context.Context) *AcsClient {
 			Context:      ctx,
 		}
 	})
-
+	log.Trace("Getting SSO client API access token.")
 	token, err := acsClient.getToken()
 	if err != nil {
 		log.Errorf("Unable to get SSO client access token: %v", err)
@@ -107,12 +107,14 @@ func (c *AcsClient) GetClientCredentials(redirectUrl string) (*model.SsoCredenti
 	// Use stored credentials if they exist
 	ssoStore := model.GetSsoStore()
 	if ssoStore.SsoCredentialsExist() {
+		log.Trace("Returning existing SSO client credentials.")
 		creds, err := ssoStore.GetSsoClientCredentials()
 		if err != nil {
 			return nil, err
 		}
 		return creds, nil
 	}
+	log.Trace("Creating new SSO client.")
 	resp, err := c.createACSClient(SSO_CLIENT_NAME, redirectUrl, SSO_ORG_ID)
 	if err != nil {
 		log.Errorf("unable to create SSO client: %v", err)
@@ -127,8 +129,7 @@ func (c *AcsClient) createACSClient(name string, redirectUrl string, orgId strin
 	headers := make(map[string]string)
 	headers["Authorization"] = getAuthHeader(c.Token)
 
-	urls := make([]string, 1)
-	urls[0] = redirectUrl
+	urls := []string{redirectUrl}
 	reqBody := ClientRequest{Name: name, RedirectUris: urls, OrgId: orgId}
 
 	req := util.NewHttpRequester()
@@ -136,8 +137,6 @@ func (c *AcsClient) createACSClient(name string, redirectUrl string, orgId strin
 	if err != nil {
 		return nil, fmt.Errorf("create ACS client request failed: %v", err)
 	}
-	log.Tracef("SSO client create request response code %d, body: %s", resp.StatusCode, string(resp.Body))
-
 	if resp.StatusCode != http.StatusCreated {
 		return nil, fmt.Errorf("create ACS client request failed: %s", string(resp.Body))
 	}

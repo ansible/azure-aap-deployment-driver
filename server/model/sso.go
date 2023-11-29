@@ -68,10 +68,13 @@ func (s ssoStore) GetSsoClientCredentials() (*SsoCredentials, error) {
 }
 
 func (s ssoStore) SsoCredentialsExist() bool {
-	if err := s.db.First(&SsoCredentials{}).Error; err != nil {
+	var count int64
+	s.db.Table("sso_credentials").Count(&count)
+	if count > 0 {
+		return true
+	} else {
 		return false
 	}
-	return true
 }
 
 func (s ssoStore) RemoveSsoClientCredentials() {

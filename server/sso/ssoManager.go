@@ -36,10 +36,12 @@ func NewSsoManager(db *persistence.Database, loginManager *handler.LoginManager)
 	if err != nil {
 		log.Errorf("Failed to initialize SSO manager, will use credentials login: %v", err)
 	}
+	// TODO Add cancel handling for normal engine exit as well
 	err = controllers.AddCancelHandler("SSO Client Cleanup", ssoManager.DeleteAcsClient)
 	if err != nil {
 		log.Errorf("Unable to add exit controller cancel handler for ACS client cleanup: %v", err)
 	}
+	log.Trace("SSO enabled.")
 	config.EnableSso()
 	*loginManager = ssoManager.SsoHandler
 }
@@ -54,12 +56,14 @@ func (s *SsoManager) initialize() error {
 		if err != nil {
 			return fmt.Errorf("unable to load existing SSO credentials from db: %v", err)
 		}
+		log.Trace("Existing SSO credentials loaded from database.")
 	} else {
 		// Create dynamic client, get credentials
 		credentials, err = createAndStoreSsoCredentials(s.Context, s.Db)
 		if err != nil {
 			return fmt.Errorf("unable to create client and get credentials: %v", err)
 		}
+		log.Trace("Created new SSO client and credentials.")
 	}
 
 	auth, err := handler.NewAuthenticator(ssoManager.Context, config.GetEnvironment().SSO_ENDPOINT, handler.GetRedirectUrl(), credentials.ClientId, credentials.ClientSecret)
@@ -71,6 +75,7 @@ func (s *SsoManager) initialize() error {
 }
 
 func (s *SsoManager) DeleteAcsClient() {
+	log.Trace("Deleting SSO client.")
 	acsClient := GetAcsClient(s.Context)
 	credentials, _ := model.GetSsoStore().GetSsoClientCredentials()
 	_, err := acsClient.DeleteACSClient(credentials.ClientId)
