@@ -10,5 +10,5 @@
 /server/
 /ui/
 .gitignore
-**/*.local_dev.*
+**/*local_dev*
 README.md
