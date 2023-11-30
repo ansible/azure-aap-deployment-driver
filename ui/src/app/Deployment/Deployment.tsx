@@ -7,24 +7,15 @@ import { DeploymentStepData, DeploymentProgressData, EntitlementsCount } from '.
 import { RHLoginModal } from './RHLoginModal';
 import { EntitlementsInfo } from './EntitlementsInfo';
 
-const SHOW_RH_LOGIN_SESSION_STORAGE_KEY = "showRHLogin"
 
-export const Deployment = () => {
+interface IDeploymentProps {
+  showLoginDialog: boolean
+}
+
+export const Deployment = ({showLoginDialog}:IDeploymentProps) => {
 
   const [stepsData, setStepsData] = useState<DeploymentStepData[]>()
   const [progressData, setProgressData] = useState<DeploymentProgressData>()
-  const [showRHLogin, setShowRHLogin] = useState<boolean>(()=>{
-    // this function gets initial state value from session storage
-    const storageItem = sessionStorage.getItem(SHOW_RH_LOGIN_SESSION_STORAGE_KEY);
-    if (storageItem === null) {
-      // store initial value of true and return it
-      sessionStorage.setItem(SHOW_RH_LOGIN_SESSION_STORAGE_KEY,String(true));
-      return true;
-    } else {
-      // return stored value
-      return storageItem.toLowerCase() === 'true'
-    }
-  })
   const [entitlementsCount, setEntitlementsCount] = useState<EntitlementsCount>()
 
   const fetchData = async () => {
@@ -56,24 +47,12 @@ export const Deployment = () => {
   }, [])
 
   useEffect(()=>{
-    // only supporting changing the value to false
-    if (showRHLogin === false) {
-      sessionStorage.setItem(SHOW_RH_LOGIN_SESSION_STORAGE_KEY,String(false));
-    }
-  },[showRHLogin])
-
-  const handleRHLoginModalAction = (loginOpened: boolean) => {
-    //place to add more logic if needed
-    setShowRHLogin(false)
-  }
-
-  useEffect(()=>{
     fetchEntitlementsData()
   },[])
 
   return (
     <>
-      { <RHLoginModal isModalShown={showRHLogin} actionHandler={handleRHLoginModalAction}/> }
+      { <RHLoginModal isModalShown={showLoginDialog}/> }
       {/* TODO Add some place holder for case when data is not available */}
 
       {entitlementsCount && <EntitlementsInfo entitlementsCount={entitlementsCount}></EntitlementsInfo> }

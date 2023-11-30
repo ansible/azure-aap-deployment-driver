@@ -10,6 +10,7 @@
     "react-router-dom": "^6.4.3"
   },
   "devDependencies": {
+    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^14.4.3",
@@ -18,6 +19,7 @@
     "@types/react": "^18.0.24",
     "@types/react-dom": "^18.0.8",
     "http-proxy-middleware": "^2.0.6",
+    "npm-watch": "^0.11.0",
     "react-scripts": "5.0.1",
     "typescript": "^4.8.4"
   },
@@ -25,7 +27,8 @@
     "start": "PORT=9999 react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "watch-and-build": "npm-watch build"
   },
   "eslintConfig": {
     "extends": [
@@ -49,6 +52,19 @@
     "transformIgnorePatterns": [
       "/node_modules/(?!@patternfly/react-icons).+\\.js$"
     ]
+  },
+  "watch": {
+    "build": {
+      "patterns": [
+        "src"
+      ],
+      "extensions": "tsx,css",
+      "ignore": [
+        "**/*.test.tsx",
+        "*Tests.tsx"
+      ],
+      "delay": 5000
+    }
   },
   "homepage": "/"
 }

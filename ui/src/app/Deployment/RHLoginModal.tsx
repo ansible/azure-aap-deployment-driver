@@ -4,31 +4,27 @@ import ExternalLinkSquareAltIcon from '@patternfly/react-icons/dist/esm/icons/ex
 
 interface IRHLoginProps {
 	isModalShown: boolean
-	actionHandler: (boolean) => void;
 }
 
-export const RHLoginModal = ({isModalShown, actionHandler}: IRHLoginProps) => {
+export const RHLoginModal = ({isModalShown}: IRHLoginProps) => {
 	return (
 		<Modal
-        title="Ansible Automation Platform requirements"
-				titleIconVariant="info"
+        title="A valid subscription for Ansible Automation Platform in your Red Hat account is required"
+				titleIconVariant="warning"
         isOpen={isModalShown}
         showClose={false}
 				variant={ModalVariant.medium}
 				actions={[
+					// TODO Set the URL in href below programmatically
           <Button
 					key="login" variant="primary"
 					icon={<ExternalLinkSquareAltIcon />} iconPosition="right"
-					component="a" href="https://console.redhat.com/" target="_blank"  onClick={()=>{actionHandler(true)}}
-					>Red Hat Hybrid Cloud Console</Button>,
-          <Button
-					key="dismiss" variant="link"
-					onClick={()=>{actionHandler(false)}}
-					>Dismiss: my account and subscription are set up</Button>
+					component="a" href="https://sso.redhat.com/" target="_blank">Log in with Red Hat account</Button>,
         ]}
-      ><p>To use Ansible Automation Platform on Azure, you MUST have a valid subscription for Ansible Automation Platform in your Red Hat account.</p>
+      ><p>Your Ansible Automation Platform deployment is underway.</p>
+			<br /><p>To use Ansible Automation Platform on Azure, you MUST have a valid subscription for Ansible Automation Platform in your Red Hat account.</p>
 			<br />
-			<p>You can set up your Ansible Automation Platform subscription and your Red Hat account by clicking the button below.</p>
+			<p>You can set up your Ansible Automation Platform subscription and your Red Hat account by clicking the button below. You will be redirected back to this page upon successful log in or account creation.</p>
 		</Modal>
 	)
 }
