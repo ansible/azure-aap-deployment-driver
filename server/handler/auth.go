@@ -55,21 +55,3 @@ func GetAuthCheckHandler(checkSSO bool) http.HandlerFunc {
 		respondError(w, http.StatusUnauthorized, "Not authenticated.")
 	})
 }
-
-func CheckAuthenticated(w http.ResponseWriter, r *http.Request) {
-	sessionHelper, err := getSessionHelper()
-	if err != nil {
-		respondError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	hasSession, err := sessionHelper.HasSession(r)
-	if err != nil {
-		respondError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	if hasSession {
-		respondOk(w)
-		return
-	}
-	respondError(w, http.StatusUnauthorized, "Not authenticated.")
-}
