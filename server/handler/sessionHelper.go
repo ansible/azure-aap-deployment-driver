@@ -4,6 +4,9 @@ import (
 	"crypto/rand"
 	"errors"
 	"net/http"
+	"server/config"
+	"server/model"
+	"server/util"
 	"sync"
 
 	"github.com/gorilla/sessions"
@@ -56,20 +59,31 @@ func getSessionHelper() (*SessionHelper, error) {
 	return helperInstance, nil
 }
 
-func (s *SessionHelper) HasSession(r *http.Request) (bool, error) {
+func (s *SessionHelper) ValidSession(r *http.Request) (bool, error) {
 	aSession, err := s.store.Get(r, s.sessionName)
 	if err != nil {
 		return false, err
 	}
+	if aSession.IsNew {
+		return false, nil
+	}
+	// For SSO, verify state
+	if config.IsSsoEnabled() {
+		state := aSession.Values["state"]
+		if !model.GetSsoStore().ValidSession(state.(string)) {
+			return false, nil
+		}
+	}
 	// only established session is considered
-	return !aSession.IsNew, nil
+	return true, nil
 }
 
-func (s *SessionHelper) SetupSession(r *http.Request, w http.ResponseWriter) error {
+func (s *SessionHelper) SetupSession(r *http.Request, w http.ResponseWriter, state string) error {
 	aSession, err := s.store.New(r, s.sessionName)
 	if err != nil {
 		return err
 	}
+	aSession.Values["state"] = util.HashThisString(state)
 	aSession.Options.HttpOnly = true
 	err = aSession.Save(r, w)
 	if err != nil {

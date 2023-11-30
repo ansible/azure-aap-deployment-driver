@@ -9,12 +9,14 @@ import (
 	"gorm.io/gorm"
 )
 
+type CredentialsHandler struct{}
+
 type loginData struct {
 	Username string `json:"uid"`
 	Password string `json:"pwd"`
 }
 
-func GetLoginHandler() HandleFuncWithDB {
+func (a CredentialsHandler) GetLoginHandler() HandleFuncWithDB {
 	// initialization of the expected credentials
 	const userName = "admin"
 	userPassword := config.GetEnvironment().PASSWORD
@@ -36,7 +38,7 @@ func GetLoginHandler() HandleFuncWithDB {
 		}
 
 		if data.Username == userName && data.Password == userPassword {
-			if err := sessionHelper.SetupSession(r, w); err != nil {
+			if err := sessionHelper.SetupSession(r, w, "credentials"); err != nil {
 				respondError(w, http.StatusInternalServerError, "Could not setup session")
 			}
 			respondJSON(w, http.StatusOK, map[string]string{"status": "success"})

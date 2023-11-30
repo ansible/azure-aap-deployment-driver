@@ -8,7 +8,9 @@ import (
 	"server/controllers"
 	"server/controllers/entitlement"
 	"server/engine"
+	"server/handler"
 	"server/persistence"
+	"server/sso"
 )
 
 func main() {
@@ -28,9 +30,15 @@ func main() {
 	azure.EnsureAzureLogin(nil)
 	deploymentsClient := azure.NewDeploymentsClient(nil)
 
+	// Fallback in case SSO setup fails
+	var loginManager handler.LoginManager = handler.CredentialsHandler{}
+
 	engine := engine.NewEngine(exit.Context(), db, deploymentsClient)
 
-	app := api.NewApp(db, engine)
+	// Set up SSO (if configured)
+	sso.NewSsoManager(db, &loginManager)
+
+	app := api.NewApp(db, engine, loginManager)
 
 	// Start listening for shutdown signal
 	exit.Start()

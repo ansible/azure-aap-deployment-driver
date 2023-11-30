@@ -42,15 +42,25 @@ server {
 
     # main location for any remaining URI, checks for session cookie
     location / {
-
         # if madd_session cookie is not set, redirect to login
+        # TODO SSO - Temporarily overriding to send directly to SSO login
         if ($cookie_madd_session = "") {
-            return 302 /login;
+            return 302 /api/login;
         }
 
         # serve what ever was requested, or index.html or 404 error
         try_files $uri $uri/ /index.html =404;
     }
+
+    # SSO Callback location, forwards to backend
+    location /ssocallback {
+        # If the request came with SSO data, send to backend
+        if ($arg_session_state != "") {return 302 /api/ssocallback$is_args$args; }
+
+        # Otherwise redirect to home page
+        return 302 /;
+    }
+
 
     # additional config
     include nginxconfig.io/general.conf;

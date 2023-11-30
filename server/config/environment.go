@@ -2,6 +2,7 @@ package config
 
 import (
 	"strconv"
+	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -27,6 +28,7 @@ type envVars struct {
 	AZURE_DEPLOYMENT_STEP_TIMEOUT_MIN   int
 	AUTO_RETRY                          bool
 	AUTO_RETRY_DELAY                    int
+	AUTH_TYPE                           string
 	SESSION_COOKIE_NAME                 string
 	SESSION_COOKIE_PATH                 string
 	SESSION_COOKIE_DOMAIN               string
@@ -46,6 +48,10 @@ type envVars struct {
 	AZURE_TENANT_ID                     string
 	AZURE_MARKETPLACE_FUNCTION_BASE_URL string
 	AZURE_MARKETPLACE_FUNCTION_KEY      string
+  INSTALLER_DOMAIN_NAME               string
+	SSO_ENDPOINT                        string
+	SSO_CLIENT_ID                       string
+	SSO_CLIENT_SECRET                   string
 }
 
 var (
@@ -83,6 +89,7 @@ func GetEnvironment() envVars {
 	environment.SW_SUB_API_PRIVATEKEY = ""
 	environment.SW_SUB_API_URL = "https://ibm-entitlement-gateway.api.redhat.com/v1/partnerSubscriptions"
 	environment.SW_SUB_VENDOR_PRODUCT_CODE = "rhaapomsa"
+	environment.SSO_ENDPOINT = "https://sso.stage.redhat.com/auth/realms/redhat-external"
 	environment.AZURE_MARKETPLACE_FUNCTION_BASE_URL = "https://marketplace-notification.azurewebsites.net/api/resource"
 
 	env := envs.EnvConfig{}
@@ -123,6 +130,13 @@ func GetEnvironment() envVars {
 		log.Fatal("MAIN_OUTPUTS environment variable must be set.")
 	}
 	environment.MAIN_OUTPUTS = mainOutputsString
+
+	authType := env.Get("AUTH_TYPE")
+	if strings.EqualFold(authType, "sso") {
+		environment.AUTH_TYPE = "SSO"
+	} else {
+		environment.AUTH_TYPE = "CREDENTIALS"
+	}
 
 	sessionCookieName := env.Get("SESSION_COOKIE_NAME")
 	if sessionCookieName != "" {
@@ -190,6 +204,26 @@ func GetEnvironment() envVars {
 	templatePath := env.Get("TEMPLATE_REL_PATH")
 	if len(templatePath) > 0 {
 		environment.TEMPLATE_REL_PATH = templatePath
+	}
+
+	installerDomainName := env.Get("INSTALLER_DOMAIN_NAME")
+	if len(installerDomainName) > 0 {
+		environment.INSTALLER_DOMAIN_NAME = installerDomainName
+	}
+
+	ssoEndpoint := env.Get("SSO_ENDPOINT")
+	if len(ssoEndpoint) > 0 {
+		environment.SSO_ENDPOINT = ssoEndpoint
+	}
+
+	ssoClientId := env.Get("SSO_CLIENT_ID")
+	if len(ssoClientId) > 0 {
+		environment.SSO_CLIENT_ID = ssoClientId
+	}
+
+	ssoClientSecret := env.Get("SSO_CLIENT_SECRET")
+	if len(ssoClientSecret) > 0 {
+		environment.SSO_CLIENT_SECRET = ssoClientSecret
 	}
 
 	// using empty string as default to force error condition and use of default when env variable not set

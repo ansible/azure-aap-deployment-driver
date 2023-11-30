@@ -16,7 +16,7 @@ func EnsureAuthenticated(next http.HandlerFunc) http.HandlerFunc {
 			respondError(w, http.StatusInternalServerError, err.Error())
 			return
 		}
-		hasSession, err := sessionHelper.HasSession(r)
+		hasSession, err := sessionHelper.ValidSession(r)
 		if err != nil {
 			// TODO add logging
 			respondError(w, http.StatusInternalServerError, "Could not find or establish session.")
