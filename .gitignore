@@ -43,3 +43,12 @@ coverage.txt
 **/node_modules
 
 npm-debug.log*
+
+# Nginx
+/nginx/dhparam.pem
+/nginx/logs/*
+!/nginx/logs/.keep
+
+# Certificates
+/certificates/*
+!/certificates/Readme.md

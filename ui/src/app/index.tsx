@@ -26,11 +26,19 @@ const appNavigation = [
 
 const routes = [
 	{
-		path: "/",
-		element: <AppLayout navigation={appNavigation} />,
+		element: <PlainLayout />,
 		children: [
 			{
 				path: "/",
+				element: <Login />
+			}
+		]
+	},
+	{
+		element: <AppLayout navigation={appNavigation} />,
+		children: [
+			{
+				path: "/welcome",
 				element: <Deployment showLoginDialog={true} />
 			}
 		]
@@ -47,16 +55,7 @@ const routes = [
 				element: <Documentation />
 			}
 		]
-	},
-	{
-		element: <PlainLayout />,
-		children: [
-			{
-				path: "/login",
-				element: <Login />
-			}
-		]
-	},
+	}
 
 ]
 

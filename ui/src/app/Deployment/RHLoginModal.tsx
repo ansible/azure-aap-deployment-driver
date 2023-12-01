@@ -19,7 +19,7 @@ export const RHLoginModal = ({isModalShown}: IRHLoginProps) => {
           <Button
 					key="login" variant="primary"
 					icon={<ExternalLinkSquareAltIcon />} iconPosition="right"
-					component="a" href="https://sso.redhat.com/" target="_blank">Log in with Red Hat account</Button>,
+					component="a" href="/sso" target="_self">Log in with Red Hat account</Button>,
         ]}
       ><p>Your Ansible Automation Platform deployment is underway.</p>
 			<br /><p>To use Ansible Automation Platform on Azure, you MUST have a valid subscription for Ansible Automation Platform in your Red Hat account.</p>

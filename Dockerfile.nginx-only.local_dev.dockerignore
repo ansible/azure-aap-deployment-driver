@@ -10,5 +10,4 @@
 /server/
 /ui/
 .gitignore
-**/*local_dev*
 README.md

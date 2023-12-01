@@ -1,0 +1,15 @@
+FROM registry.access.redhat.com/ubi9/nginx-120
+
+USER root
+
+# This will get passed in at build time
+ARG INSTALLER_DOMAIN_NAME=localhost
+
+# Add nginx config files and the development one from sites-enabled
+ADD ["nginx/nginx.conf", "/etc/nginx/nginx.conf"]
+ADD ["nginx/nginxconfig.io", "/etc/nginx/nginxconfig.io/"]
+ADD ["nginx/sites-enabled/aapinstaller.http_https_local_dev.conf", "/etc/nginx/sites-enabled/aapinstaller.http_https_local_dev.conf"]
+
+VOLUME ["/var/log/nginx", "/var/www/aapinstaller/public"]
+
+# The standard entrypoint is used

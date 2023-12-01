@@ -15,25 +15,26 @@ module.exports = function(app) {
   // this allows access to parsed request body
   app.use(express.json())
 
-  app.use('/api/login', (req, res, next)=>{
-    res.cookie(cookieName, cookieValue,cookieOptions)
-    const {uid,pwd} = req.body
-    const response = ((uid && uid === 'admin') && (pwd && typeof pwd === 'string' && pwd.length >= 12 )) ?
-      {status: "success"} :
-      {
-        error: "Login Required",
-        "status": 401
-      }
-    res.json(response)
-  })
-  app.use('/api/logout', (req, res, next)=>{
-    res.clearCookie(cookieName)
-    res.json({status: "success"})
-  })
+  // app.use('/api/login', (req, res, next)=>{
+  //   res.cookie(cookieName, cookieValue,cookieOptions)
+  //   const {uid,pwd} = req.body
+  //   const response = ((uid && uid === 'admin') && (pwd && typeof pwd === 'string' && pwd.length >= 12 )) ?
+  //     {status: "success"} :
+  //     {
+  //       error: "Login Required",
+  //       "status": 401
+  //     }
+  //   res.json(response)
+  // })
+  // app.use('/api/logout', (req, res, next)=>{
+  //   res.clearCookie(cookieName)
+  //   res.json({status: "success"})
+  // })
   app.use(
     '/api',
     createProxyMiddleware({
-      target: 'http://127.0.0.1:55080',
+      // port 55080 is used by python helper script, 9090 is the real back-end
+      target: 'http://127.0.0.1:9090',
       changeOrigin: true,
       onProxyReq: fixRequestBody,
 			pathRewrite: {
@@ -41,22 +42,22 @@ module.exports = function(app) {
 			}
     })
   );
-  app.use(
-    '/',
-    (req, res, next) => {
-      if (req.path === '/login') {
-        next();
-      } else if (appFilesRegexp.test(req.path)) {
-        next();
-      } else {
-        const cookies = req.headers['cookie']
-        const hasSessionCookie = (cookies) ? cookies.split('; ').filter((aCookie)=>aCookie.startsWith(cookieName)).length: 0
-        if (hasSessionCookie === 0) {
-          res.redirect('/login')
-        } else {
-          next();
-        }
-      }
-    }
-  );
+  // app.use(
+  //   '/',
+  //   (req, res, next) => {
+  //     if (req.path === '/login') {
+  //       next();
+  //     } else if (appFilesRegexp.test(req.path)) {
+  //       next();
+  //     } else {
+  //       const cookies = req.headers['cookie']
+  //       const hasSessionCookie = (cookies) ? cookies.split('; ').filter((aCookie)=>aCookie.startsWith(cookieName)).length: 0
+  //       if (hasSessionCookie === 0) {
+  //         res.redirect('/login')
+  //       } else {
+  //         next();
+  //       }
+  //     }
+  //   }
+  // );
 };

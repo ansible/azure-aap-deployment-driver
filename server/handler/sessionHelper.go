@@ -59,6 +59,15 @@ func getSessionHelper() (*SessionHelper, error) {
 	return helperInstance, nil
 }
 
+func (s *SessionHelper) HasSession(r *http.Request) (bool, error) {
+	aSession, err := s.store.Get(r, s.sessionName)
+	if err != nil {
+		return false, err
+	}
+	// only established session is considered
+	return !aSession.IsNew, nil
+}
+
 func (s *SessionHelper) ValidSession(r *http.Request) (bool, error) {
 	aSession, err := s.store.Get(r, s.sessionName)
 	if err != nil {
