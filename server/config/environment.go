@@ -48,7 +48,7 @@ type envVars struct {
 	AZURE_TENANT_ID                     string
 	AZURE_MARKETPLACE_FUNCTION_BASE_URL string
 	AZURE_MARKETPLACE_FUNCTION_KEY      string
-  INSTALLER_DOMAIN_NAME               string
+	INSTALLER_DOMAIN_NAME               string
 	SSO_ENDPOINT                        string
 	SSO_CLIENT_ID                       string
 	SSO_CLIENT_SECRET                   string

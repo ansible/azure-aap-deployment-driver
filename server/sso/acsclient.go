@@ -14,7 +14,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const REG_API string = "apis/beta/acs/v1"
+const REG_API string = "/apis/beta/acs/v1"
 
 type TokenResponse struct {
 	AccessToken string `json:"access_token"`
@@ -43,7 +43,7 @@ type ClientResponse struct {
 }
 
 const TOKEN_SCOPE string = "api.iam.clients.aoc"
-const TOKEN_API string = "protocol/openid-connect/token"
+const TOKEN_API string = "/protocol/openid-connect/token"
 const SSO_ORG_ID string = "123" // TODO Make this one value for test, one for production
 const SSO_CLIENT_NAME string = "deploymentdriver"
 
@@ -106,7 +106,7 @@ func (c *AcsClient) getToken() (string, error) {
 func (c *AcsClient) GetClientCredentials(redirectUrl string) (*model.SsoCredentials, error) {
 	// Use stored credentials if they exist
 	ssoStore := model.GetSsoStore()
-	if ssoStore.SsoCredentialsExist() {
+	if ssoStore != nil && ssoStore.SsoCredentialsExist() {
 		log.Trace("Returning existing SSO client credentials.")
 		creds, err := ssoStore.GetSsoClientCredentials()
 		if err != nil {
@@ -168,7 +168,10 @@ func (c *AcsClient) DeleteACSClient(clientID string) (*ClientResponse, error) {
 		}
 		return &bodyJson, fmt.Errorf("request to delete ACS client failed: %s", bodyJson.ErrorDescription)
 	}
-	model.GetSsoStore().RemoveSsoClientCredentials()
+	ssoStore := model.GetSsoStore()
+	if ssoStore != nil {
+		ssoStore.RemoveSsoClientCredentials()
+	}
 	return nil, nil
 }
 
