@@ -6,7 +6,6 @@
 /configs/
 /installerstore/
 /scripts/
-/tools/
 /server/
 /ui/
 .gitignore
