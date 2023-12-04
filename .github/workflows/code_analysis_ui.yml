@@ -1,0 +1,26 @@
+name: Code analysis of UI code
+on:
+  push:
+    branches:
+      - main
+    paths: # Only applicable if any UI code was changed
+      - 'ui/**'
+  pull_request:
+    branches:
+      - main
+    paths: # Only applicable if any UI code was changed
+      - 'ui/**'
+jobs:
+  Build-Test-and-Analyze-UI:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run make in ui directory
+        run: |
+          cd ui
+          make
+      - name: Run SonarQube analysis
+        env:
+          SONAR_PROJECT_TOKEN: ${{ secrets.SONAR_PROJECT_TOKEN }}
+        if: ${{ github.event_name == 'push' && github.repository == 'ansible/azure-aap-deployment-driver' }}
+        run: tools/run_sonarqube.sh server
