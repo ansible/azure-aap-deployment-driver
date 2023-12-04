@@ -18,7 +18,7 @@ jobs:
       - name: Run make in ui directory
         run: |
           cd ui
-          make
+          make test-with-coverage
       - name: Run SonarCloud Scan
         uses: sonarsource/sonarcloud-github-action@master
         with:
