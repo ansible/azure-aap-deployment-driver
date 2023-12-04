@@ -19,14 +19,20 @@ func getAcsClient(t *testing.T) *sso.AcsClient {
 				t.Errorf("Expected path %s, got path %s", sso.TOKEN_API, r.URL.Path)
 			}
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(`{"access_token": "token"}`))
+			_, err := w.Write([]byte(`{"access_token": "token"}`))
+			if err != nil {
+				t.Error("Testing error, could not write server response.")
+			}
 		} else if strings.HasSuffix(r.URL.Path, "v1") {
 			// Client create request
 			if r.URL.Path != sso.REG_API {
 				t.Errorf("Expected path %s, got path %s", sso.REG_API, r.URL.Path)
 			}
 			w.WriteHeader(http.StatusCreated)
-			w.Write([]byte(`{"clientId": "clientid", "secret": "secret"}`))
+			_, err := w.Write([]byte(`{"clientId": "clientid", "secret": "secret"}`))
+			if err != nil {
+				t.Error("Testing error, could not write server response.")
+			}
 		} else if strings.HasSuffix(r.URL.Path, "12345") {
 			// Client delete request
 			w.WriteHeader(http.StatusNoContent)
