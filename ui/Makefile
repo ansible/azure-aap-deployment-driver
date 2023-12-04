@@ -19,6 +19,10 @@ build: ${NVM_SCRIPT}
 test: ${NVM_SCRIPT}
 	make nvm CMD="npm run test -- --watchAll=false"
 
+.PHONY: test
+test-with-coverage: ${NVM_SCRIPT}
+	make nvm CMD="npm run test -- --watchAll=false --coverage"
+
 .PHONY: audit-prod-only
 audit-prod-only: ${NVM_SCRIPT}
 	make nvm CMD="npm audit --omit dev"
