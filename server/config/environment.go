@@ -50,6 +50,7 @@ type envVars struct {
 	AZURE_MARKETPLACE_FUNCTION_KEY      string
 	INSTALLER_DOMAIN_NAME               string
 	SSO_ENDPOINT                        string
+	DYNAMIC_CLIENT_REG_ENDPOINT         string
 	SSO_CLIENT_ID                       string
 	SSO_CLIENT_SECRET                   string
 }
@@ -89,7 +90,8 @@ func GetEnvironment() envVars {
 	environment.SW_SUB_API_PRIVATEKEY = ""
 	environment.SW_SUB_API_URL = "https://ibm-entitlement-gateway.api.redhat.com/v1/partnerSubscriptions"
 	environment.SW_SUB_VENDOR_PRODUCT_CODE = "rhaapomsa"
-	environment.SSO_ENDPOINT = "https://sso.stage.redhat.com/auth/realms/redhat-external"
+	environment.SSO_ENDPOINT = "https://sso.redhat.com/auth/realms/redhat-external"
+	environment.DYNAMIC_CLIENT_REG_ENDPOINT = environment.SSO_ENDPOINT // Normal case, only change for unit tests
 	environment.AZURE_MARKETPLACE_FUNCTION_BASE_URL = "https://marketplace-notification.azurewebsites.net/api/resource"
 
 	env := envs.EnvConfig{}
@@ -214,6 +216,13 @@ func GetEnvironment() envVars {
 	ssoEndpoint := env.Get("SSO_ENDPOINT")
 	if len(ssoEndpoint) > 0 {
 		environment.SSO_ENDPOINT = ssoEndpoint
+		// Want to default to this value, but override in the next block if necessary
+		environment.DYNAMIC_CLIENT_REG_ENDPOINT = ssoEndpoint
+	}
+
+	regEndpoint := env.Get("DYNAMIC_CLIENT_REG_ENDPOINT")
+	if len(regEndpoint) > 0 {
+		environment.DYNAMIC_CLIENT_REG_ENDPOINT = regEndpoint
 	}
 
 	ssoClientId := env.Get("SSO_CLIENT_ID")

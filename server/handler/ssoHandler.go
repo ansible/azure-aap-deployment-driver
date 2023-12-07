@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"server/config"
 	"server/model"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -40,7 +41,7 @@ func (s *SsoHandler) GetLoginHandler() HandleFuncWithDB {
 func (s *SsoHandler) SsoRedirect(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	code := r.URL.Query().Get("code")
 	state := r.URL.Query().Get("state")
-	if state != s.State {
+	if !strings.EqualFold(state, s.State) {
 		log.Errorf("SSO state mismatch. Sent: %s, Received: %s", s.State, state)
 		respondError(w, http.StatusUnauthorized, "SSO state values do not match.")
 		return
