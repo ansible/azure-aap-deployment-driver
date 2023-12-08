@@ -17,6 +17,7 @@ import (
 	"testing"
 
 	"github.com/oauth2-proxy/mockoidc"
+	"github.com/stretchr/testify/assert"
 )
 
 var client *sso.AcsClient
@@ -70,74 +71,40 @@ func getAcsClient(m *testing.M, clientId string, clientSecret string) {
 }
 
 func TestGetToken(t *testing.T) {
-	if client == nil {
-		t.Error("Client should not be nil!")
-		return
-	}
-	if client.Token != "token" {
-		t.Errorf("Expected token == token, but got %s", client.Token)
-	}
-
-	if client.ClientId != "" {
-		t.Errorf("Expected blank client ID, got %s", client.ClientId)
-	}
+	assert.NotNil(t, client, "Expected not to get nil client.")
+	assert.Equal(t, "token", client.Token)
+	assert.Equal(t, "", client.ClientId, "Expected blank client ID.")
 }
 
 func TestGetClientCredentials(t *testing.T) {
-	if client == nil {
-		t.Errorf("Expected not to get nil client.")
-		return
-	}
+	assert.NotNil(t, client, "Expected not to get nil client.")
 	creds, err := client.GetClientCredentials("https://127.0.0.1/ssocallback")
-	if err != nil {
-		t.Errorf("Expected no error from get client credentials, got %v", err)
-	}
-	if creds.ClientId != ssoServer.ClientID {
-		t.Errorf("Expected clientid of %s, got %s", ssoServer.ClientID, creds.ClientId)
-	}
+	assert.Nil(t, err, "Expected no error from get client credentials.")
+	assert.Equal(t, ssoServer.ClientID, creds.ClientId)
 }
 
 func TestGetClientCredentialsDb(t *testing.T) {
 	db := persistence.NewInMemoryDB()
 	ssoStore := model.InitSsoStore(db.Instance)
 	err := ssoStore.SetSsoClientCredentials("dbclientid", "dbsecret")
-	if err != nil {
-		t.Errorf("Unable to set SSO credentials: %v", err)
-		return
-	}
+	assert.Nil(t, err, "Unable to set SSO credentials.")
+
 	creds, err := client.GetClientCredentials("https://127.0.0.1/ssocallback")
-	if err != nil {
-		t.Errorf("Expected no error from get client credentials, got %v", err)
-		return
-	}
-	if creds.ClientId != "dbclientid" {
-		t.Errorf("Expected clientid of dbclientid, got %s", creds.ClientId)
-	}
+	assert.Nil(t, err, "Expected no error from get client credentials.")
+	assert.Equal(t, "dbclientid", creds.ClientId)
 }
 
 func TestDeleteClientCredentials(t *testing.T) {
-	if client == nil {
-		t.Error("Expected not to get nil client.")
-		return
-	}
+	assert.NotNil(t, client, "Expected client to not be nil.")
 	resp, err := client.DeleteACSClient(ssoServer.ClientID)
-	if err != nil {
-		t.Errorf("Expected no error from delete client credentials, got %v", err)
-		return
-	}
-	if resp != nil {
-		t.Errorf("Expected nil delete client response, was not nil: %v", resp)
-	}
+	assert.Nil(t, err, "Expected no error from delete client credentials.")
+	assert.Nil(t, resp, "Expected nil delete client response.")
 }
 
 func TestFailedDeleteClientCredentials(t *testing.T) {
 	resp, err := client.DeleteACSClient("45678")
-	if err == nil {
-		t.Error("Expected error from delete client credentials, got none")
-	}
-	if resp == nil {
-		t.Error("Expected non-nil delete client response, was nil")
-	}
+	assert.NotNil(t, err, "Expected error from delete client credentials.")
+	assert.NotNil(t, resp, "Expected non-nil delete client response.")
 }
 
 func TestSsoManager(t *testing.T) {
@@ -148,17 +115,13 @@ func TestSsoManager(t *testing.T) {
 	controllers.NewExitController()
 	var lm handler.LoginManager
 	man := sso.NewSsoManager(db, &lm)
-	if lm == nil {
-		t.Error("Expected SSO manager to instantiate login manager, but it didn't.")
-	}
+	assert.NotNil(t, lm, "Expected SSO manager to instantiate login manager.")
+
 	creds, _ := ssoStore.GetSsoClientCredentials()
-	if creds.ClientId != ssoServer.ClientID {
-		t.Errorf("Expected client ID %s, got %s", ssoServer.ClientID, creds.ClientId)
-	}
+	assert.Equal(t, ssoServer.ClientID, creds.ClientId)
+
 	man.DeleteAcsClient()
-	if ssoStore.SsoCredentialsExist() {
-		t.Error("Expected db credentials to be deleted.")
-	}
+	assert.False(t, ssoStore.SsoCredentialsExist(), "Expected db credentials to be deleted.")
 }
 
 func TestMain(m *testing.M) {

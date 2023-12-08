@@ -39,17 +39,11 @@ func TestLogging(t *testing.T) {
 }
 
 func TestSsoConfig(t *testing.T) {
-	if config.IsSsoEnabled() {
-		t.Error("Expected SSO not to be enabled.")
-	}
+	assert.False(t, config.IsSsoEnabled(), "Expected SSO not to be enabled.")
 	config.EnableSso()
-	if !config.IsSsoEnabled() {
-		t.Error("Expected SSO to be enabled.")
-	}
+	assert.True(t, config.IsSsoEnabled(), "Expected SSO to be enabled.")
 	config.DisableSso()
-	if config.IsSsoEnabled() {
-		t.Error("Expected SSO not to be enabled.")
-	}
+	assert.False(t, config.IsSsoEnabled(), "Expected SSO not to be enabled.")
 }
 
 // TestMain wraps the tests.  Setup is done before the call to m.Run() and any
