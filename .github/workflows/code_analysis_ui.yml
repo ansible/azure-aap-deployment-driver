@@ -20,6 +20,7 @@ jobs:
           cd ui
           make test-with-coverage
       - name: Run SonarCloud Scan
+        if: ${{ secrets.SONARCLOUD_PROJECT_TOKEN }}
         uses: sonarsource/sonarcloud-github-action@master
         with:
           projectBaseDir: ui
