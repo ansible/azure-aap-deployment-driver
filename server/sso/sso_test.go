@@ -111,7 +111,6 @@ func TestSsoManager(t *testing.T) {
 	db := persistence.NewInMemoryDB()
 	ssoStore := model.InitSsoStore(db.Instance)
 
-	// Separate endpoint for dynamic client registration
 	controllers.NewExitController()
 	var lm handler.LoginManager
 	man := sso.NewSsoManager(db, &lm)
