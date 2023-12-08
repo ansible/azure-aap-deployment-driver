@@ -38,6 +38,20 @@ func TestLogging(t *testing.T) {
 	assert.Contains(t, buf.String(), time.Now().UTC().Format("2006-01-02"))
 }
 
+func TestSsoConfig(t *testing.T) {
+	if config.IsSsoEnabled() {
+		t.Error("Expected SSO not to be enabled.")
+	}
+	config.EnableSso()
+	if !config.IsSsoEnabled() {
+		t.Error("Expected SSO to be enabled.")
+	}
+	config.DisableSso()
+	if config.IsSsoEnabled() {
+		t.Error("Expected SSO not to be enabled.")
+	}
+}
+
 // TestMain wraps the tests.  Setup is done before the call to m.Run() and any
 // needed teardown after that.
 func TestMain(m *testing.M) {
