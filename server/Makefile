@@ -18,7 +18,8 @@ test: print-version
 	go test -cover -count=1 ./...
 
 test-with-coverage: print-version
-	go test -coverpkg=./... -coverprofile=coverage.txt -count=1 ./...
+	go test -coverpkg=./... -coverprofile=precoverage.txt -count=1 ./...
+	@cat precoverage.txt | grep -v test > coverage.txt && rm precoverage.txt
 
 lint: print-version
 	go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
