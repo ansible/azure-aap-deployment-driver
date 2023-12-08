@@ -64,6 +64,7 @@ func (s *SessionHelper) HasSession(r *http.Request) (bool, error) {
 	if err != nil {
 		return false, err
 	}
+	log.Warnf("Session %s exists", s.sessionName)
 	// only established session is considered
 	return !aSession.IsNew, nil
 }

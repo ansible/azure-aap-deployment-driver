@@ -1,6 +1,7 @@
 package handler_test
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -237,6 +238,17 @@ func TestSsoHandler(t *testing.T) {
 		t.Errorf("Expected redirect URL to end in /deployment, was %s", redirUrl)
 		return
 	}
+	// Test SSO session checker
+	authCookie := rec.Result().Cookies()[0]
+	req, _ = http.NewRequest(http.MethodGet, "/authcheck", nil)
+	req.AddCookie(authCookie)
+	rec = httptest.NewRecorder()
+	toTest := handler.GetAuthCheckHandler(true)
+	toTest.ServeHTTP(rec, req)
+	if rec.Result().StatusCode != http.StatusOK {
+		t.Errorf("Expected OK from authcheck, got %d", rec.Result().StatusCode)
+		return
+	}
 	// Test invalid state
 	callbackUrl = fmt.Sprintf("/ssocallback?code=%s&state=%s&session_state=unused", code, "BADSTATE")
 	req, _ = http.NewRequest(http.MethodGet, callbackUrl, nil)
@@ -261,6 +273,81 @@ func TestRedirectGenerator(t *testing.T) {
 	url := handler.GetRedirectUrl()
 	if url != "https://localhost/ssocallback" {
 		t.Errorf("Expected https://localhost/ssocallback redirect, got: %s", url)
+	}
+}
+
+func TestAuthType(t *testing.T) {
+	config.DisableSso()
+	rec := testHttpRoute(t, "GET", "/authtype", nil)
+	assert.Equal(t, 200, rec.Code)
+	var authResp map[string]interface{}
+	if err := json.Unmarshal(rec.Body.Bytes(), &authResp); err != nil {
+		t.Error(err.Error())
+	}
+	assert.Equal(t, "CREDENTIALS", authResp["authtype"])
+
+	config.EnableSso()
+	rec = testHttpRoute(t, "GET", "/authtype", nil)
+	assert.Equal(t, 200, rec.Code)
+	if err := json.Unmarshal(rec.Body.Bytes(), &authResp); err != nil {
+		t.Error(err.Error())
+	}
+	assert.Equal(t, "SSO", authResp["authtype"])
+}
+
+func TestSessionHelper(t *testing.T) {
+	// First test regular authentication
+	// Set up session helper
+	key, _ := handler.GenerateSessionAuthKey()
+	cfg := handler.SessionHelperConfiguration{
+		AuthKey:      key,
+		CookieName:   "cookie",
+		CookiePath:   "/",
+		CookieDomain: "localhost",
+		Secure:       false,
+		MaxAge:       10,
+	}
+	handler.ConfigureSessionHelper(cfg)
+
+	// Create next handler
+	nextHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	})
+	// Ensure logged out
+	resp := testHttpRoute(t, http.MethodPost, "/logout", nil)
+	if resp.Result().StatusCode != http.StatusOK {
+		t.Errorf("Expected OK from logout, got %d", resp.Result().StatusCode)
+		return
+	}
+	handler.ConfigureAuthenticationForTesting(false)
+	req, _ := http.NewRequest(http.MethodGet, "/", nil)
+	rec := httptest.NewRecorder()
+	underTest := handler.EnsureAuthenticated(nextHandler)
+	underTest.ServeHTTP(rec, req)
+	if rec.Result().StatusCode != http.StatusUnauthorized {
+		t.Errorf("Expected unauthorized due to missing cookie, got %d", rec.Result().StatusCode)
+		return
+	}
+	loginBody := make(map[string]interface{})
+	loginBody["uid"] = "admin"
+	loginBody["pwd"] = config.GetEnvironment().PASSWORD
+	jsonLoginBody, _ := json.Marshal(&loginBody)
+	resp = testHttpRoute(t, http.MethodPost, "/login", bytes.NewReader(jsonLoginBody))
+	if resp.Result().StatusCode != http.StatusOK {
+		t.Errorf("Expected OK from login, got %d", resp.Result().StatusCode)
+		return
+	}
+	validCookie := http.Cookie{
+		Name:   "cookie",
+		Domain: "localhost",
+		Path:   "/",
+		Secure: false,
+		MaxAge: 10,
+	}
+	req.AddCookie(&validCookie)
+	rec = httptest.NewRecorder()
+	underTest.ServeHTTP(rec, req)
+	if rec.Result().StatusCode != http.StatusOK {
+		t.Errorf("Expected OK from auth with cookie, got %d", rec.Result().StatusCode)
 	}
 }
 
