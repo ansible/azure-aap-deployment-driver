@@ -22,10 +22,10 @@ type SsoManager struct {
 	Db            *persistence.Database
 }
 
-func NewSsoManager(db *persistence.Database, loginManager *handler.LoginManager) {
+func NewSsoManager(db *persistence.Database, loginManager *handler.LoginManager) *SsoManager {
 	if config.GetEnvironment().AUTH_TYPE != "SSO" {
 		log.Infof("SSO not enabled, skipping setup.")
-		return
+		return nil
 	}
 	model.InitSsoStore(db.Instance)
 	ssoManager = &SsoManager{
@@ -35,6 +35,7 @@ func NewSsoManager(db *persistence.Database, loginManager *handler.LoginManager)
 	err := ssoManager.initialize()
 	if err != nil {
 		log.Errorf("Failed to initialize SSO manager, will use credentials login: %v", err)
+		return nil
 	}
 	// TODO Add cancel handling for normal engine exit as well
 	err = controllers.AddCancelHandler("SSO Client Cleanup", ssoManager.DeleteAcsClient)
@@ -44,6 +45,7 @@ func NewSsoManager(db *persistence.Database, loginManager *handler.LoginManager)
 	log.Trace("SSO enabled.")
 	config.EnableSso()
 	*loginManager = ssoManager.SsoHandler
+	return ssoManager
 }
 
 func (s *SsoManager) initialize() error {

@@ -37,6 +37,7 @@ func SetEnvironment() {
 	os.Setenv("STORAGE_ACCOUNT_NAME", "dummy")
 	os.Setenv("ADMIN_PASS", "password1234")
 	os.Setenv("MAIN_OUTPUTS", "{}")
+	os.Setenv("INSTALLER_DOMAIN_NAME", "localhost")
 }
 
 func MockDeploymentResult(name string, provisioningState armresources.ProvisioningState, params map[string]SettableValue, outputs map[string]SettableValue) DoFunc {

@@ -61,7 +61,7 @@ type AcsClient struct {
 func GetAcsClient(ctx context.Context) *AcsClient {
 	once.Do(func() {
 		acsClient = &AcsClient{
-			Endpoint:     config.GetEnvironment().SSO_ENDPOINT,
+			Endpoint:     config.GetEnvironment().DYNAMIC_CLIENT_REG_ENDPOINT,
 			ClientId:     config.GetEnvironment().SSO_CLIENT_ID,
 			ClientSecret: config.GetEnvironment().SSO_CLIENT_SECRET,
 			Context:      ctx,
