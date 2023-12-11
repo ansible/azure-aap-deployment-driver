@@ -13,7 +13,7 @@
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^14.4.3",
+    "@testing-library/user-event": "^14.5.1",
     "@types/jest": "^27.5.2",
     "@types/node": "^18.11.18",
     "@types/react": "^18.0.24",
@@ -26,7 +26,7 @@
   "scripts": {
     "start": "PORT=9999 react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "react-scripts test --verbose",
     "eject": "react-scripts eject",
     "watch-and-build": "npm-watch build"
   },
