@@ -64,10 +64,10 @@ const AppLayout = ({ navigation }: IAppLayout) => {
   function LogoImg() {
     const navigate = useNavigate();
     function handleClick() {
-      navigate('/');
+      navigate('/deployment');
     }
     return (
-      <img src={logo} onClick={handleClick} alt="Ansible Logo" />
+      <img src={logo} onClick={handleClick} onKeyDown={handleClick} alt="Ansible Logo" />
     );
   }
 

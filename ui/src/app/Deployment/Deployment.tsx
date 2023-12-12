@@ -18,14 +18,18 @@ export const Deployment = ({showLoginDialog}:IDeploymentProps) => {
   const [progressData, setProgressData] = useState<DeploymentProgressData>()
   const [entitlementsCount, setEntitlementsCount] = useState<EntitlementsCount>()
 
-  const fetchData = async () => {
-    try {
-      const data = await getSteps()
-      setStepsData(data.steps)
-      setProgressData(data.progress)
-    } catch (error) {
-      console.log("Could not fetch steps data.", error)
-    }
+  const fetchData = () => {
+    // intentionally wrapped inside IIFE to make fetchData function have "void" return
+    // because analysis tools need it to correctly use it as a callback in setInterval
+    (async ()=>{
+      try {
+        const data = await getSteps()
+        setStepsData(data.steps)
+        setProgressData(data.progress)
+      } catch (error) {
+        console.log("Could not fetch steps data.", error)
+      }
+    })();
   }
 
   const fetchEntitlementsData = async () => {

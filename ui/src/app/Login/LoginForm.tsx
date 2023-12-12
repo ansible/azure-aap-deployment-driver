@@ -44,7 +44,7 @@ export function FormLogin() {
 
   const onLoginButtonClick = (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     event.preventDefault();
-    setShowHelperText(!'admin' || !password);
+    setShowHelperText(!password);
     loginHandler('admin', password);
   };
 
