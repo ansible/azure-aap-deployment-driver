@@ -23,11 +23,11 @@ type envVars struct {
 	ENGINE_END_WAIT                     int64
 	ENGINE_MAX_RUNTIME                  int64
 	ENGINE_RETRY_WAIT                   int64
-	EXECUTION_MAX_RETRY                 int
+	EXECUTION_MAX_RETRY                 int64
 	AZURE_POLLING_FREQ_SECONDS          int
-	AZURE_DEPLOYMENT_STEP_TIMEOUT_MIN   int
+	AZURE_DEPLOYMENT_STEP_TIMEOUT       int64
 	AUTO_RETRY                          bool
-	AUTO_RETRY_DELAY                    int
+	AUTO_RETRY_DELAY                    int64
 	AUTH_TYPE                           string
 	SESSION_COOKIE_NAME                 string
 	SESSION_COOKIE_PATH                 string
@@ -73,7 +73,7 @@ func GetEnvironment() envVars {
 	environment.DB_REL_PATH = "installer.db"    // on top of BASE_PATH
 	environment.TEMPLATE_REL_PATH = "templates" // on top of BASE_PATH
 	environment.AZURE_POLLING_FREQ_SECONDS = 5
-	environment.AZURE_DEPLOYMENT_STEP_TIMEOUT_MIN = 30
+	environment.AZURE_DEPLOYMENT_STEP_TIMEOUT = 1800 // 30 min timeout for any one azure deployment
 	environment.AUTO_RETRY = false
 	environment.AUTO_RETRY_DELAY = 60 // Retry after 60 seconds if AUTO_RETRY set
 	environment.SESSION_COOKIE_NAME = "madd_session"
@@ -176,11 +176,11 @@ func GetEnvironment() envVars {
 		environment.AZURE_LOGIN_RETRIES = int(azureLoginRetries)
 	}
 
-	azureStepTimeoutMin, err := strconv.ParseInt(env.Get("AZURE_DEPLOYMENT_STEP_TIMEOUT_MIN", "0"), 10, 32)
+	azureStepTimeout, err := strconv.ParseInt(env.Get("AZURE_DEPLOYMENT_STEP_TIMEOUT", "0"), 10, 32)
 	if err != nil {
-		log.Warnf("AZURE_DEPLOYMENT_STEP_TIMEOUT_MIN environment variable is not a number, will use default of %d", environment.AZURE_DEPLOYMENT_STEP_TIMEOUT_MIN)
-	} else if azureStepTimeoutMin != 0 {
-		environment.AZURE_DEPLOYMENT_STEP_TIMEOUT_MIN = int(azureStepTimeoutMin)
+		log.Warnf("AZURE_DEPLOYMENT_STEP_TIMEOUT_MIN environment variable is not a number, will use default of %d", environment.AZURE_DEPLOYMENT_STEP_TIMEOUT)
+	} else if azureStepTimeout != 0 {
+		environment.AZURE_DEPLOYMENT_STEP_TIMEOUT = int64(azureStepTimeout)
 	}
 
 	basePath := env.Get("BASE_PATH")
@@ -264,7 +264,7 @@ func GetEnvironment() envVars {
 	if err != nil {
 		log.Warnf("EXECUTION_MAX_RETRY environment variable is not set or is not a number, will use default: %d", environment.EXECUTION_MAX_RETRY)
 	} else {
-		environment.EXECUTION_MAX_RETRY = int(executionMaxRetry)
+		environment.EXECUTION_MAX_RETRY = executionMaxRetry
 	}
 
 	// using empty string as default to force error condition and use of default when env variable not set
@@ -290,9 +290,9 @@ func GetEnvironment() envVars {
 		if autoRetryDelay > int64(environment.ENGINE_RETRY_WAIT) {
 			maxAutoRetryDelay := environment.ENGINE_RETRY_WAIT / 2
 			log.Warnf("AUTO_RETRY_DELAY cannot exceed ENGINE_RETRY_WAIT, setting to: %d", maxAutoRetryDelay)
-			environment.AUTO_RETRY_DELAY = int(maxAutoRetryDelay)
+			environment.AUTO_RETRY_DELAY = int64(maxAutoRetryDelay)
 		} else {
-			environment.AUTO_RETRY_DELAY = int(autoRetryDelay)
+			environment.AUTO_RETRY_DELAY = int64(autoRetryDelay)
 		}
 	}
 

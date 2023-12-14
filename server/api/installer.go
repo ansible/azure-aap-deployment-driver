@@ -74,6 +74,7 @@ func (a *Installer) configureSessionHelper() {
 
 func (a *Installer) setRouters() {
 	a.Get("/status", a.WrapHandlerWithDB(handler.Status))
+	a.Get("/engineconfiguration", handler.EnsureAuthenticated(handler.GetEngineConfiguration))
 	a.Get("/authtype", handler.AuthType)
 	a.Get("/authcheck", handler.GetAuthCheckHandler(false))
 	a.Get("/authchecksso", handler.GetAuthCheckHandler(true))

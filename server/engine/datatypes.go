@@ -15,6 +15,6 @@ type Engine struct {
 	mainOutputs          *model.Output
 	done                 chan struct{}
 	status               *model.Status
-	maxExecutionRestarts int
+	maxExecutionRestarts int64
 	deploymentsClient    *armresources.DeploymentsClient
 }
