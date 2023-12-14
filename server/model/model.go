@@ -64,7 +64,7 @@ type EngineConfiguration struct {
 	EngineExitDelay       int64 `json:"engineExitDelaySec"`
 	AutoRetryDelay        int64 `json:"autoRetryDelaySec"`
 	StepDeploymentTimeout int64 `json:"stepDeploymentTimeoutSec"`
-	StepMaxRetries        int64 `json:"stepMaxRetries"`
+	StepMaxRetries        int   `json:"stepMaxRetries"`
 }
 
 type SessionConfig struct {

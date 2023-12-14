@@ -23,7 +23,7 @@ type envVars struct {
 	ENGINE_END_WAIT                     int64
 	ENGINE_MAX_RUNTIME                  int64
 	ENGINE_RETRY_WAIT                   int64
-	EXECUTION_MAX_RETRY                 int64
+	EXECUTION_MAX_RETRY                 int
 	AZURE_POLLING_FREQ_SECONDS          int
 	AZURE_DEPLOYMENT_STEP_TIMEOUT       int64
 	AUTO_RETRY                          bool
@@ -264,7 +264,7 @@ func GetEnvironment() envVars {
 	if err != nil {
 		log.Warnf("EXECUTION_MAX_RETRY environment variable is not set or is not a number, will use default: %d", environment.EXECUTION_MAX_RETRY)
 	} else {
-		environment.EXECUTION_MAX_RETRY = executionMaxRetry
+		environment.EXECUTION_MAX_RETRY = int(executionMaxRetry)
 	}
 
 	// using empty string as default to force error condition and use of default when env variable not set
