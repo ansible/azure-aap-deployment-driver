@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
+  Brand,
   Nav,
   NavList,
   NavItem,
@@ -11,7 +12,7 @@ import {
   SkipToContent,
   Modal, ModalVariant, Button
 } from '@patternfly/react-core';
-import logo from '../bgimages/Ansible.svg';
+import logo from '../bgimages/Technology_icon-Red_Hat-Ansible_Automation_Platform-Standard-RGB.svg';
 import { logout } from "../apis/auth";
 
 interface IAppLayout {
@@ -61,19 +62,9 @@ const AppLayout = ({ navigation }: IAppLayout) => {
     }, 3000)
   }
 
-  function LogoImg() {
-    const navigate = useNavigate();
-    function handleClick() {
-      navigate('/deployment');
-    }
-    return (
-      <img src={logo} onClick={handleClick} onKeyDown={handleClick} alt="Ansible Logo" />
-    );
-  }
-
   const Header = (
     <PageHeader
-      logo={<LogoImg />}
+      logo={<Brand src={logo} alt="Red Hat Ansible Automation Platform Logo"/>}
       showNavToggle
       isNavOpen={isNavOpen}
       onNavToggle={isMobileView ? onNavToggleMobile : onNavToggle}
