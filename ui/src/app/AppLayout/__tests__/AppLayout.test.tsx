@@ -23,8 +23,6 @@ describe('AppLayout', ()=>{
 		// what's passed to the render() is the same what's done index.tsx file
 		render(<RouterProvider router={router} />);
 
-		//screen.debug();
-
 		const logo = screen.getByAltText("Red Hat Ansible Automation Platform Logo")
 		expect(logo).toBeInTheDocument()
 		expect(logo).toBeVisible()
