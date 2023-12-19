@@ -346,3 +346,4 @@ func GetEnvironment() envVars {
 
 	return environment
 }
+
