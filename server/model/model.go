@@ -58,6 +58,15 @@ type Status struct {
 	FirstStart        time.Time
 }
 
+type EngineConfiguration struct {
+	StepRestartTimeout    int64 `json:"stepRestartTimeoutSec"`
+	OverallTimeout        int64 `json:"overallTimeoutSec"`
+	EngineExitDelay       int64 `json:"engineExitDelaySec"`
+	AutoRetryDelay        int64 `json:"autoRetryDelaySec"`
+	StepDeploymentTimeout int64 `json:"stepDeploymentTimeoutSec"`
+	StepMaxRetries        int   `json:"stepMaxRetries"`
+}
+
 type SessionConfig struct {
 	BaseModel
 	SessionAuthKey []byte

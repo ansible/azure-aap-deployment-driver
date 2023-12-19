@@ -317,6 +317,21 @@ func TestSessionHelper(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rec.Result().StatusCode, "Expected OK from auth with cookie.")
 }
 
+func TestEngineConfiguration(t *testing.T) {
+	timeouts := model.EngineConfiguration{}
+	resp := testHttpRoute(t, http.MethodGet, "/engineconfiguration", nil)
+	assert.Equal(t, http.StatusOK, resp.Result().StatusCode)
+	if err := json.Unmarshal(resp.Body.Bytes(), &timeouts); err != nil {
+		t.Error(err.Error())
+	}
+	assert.Equal(t, config.GetEnvironment().AZURE_DEPLOYMENT_STEP_TIMEOUT, timeouts.StepDeploymentTimeout)
+	assert.Equal(t, config.GetEnvironment().ENGINE_END_WAIT, timeouts.EngineExitDelay)
+	assert.Equal(t, config.GetEnvironment().ENGINE_MAX_RUNTIME, timeouts.OverallTimeout)
+	assert.Equal(t, config.GetEnvironment().EXECUTION_MAX_RETRY, timeouts.StepMaxRetries)
+	assert.Equal(t, config.GetEnvironment().AUTO_RETRY_DELAY, timeouts.AutoRetryDelay)
+	assert.Equal(t, config.GetEnvironment().ENGINE_RETRY_WAIT, timeouts.StepRestartTimeout)
+}
+
 // TestMain wraps the tests.  Setup is done before the call to m.Run() and any
 // needed teardown after that.
 func TestMain(m *testing.M) {

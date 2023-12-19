@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"server/config"
 	"server/model"
 
 	"gorm.io/gorm"
@@ -39,6 +40,18 @@ func Status(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	respondJSON(w, http.StatusOK, map[string]string{"status": status.toString()})
+}
+
+func GetEngineConfiguration(w http.ResponseWriter, r *http.Request) {
+	timeouts := model.EngineConfiguration{
+		StepRestartTimeout:    config.GetEnvironment().ENGINE_RETRY_WAIT,
+		OverallTimeout:        config.GetEnvironment().ENGINE_MAX_RUNTIME,
+		EngineExitDelay:       config.GetEnvironment().ENGINE_END_WAIT,
+		AutoRetryDelay:        config.GetEnvironment().AUTO_RETRY_DELAY,
+		StepDeploymentTimeout: config.GetEnvironment().AZURE_DEPLOYMENT_STEP_TIMEOUT,
+		StepMaxRetries:        config.GetEnvironment().EXECUTION_MAX_RETRY,
+	}
+	respondJSON(w, http.StatusOK, timeouts)
 }
 
 func getLatestExecution(db *gorm.DB, step model.Step) model.Execution {
