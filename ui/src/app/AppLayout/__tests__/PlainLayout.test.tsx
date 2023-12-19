@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { PlainLayout } from '../PlainLayout';
 
-describe('AppLayout', ()=>{
+describe('PlainLayout', ()=>{
 	it('renders Page with proper AAP logo', ()=> {
 		render(<PlainLayout />)
 
