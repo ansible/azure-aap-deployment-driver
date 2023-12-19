@@ -1,11 +1,14 @@
 {
-  "short_name": "AAP Dashboard",
-  "name": "Ansible Automation Platform Dashboard",
+  "short_name": "AAP Deployment Engine",
+  "name": "Red Hat Ansible Automation Platform Deployment Engine",
   "icons": [
     {
-      "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "src": "favicon.svg",
+      "sizes": "any"
+    },
+    {
+      "src": "rhaaplogo_black.png",
+      "sizes": "380x380"
     }
   ],
   "start_url": ".",
