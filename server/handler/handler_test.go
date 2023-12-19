@@ -317,7 +317,7 @@ func TestSessionHelper(t *testing.T) {
 	assert.Equal(t, http.StatusOK, rec.Result().StatusCode, "Expected OK from auth with cookie.")
 }
 
-func TestTimeouts(t *testing.T) {
+func TestEngineConfiguration(t *testing.T) {
 	timeouts := model.EngineConfiguration{}
 	resp := testHttpRoute(t, http.MethodGet, "/engineconfiguration", nil)
 	assert.Equal(t, http.StatusOK, resp.Result().StatusCode)
