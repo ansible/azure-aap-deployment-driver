@@ -140,3 +140,7 @@ func (requester *HttpRequester) MakeRequest(ctx context.Context, request HttpReq
 		Body:       bodyBytes,
 	}, nil
 }
+
+func (r *HttpRequester) TestOnlySetClient(client *http.Client) {
+	r.client = client
+}
