@@ -98,6 +98,7 @@ func (controller *EntitlementAPIController) FetchSubscriptions() {
 				storeError(controller.database, err)
 				return
 			}
+
 			response := APIResponse{}
 			if err := json.Unmarshal(resp.Body, &response); err != nil {
 				log.Warnf("Couldn't unmarshal JSON response. %v", err)

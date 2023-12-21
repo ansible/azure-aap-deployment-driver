@@ -31,7 +31,11 @@ type HttpResponse struct {
 }
 
 func NewHttpRequester() *HttpRequester {
-	return newRequester(&http.Transport{})
+	return newRequester(&http.Client{Timeout: 30 * time.Second})
+}
+
+func NewHttpRequesterWithClient(client *http.Client) *HttpRequester {
+	return newRequester(client)
 }
 
 func NewHttpRequesterWithCertificate(certPEMString, privkeyPEMString string) (*HttpRequester, error) {
@@ -44,20 +48,20 @@ func NewHttpRequesterWithCertificate(certPEMString, privkeyPEMString string) (*H
 	tlsConfig := &tls.Config{
 		Certificates: []tls.Certificate{cert},
 	}
-	// setup transport
-	httpTransport := &http.Transport{
-		TLSClientConfig: tlsConfig,
+	// create client
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+		Transport: &http.Transport{
+			TLSClientConfig: tlsConfig,
+		},
 	}
 
-	return newRequester(httpTransport), nil
+	return newRequester(client), nil
 }
 
-func newRequester(transport *http.Transport) *HttpRequester {
+func newRequester(client *http.Client) *HttpRequester {
 	return &HttpRequester{
-		client: &http.Client{
-			Transport: transport,
-			Timeout:   30 * time.Second,
-		},
+		client: client,
 	}
 }
 
@@ -139,8 +143,4 @@ func (requester *HttpRequester) MakeRequest(ctx context.Context, request HttpReq
 		Headers:    map[string][]string(httpResponse.Header),
 		Body:       bodyBytes,
 	}, nil
-}
-
-func (r *HttpRequester) TestOnlySetClient(client *http.Client) {
-	r.client = client
 }
