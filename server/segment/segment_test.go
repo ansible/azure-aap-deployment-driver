@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestSegmentClient(t *testing.T) {
@@ -40,9 +41,12 @@ func TestSegmentClient(t *testing.T) {
 	props[4] = model.Telemetry{
 		MetricName:  "deploystatus",
 		MetricValue: "failed",
+		Step:        model.MAIN_MARKER,
 	}
 	s.AddProperties(props)
 	track, err := s.Publish()
+	assert.Nil(t, err)
+	require.NotNil(t, track)
 	assert.Equal(t, "aap.azure.installer-deploy-failed", track.Event)
 	assert.Equal(t, "subscription", track.UserId)
 	assert.Equal(t, []string{"error1", "error2"}, track.Properties["errors"].(map[string][]string)["failed"])
