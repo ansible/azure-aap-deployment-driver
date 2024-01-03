@@ -45,8 +45,8 @@ func TestInMemoryDatabase(t *testing.T) {
 }
 func TestTelemetryTable(t *testing.T) {
 	db := persistence.NewInMemoryDB()
-	model.SetMetric(db.Instance, model.DeployStatus, "SUCCESS", "")
-	model.SetMetric(db.Instance, model.AccessType, "PRIVATE", "")
+	model.SetMetric(db.Instance, model.DeployStatus, "SUCCESS", model.MAIN_MARKER)
+	model.SetMetric(db.Instance, model.AccessType, "PRIVATE", model.MAIN_MARKER)
 	retrieved := model.Metric(db.Instance, model.DeployStatus)
 	assert.Equal(t, "SUCCESS", retrieved.MetricValue)
 	retrieved = model.Metric(db.Instance, model.ApplicationId)

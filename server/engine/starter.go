@@ -8,6 +8,7 @@ import (
 	"server/config"
 	"server/model"
 	"server/persistence"
+	"server/telemetry"
 	"server/templates"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
@@ -23,6 +24,7 @@ func NewEngine(ctx context.Context, db *persistence.Database, client *armresourc
 		status:               &model.Status{},
 		maxExecutionRestarts: config.GetEnvironment().EXECUTION_MAX_RETRY,
 		deploymentsClient:    client,
+		telemetryHandler:     telemetry.Init(db.Instance, ctx),
 	}
 	engine.initialize()
 	return engine

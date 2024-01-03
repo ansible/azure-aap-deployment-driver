@@ -4,6 +4,7 @@ import (
 	"context"
 	"server/model"
 	"server/persistence"
+	"server/telemetry"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 )
@@ -17,4 +18,5 @@ type Engine struct {
 	status               *model.Status
 	maxExecutionRestarts int
 	deploymentsClient    *armresources.DeploymentsClient
+	telemetryHandler     *telemetry.TelemetryHandler
 }

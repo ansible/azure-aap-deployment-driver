@@ -72,11 +72,14 @@ type SessionConfig struct {
 	SessionAuthKey []byte
 }
 
+// DB comparisons don't work well with empty string, so
+// use this to mark "top level" telemetry values
+const MAIN_MARKER string = "xxmainxx"
+
 type Telemetry struct {
-	BaseModel
-	MetricName  DeploymentMetric `gorm:"type:string"`
+	MetricName  DeploymentMetric `gorm:"type:string;primaryKey"`
 	MetricValue string
-	Step        string
+	Step        string `gorm:"primaryKey"`
 }
 
 type RedHatEntitlements struct {
@@ -136,8 +139,7 @@ func CreateNewOutput(name string, result *DeploymentResult) *Output {
 
 // Setter function for each deployment metric
 func SetMetric(db *gorm.DB, metric DeploymentMetric, value string, step string) {
-
-	db.Create(&Telemetry{
+	db.Save(&Telemetry{
 		MetricName:  metric,
 		MetricValue: value,
 		Step:        step,
@@ -146,7 +148,6 @@ func SetMetric(db *gorm.DB, metric DeploymentMetric, value string, step string) 
 
 // Getter function for each deployment metric
 func Metric(db *gorm.DB, metric DeploymentMetric) Telemetry {
-
 	telemetry := Telemetry{}
 	db.Where("metric_name = ?", metric).Find(&telemetry)
 	return telemetry
