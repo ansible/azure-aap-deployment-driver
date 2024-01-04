@@ -220,16 +220,24 @@ func TestSsoHandler(t *testing.T) {
 	assert.Equal(t, http.StatusTemporaryRedirect, rec.Result().StatusCode, "Expected callback to redirect")
 
 	redirUrl := rec.Header().Get("Location")
-	assert.Contains(t, redirUrl, "deployment")
+	assert.Contains(t, redirUrl, "/")
 
 	// Test SSO session checker
 	authCookie := rec.Result().Cookies()[0]
-	req, _ = http.NewRequest(http.MethodGet, "/authcheck", nil)
+	req, _ = http.NewRequest(http.MethodGet, "/authstatus", nil)
 	req.AddCookie(authCookie)
 	rec = httptest.NewRecorder()
-	toTest := handler.GetAuthCheckHandler(true)
-	toTest.ServeHTTP(rec, req)
+	handler.AuthStatusHandler(rec, req)
 	assert.Equal(t, http.StatusOK, rec.Result().StatusCode, "Expected OK from authcheck")
+	assert.Equal(t, "true", rec.Result().Header.Get("X-Session-Creds"), "Expected true in X-Session-Creds response header")
+	assert.Equal(t, "true", rec.Result().Header.Get("X-Session-SSO"), "Expected true in X-Session-SSO response header")
+
+	req, _ = http.NewRequest(http.MethodGet, "/authstatus", nil)
+	rec = httptest.NewRecorder()
+	handler.AuthStatusHandler(rec, req)
+	assert.Equal(t, http.StatusUnauthorized, rec.Result().StatusCode, "Expected Unauthorized from authcheck")
+	assert.Equal(t, "false", rec.Result().Header.Get("X-Session-Creds"), "Expected false in X-Session-Creds response header")
+	assert.Equal(t, "false", rec.Result().Header.Get("X-Session-SSO"), "Expected false in X-Session-SSO response header")
 
 	// Test invalid state
 	callbackUrl = fmt.Sprintf("/ssocallback?code=%s&state=%s&session_state=unused", code, "BADSTATE")

@@ -1,6 +1,11 @@
 package handler
 
-import "net/http"
+import (
+	"net/http"
+	"strconv"
+
+	log "github.com/sirupsen/logrus"
+)
 
 var authDisabled bool
 
@@ -31,27 +36,29 @@ func EnsureAuthenticated(next http.HandlerFunc) http.HandlerFunc {
 	})
 }
 
-func GetAuthCheckHandler(checkSSO bool) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		sessionHelper, err := getSessionHelper()
-		if err != nil {
-			respondError(w, http.StatusInternalServerError, err.Error())
-			return
-		}
-		var hasSession bool
-		if checkSSO {
-			hasSession, err = sessionHelper.ValidSession(r)
-		} else {
-			hasSession, err = sessionHelper.HasSession(r)
-		}
-		if err != nil {
-			respondError(w, http.StatusInternalServerError, err.Error())
-			return
-		}
-		if hasSession {
-			respondOk(w)
-			return
-		}
-		respondError(w, http.StatusUnauthorized, "Not authenticated.")
-	})
+func AuthStatusHandler(w http.ResponseWriter, r *http.Request) {
+	sessionHelper, err := getSessionHelper()
+	if err != nil {
+		respondError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	// check both types of session, credentials and SSO
+	var hasSSOSession, hasCredSession bool
+	if hasSSOSession, err = sessionHelper.ValidSession(r); err != nil {
+		respondError(w, http.StatusInternalServerError, err.Error())
+	}
+	if hasCredSession, err = sessionHelper.HasSession(r); err != nil {
+		respondError(w, http.StatusInternalServerError, err.Error())
+	}
+	// set response headers indicating what sessions are established
+	w.Header().Add("X-Session-Creds", strconv.FormatBool(hasCredSession))
+	w.Header().Add("X-Session-SSO", strconv.FormatBool(hasSSOSession))
+
+	log.Tracef("Session status: creds: %t, sso:%t", hasCredSession, hasSSOSession)
+
+	if hasCredSession && hasSSOSession {
+		respondOk(w)
+		return
+	}
+	respondError(w, http.StatusUnauthorized, "Not authenticated.")
 }

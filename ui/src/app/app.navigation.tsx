@@ -1,6 +1,6 @@
 const appNavigation = [
   {
-    path: "/deployment",
+    path: "/",
     label: "Deployment"
   },
   {

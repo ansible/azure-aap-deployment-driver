@@ -85,7 +85,7 @@ func (s *SsoHandler) SsoRedirect(db *gorm.DB, w http.ResponseWriter, r *http.Req
 		return
 	}
 	log.Trace("Redirecting to deployment driver home.")
-	http.Redirect(w, r, fmt.Sprintf("https://%s/deployment", config.GetEnvironment().INSTALLER_DOMAIN_NAME), http.StatusTemporaryRedirect)
+	http.Redirect(w, r, fmt.Sprintf("https://%s/", config.GetEnvironment().INSTALLER_DOMAIN_NAME), http.StatusTemporaryRedirect)
 }
 
 func (s *SsoHandler) rollState() error {

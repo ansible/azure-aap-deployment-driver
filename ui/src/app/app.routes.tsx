@@ -11,7 +11,7 @@ const appRoutes = [
 		element: <PlainLayout />,
 		children: [
 			{
-				path: "/",
+				path: "/login",
 				element: <Login />
 			}
 		]
@@ -20,7 +20,7 @@ const appRoutes = [
 		element: <AppLayout navigation={appNavigation} />,
 		children: [
 			{
-				path: "/welcome",
+				path: "/rhlogin",
 				element: <Deployment showLoginDialog={true} />
 			}
 		]
@@ -29,7 +29,7 @@ const appRoutes = [
 		element: <AppLayout navigation={appNavigation} />,
 		children: [
 			{
-				path: "/deployment",
+				path: "/",
 				element: <Deployment showLoginDialog={false}/>
 			},
 			{

@@ -40,7 +40,7 @@ if [ ! -f "nginx/dhparam.pem" ]; then
 fi
 
 echo "Building the container image for nginx..."
-docker build -f Dockerfile.nginx-only.local_dev -t deploymentdrivernginx:latest .
+DOCKER_BUILDKIT=1 docker build -f Dockerfile.nginx-only.local_dev -t deploymentdrivernginx:latest .
 
 echo "Starting the container for nginx... You can exit it with: ctrl-c"
 docker run -ti --name nginx --rm \
