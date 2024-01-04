@@ -235,6 +235,11 @@ func GetEnvironment() envVars {
 		environment.SSO_CLIENT_SECRET = ssoClientSecret
 	}
 
+	azFunctionUrl := env.Get("AZURE_MARKETPLACE_FUNCTION_BASE_URL")
+	if len(azFunctionUrl) > 0 {
+		environment.AZURE_MARKETPLACE_FUNCTION_BASE_URL = azFunctionUrl
+	}
+
 	// using empty string as default to force error condition and use of default when env variable not set
 	engineEndWait, err := strconv.ParseInt(env.Get("ENGINE_END_WAIT", ""), 10, 64)
 	if err != nil {
@@ -346,4 +351,3 @@ func GetEnvironment() envVars {
 
 	return environment
 }
-

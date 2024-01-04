@@ -27,12 +27,14 @@ func TestTelemetryHandler(t *testing.T) {
 	os.Setenv("SEGMENT_WRITE_KEY", "DUMMY")
 	os.Setenv("AZURE_MARKETPLACE_FUNCTION_BASE_URL", server.URL)
 	os.Setenv("AZURE_MARKETPLACE_FUNCTION_KEY", "DUMMY")
+	os.Setenv("APPLICATION_ID", "DUMMY")
 	test.SetEnvironment()
 
 	// Create main outputs
 	mainoutputs := "{\"access\":{\"type\":\"String\",\"value\":\"public\"},\"location\":{\"type\":\"String\",\"value\":\"eastus\"}}"
 	outputValues := make(map[string]interface{})
-	json.Unmarshal([]byte(mainoutputs), &outputValues)
+	err := json.Unmarshal([]byte(mainoutputs), &outputValues)
+	assert.Nil(t, err)
 
 	outputs := model.Output{
 		ModuleName: "",
@@ -51,7 +53,6 @@ func TestTelemetryHandler(t *testing.T) {
 		ErrorDetails: "ERROR",
 	}
 	db.Instance.Create(&exec)
-	// Create outputs? etc?
 	th := telemetry.Init(db.Instance, context.Background())
 	c := segment.Init("DUMMY", "subscription")
 	th.TestSetClient(c)
@@ -59,6 +60,8 @@ func TestTelemetryHandler(t *testing.T) {
 	assert.Nil(t, err)
 	require.NotNil(t, track)
 	assert.Equal(t, "aap.azure.installer-deploy-failed", track.Event)
+	assert.Equal(t, "12345678-90ab-cdef-0123-4567890abcde", track.UserId)
+	// TODO check properties
 }
 
 func TestIncrementLogins(t *testing.T) {

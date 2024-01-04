@@ -57,7 +57,10 @@ func (t *TelemetryHandler) FinalizeAndPublish() (*analytics.Track, error) {
 	// Set final metrics
 	model.SetMetric(t.db, model.EndTime, time.Now().Format(time.RFC3339), model.MAIN_MARKER)
 	setStepMetrics(t.db)
-	sendDeploymentIdentification(t.ctx)
+	err := sendDeploymentIdentification(t.ctx)
+	if err != nil {
+		log.Errorf("Unable to send deployment identification event to Azure Function/Segment: %v", err)
+	}
 
 	// Set deployment status
 	setDeploymentStatus(t.db)
