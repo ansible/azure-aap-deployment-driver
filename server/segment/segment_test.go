@@ -17,7 +17,7 @@ func TestSegmentClient(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
-	s.SetEndpoint(server.URL)
+	s.TestSetEndpoint(server.URL)
 	props := make([]model.Telemetry, 5)
 	props[0] = model.Telemetry{
 		MetricName:  "key",

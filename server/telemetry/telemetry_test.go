@@ -61,7 +61,9 @@ func TestTelemetryHandler(t *testing.T) {
 	require.NotNil(t, track)
 	assert.Equal(t, "aap.azure.installer-deploy-failed", track.Event)
 	assert.Equal(t, "12345678-90ab-cdef-0123-4567890abcde", track.UserId)
-	// TODO check properties
+	assert.Equal(t, "public", track.Properties[string(model.AccessType)])
+	assert.Equal(t, "DUMMY", track.Properties[string(model.ApplicationId)])
+	assert.Equal(t, "eastus", track.Properties[string(model.Region)])
 }
 
 func TestIncrementLogins(t *testing.T) {
