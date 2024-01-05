@@ -2,6 +2,7 @@ package telemetry
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"server/config"
@@ -30,10 +31,6 @@ var handler TelemetryHandler
 func Init(db *gorm.DB, ctx context.Context) *TelemetryHandler {
 	// Get write key
 	writeKey := config.GetEnvironment().SEGMENT_WRITE_KEY
-	if writeKey == "" {
-		log.Error("Segment Write Key is missing : Not sending telemetry to Segment")
-		return nil
-	}
 	// Set metrics
 	if config.GetEnvironment().APPLICATION_ID != "" {
 		model.SetMetric(db, model.ApplicationId, config.GetEnvironment().APPLICATION_ID, model.MAIN_MARKER)
@@ -44,8 +41,14 @@ func Init(db *gorm.DB, ctx context.Context) *TelemetryHandler {
 	extractMainOutputs(db)
 
 	once.Do(func() {
+		var c *segment.SegmentClient
+		if writeKey != "" {
+			segment.Init(writeKey, config.GetEnvironment().SUBSCRIPTION)
+		} else {
+			log.Warn("Segment Write Key is missing : Not sending telemetry to Segment")
+		}
 		handler = TelemetryHandler{
-			client: segment.Init(writeKey, config.GetEnvironment().SUBSCRIPTION),
+			client: c,
 			db:     db,
 			ctx:    ctx,
 		}
@@ -70,8 +73,11 @@ func (t *TelemetryHandler) FinalizeAndPublish() (*analytics.Track, error) {
 	t.db.Find(&metricData)
 
 	// Publish
-	t.client.AddProperties(metricData)
-	return t.client.Publish()
+	if t.client != nil {
+		t.client.AddProperties(metricData)
+		return t.client.Publish()
+	}
+	return nil, errors.New("segment client not initialized")
 }
 
 func setStepMetrics(db *gorm.DB) {
