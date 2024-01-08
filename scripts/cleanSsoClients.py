@@ -10,7 +10,7 @@ import urllib.parse
 
 
 DEFAULT_ORG = 123
-DEFAULT_HOST = "sso.stage.redhat.com"
+DEFAULT_HOST = "sso.redhat.com"
 DEFAULT_URL = f"https://{DEFAULT_HOST}"
 TOKEN_PATH = "auth/realms/redhat-external/protocol/openid-connect/token"
 API_PATH = "auth/realms/redhat-external/apis/beta/acs/v1"
