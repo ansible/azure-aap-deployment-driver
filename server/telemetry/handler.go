@@ -43,7 +43,7 @@ func Init(db *gorm.DB, ctx context.Context) *TelemetryHandler {
 	once.Do(func() {
 		var c *segment.SegmentClient
 		if writeKey != "" {
-			segment.Init(writeKey, config.GetEnvironment().SUBSCRIPTION)
+			c = segment.Init(writeKey, config.GetEnvironment().SUBSCRIPTION)
 		} else {
 			log.Warn("Segment Write Key is missing : Not sending telemetry to Segment")
 		}
