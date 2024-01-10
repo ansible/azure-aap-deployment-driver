@@ -5,27 +5,23 @@ import App from '..';
 import appRoutes from '../app.routes';
 
 describe('Main app', ()=>{
-  it('initially renders login form', () => {
-    render(<App />);
-    verifyInitialLoginForm()
-  });
 
-  it('route / renders login form', ()=>{
-    navigateTo('/')
+  it('route /login renders login form', ()=>{
+    navigateTo('/login')
     verifyInitialLoginForm()
   })
 
-  it('route /welcome renders deployment component with SSO login dialog over it', ()=>{
-    navigateTo('/welcome')
+  it('route /rhlogin renders deployment component with SSO login dialog over it', ()=>{
+    navigateTo('/rhlogin')
     const dialog = screen.getByRole('dialog')
     expect(dialog).toBeVisible()
     const login = screen.getByRole('link', {name:'Log in with Red Hat account'})
     expect(login).toBeVisible()
   })
 
-  it('route /deployment renders deployment component without the SSO login dialog', ()=>{
+  it('route / renders deployment component without the SSO login dialog', ()=>{
     //const user = userEvent.setup()
-    navigateTo('/deployment')
+    navigateTo('/')
     const dialog = screen.queryByRole('dialog')
     expect(dialog).toBeNull()
   })

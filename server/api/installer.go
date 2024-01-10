@@ -76,8 +76,7 @@ func (a *Installer) setRouters() {
 	a.Get("/status", a.WrapHandlerWithDB(handler.Status))
 	a.Get("/engineconfiguration", handler.EnsureAuthenticated(handler.GetEngineConfiguration))
 	a.Get("/authtype", handler.AuthType)
-	a.Get("/authcheck", handler.GetAuthCheckHandler(false))
-	a.Get("/authchecksso", handler.GetAuthCheckHandler(true))
+	a.Get("/authstatus", handler.AuthStatusHandler)
 	a.Post("/login", a.WrapHandlerWithDB(handler.CredentialsHandler{}.GetLoginHandler())) // GetLoginHandler() must be executed to do its initialization
 	a.Post("/logout", handler.EnsureAuthenticated(handler.Logout))
 	a.Get("/step", handler.EnsureAuthenticated(a.WrapHandlerWithDB(handler.GetAllSteps)))

@@ -21,7 +21,7 @@ export function FormLogin() {
         setShowHelperText(true);
       } else {
         setIsValidPassword(true)
-        navigate('/welcome');
+        navigate('/rhlogin');
       }
     } catch (err: any) {
       console.log('Got exception from logging in.', err);
