@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"server/config"
-	"server/engine"
+	"server/telemetry"
 
 	"gorm.io/gorm"
 )
@@ -43,7 +43,7 @@ func (a CredentialsHandler) GetLoginHandler() HandleFuncWithDB {
 			}
 			respondJSON(w, http.StatusOK, map[string]string{"status": "success"})
 			// update metrics because user attempted logging in with correct credentials
-			engine.UpdateLogInMetrics(db)
+			telemetry.IncrementLogins(db)
 			return
 		}
 

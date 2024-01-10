@@ -8,6 +8,7 @@ import (
 	"server/config"
 	"server/model"
 	"server/persistence"
+	"server/telemetry"
 	"server/templates"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
@@ -72,7 +73,7 @@ func (engine *Engine) initialize() {
 		}
 		log.Infof("Finished deployment template discovery, stored %d steps in database.", stepCount)
 	} else {
-		log.Infof("Skipped discovery of templates, they are in database already.")
+		log.Info("Skipped discovery of templates, they are in database already.")
 	}
 
 	if !engine.status.MainOutputsLoaded {
@@ -90,8 +91,11 @@ func (engine *Engine) initialize() {
 		engine.database.Instance.Save(engine.status)
 		log.Infof("Finished parsing main outputs, stored %d outputs in database.", len(outputValues))
 	} else {
-		log.Infof("Skipped parsing and storing main outputs, they are in database already.")
+		log.Info("Skipped parsing and storing main outputs, they are in database already.")
 	}
+
+	log.Info("Initializing telemetry handler for Segment reporting.")
+	engine.telemetryHandler = telemetry.Init(engine.database.Instance, engine.context)
 
 	// Allways read the main outputs from DB
 	engine.mainOutputs = &model.Output{}

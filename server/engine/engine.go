@@ -155,36 +155,11 @@ func (engine *Engine) startDeploymentExecutions() {
 	}
 }
 
-func (engine *Engine) ReportFinalDeploymentStatusToTelemetry() {
-	steps := []model.Step{}
-	engine.database.Instance.Model(&model.Step{}).Preload("Executions").Find(&steps)
-	status := model.DeploymentSucceeded
-	for _, step := range steps {
-		latestExecution := engine.GetLatestExecution(step)
-		if latestExecution.Status == model.PermanentlyFailed {
-			status = model.DeploymentFailed
-			break
-		} else if latestExecution.Status == model.Canceled {
-			status = model.DeploymentCanceled
-			break
-		}
-	}
-	model.SetMetric(engine.database.Instance, model.DeployStatus, string(status), "")
-}
-
 func (engine *Engine) waitBeforeEnding() {
-	// Add DeploymentMetric to Database
-	engine.ReportFinalDeploymentStatusToTelemetry()
-	// Publish telemetry for this deployment to Segment before starting wait time
-	log.Info("Setting final metrics before sending telemetry to Segment")
-	SetFinalMetrics(engine.database.Instance)
 	log.Info("Sending telemetry for this deployment to Segment")
-	PublishToSegment(engine.database.Instance)
-
-	// Send deployment identification to Azure function
-	err := SendDeploymentIdentification(engine.context)
+	_, err := engine.telemetryHandler.FinalizeAndPublish()
 	if err != nil {
-		log.Errorf("Unable to send deployment identification event to Azure function: %v", err)
+		log.Warnf("Unable to publish telemetry: %v", err)
 	}
 
 	// if the context is not yet cancelled, check for failed executions
