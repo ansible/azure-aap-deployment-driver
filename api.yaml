@@ -13,6 +13,26 @@ paths:
             "*/*":
               schema:
                 $ref: "#/components/schemas/Status"
+  /authcheck:
+    get:
+      summary: Check if authenticated w/ password (validate cookie)
+      responses:
+        "200":
+          description: Client is authenticated
+        "401":
+          description: Client is not authenticated
+        "500":
+          description: Server error
+  /authchecksso:
+    get:
+      summary: Check if SSO authenticated (validate cookie)
+      responses:
+        "200":
+          description: Client is authenticated
+        "401":
+          description: Client is not authenticated
+        "500":
+          description: Server error
   /authtype:
     get:
       summary: Authorization type currently enabled
@@ -92,7 +112,6 @@ paths:
             "*/*":
               schema:
                 $ref: "#/components/schemas/Error"
-
   /step:
     get:
       summary: Get a list of steps
@@ -189,6 +208,16 @@ paths:
       responses:
         "200":
           description: OK
+  /azmarketplaceentitlementscount:
+    get:
+      summary: Get number of AZ marketplace entitlements
+      responses:
+        "200":
+          description: OK
+          content:
+            "*/*":
+              schema:
+                $ref: "#/components/schemas/EntitlementsCount"
 servers:
   - url: /api
 components:
@@ -250,3 +279,9 @@ components:
         authtype:
           type: string
           enum: [SSO, CREDENTIALS]
+    EntitlementsCount:
+      properties:
+        count:
+          type: integer
+        error:
+          type: string
