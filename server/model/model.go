@@ -13,7 +13,7 @@ import (
 
 // Replicate GORM base model, hiding times from json
 type BaseModel struct {
-	ID        uint      `gorm:"primary_key"`
+	ID        uint      `gorm:"primaryKey"`
 	CreatedAt time.Time `json:"-"`
 	UpdatedAt time.Time `json:"-"`
 	DeletedAt time.Time `json:"-" gorm:"index"`

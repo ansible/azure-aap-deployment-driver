@@ -14,7 +14,7 @@ type SsoStore interface {
 	GetSsoClientCredentials() (*SsoCredentials, error)
 	RemoveSsoClientCredentials()
 	SsoCredentialsExist() bool
-	CreateSession(string, string) error
+	CreateSession(*SsoSession) error
 	RemoveSession(string) error
 	ValidSession(string) bool
 }
@@ -28,9 +28,11 @@ type SsoCredentials struct {
 }
 
 type SsoSession struct {
-	BaseModel
-	Code  string
-	State string
+	Code           string
+	State          string `gorm:"primaryKey"`
+	OrganizationId string
+	Name           string
+	Email          string
 }
 
 type ssoStore struct {
@@ -82,9 +84,8 @@ func (s ssoStore) RemoveSsoClientCredentials() {
 	s.db.Exec("DELETE FROM sso_credentials")
 }
 
-func (s ssoStore) CreateSession(sessionState string, code string) error {
-	session := SsoSession{State: sessionState, Code: code}
-	if err := s.db.Create(&session).Error; err != nil {
+func (s ssoStore) CreateSession(session *SsoSession) error {
+	if err := s.db.Create(session).Error; err != nil {
 		log.Errorf("Unable to store SSO session: %v", err)
 		return err
 	}
