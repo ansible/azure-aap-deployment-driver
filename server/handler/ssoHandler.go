@@ -41,39 +41,42 @@ func (s *SsoHandler) GetLoginHandler() HandleFuncWithDB {
 func (s *SsoHandler) SsoRedirect(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	code := r.URL.Query().Get("code")
 	state := r.URL.Query().Get("state")
+	errStr := r.URL.Query().Get("error")
+	errorDesc := r.URL.Query().Get("error_description")
+	if errStr != "" {
+		log.Errorf("Error returned by SSO during login: %s - description: %s", errStr, errorDesc)
+		respondError(w, http.StatusInternalServerError, "SSO Session unable to be established.")
+		return
+	}
 	if !strings.EqualFold(state, s.State) {
 		log.Errorf("SSO state mismatch. Sent: %s, Received: %s", s.State, state)
 		respondError(w, http.StatusUnauthorized, "SSO state values do not match.")
 		return
 	}
 	sessionState := r.URL.Query().Get("session_state")
-
 	log.Trace("Performing SSO exchange.")
 	oauth2Token, err := s.Auth.Config.Exchange(context.Background(), code)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	// Load SSO client credentials from db
-	ssoStore := model.GetSsoStore()
-	ssoCredentials, err := ssoStore.GetSsoClientCredentials()
+	log.Trace("Verifying SSO token/extracting access token.")
+	accessToken, err := s.Auth.VerifyToken(oauth2Token)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	log.Trace("Verifying SSO token/extracting ID token.")
-	_, err = s.Auth.VerifyToken(oauth2Token, ssoCredentials.ClientId)
-	if err != nil {
-		respondError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
+	ssoSession := s.Auth.ExtractUserInfo(accessToken)
+	ssoSession.Code = code
+	ssoSession.State = sessionState
+
 	sessionHelper, err := getSessionHelper()
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 	log.Trace("Creating new SSO session.")
-	err = model.GetSsoStore().CreateSession(sessionState, code)
+	err = model.GetSsoStore().CreateSession(ssoSession)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return

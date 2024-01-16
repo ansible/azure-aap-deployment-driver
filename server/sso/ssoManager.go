@@ -10,10 +10,13 @@ import (
 	"server/model"
 	"server/persistence"
 
+	"github.com/coreos/go-oidc/v3/oidc"
 	log "github.com/sirupsen/logrus"
 )
 
 var ssoManager *SsoManager
+
+const ID_SCOPE string = "api.ansible_on_cloud"
 
 type SsoManager struct {
 	Context       context.Context
@@ -68,7 +71,17 @@ func (s *SsoManager) initialize() error {
 		log.Trace("Created new SSO client and credentials.")
 	}
 
-	auth, err := handler.NewAuthenticator(ssoManager.Context, config.GetEnvironment().SSO_ENDPOINT, handler.GetRedirectUrl(), credentials.ClientId, credentials.ClientSecret)
+	authCfg := handler.AuthenticatorConfig{
+		Context:      ssoManager.Context,
+		Scopes:       []string{oidc.ScopeOpenID, "profile", "email", ID_SCOPE},
+		ClientId:     credentials.ClientId,
+		ClientSecret: credentials.ClientSecret,
+		RedirecUrl:   handler.GetRedirectUrl(),
+		SsoEndpoint:  config.GetEnvironment().SSO_ENDPOINT,
+		Audience:     ID_SCOPE,
+	}
+
+	auth, err := handler.NewAuthenticator(authCfg)
 	if err != nil {
 		return fmt.Errorf("unable to instantiate SSO authenticator: %v", err)
 	}

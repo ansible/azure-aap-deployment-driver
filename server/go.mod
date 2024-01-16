@@ -10,6 +10,7 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/storage/armstorage v1.2.0
 	github.com/coreos/go-oidc/v3 v3.7.0
 	github.com/elsevierlabs-os/go-envs v0.4.0
+	github.com/golang-jwt/jwt/v5 v5.2.0
 	github.com/gorilla/mux v1.8.0
 	github.com/gorilla/sessions v1.2.1
 	github.com/oauth2-proxy/mockoidc v0.0.0-20220308204021-b9169deeb282
