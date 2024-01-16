@@ -69,27 +69,20 @@ func (a *Authenticator) ExtractUserInfo(accessToken *oidc.IDToken) *model.SsoSes
 		log.Errorf("Unable to extract claims (user info) from access token: %v", err)
 		return session // Empty, will still support storing login, just without user data
 	}
-	email, ok := claims["email"].(string)
-	if !ok {
-		log.Warnf("Email not found in access token claims, value: %v", claims["email"])
-	} else {
-		session.Email = email
+	email, emailFound := claims["email"].(string)
+	name, nameFound := claims["name"].(string)
+	var orgFound bool
+	var orgId string
+	orgMap, ok := claims["organization"].(map[string]interface{})
+	if ok {
+		orgId, orgFound = orgMap["id"].(string)
 	}
-	name, ok := claims["name"].(string)
-	if !ok {
-		log.Warnf("Name not found in access token claims, value: %v", claims["name"])
+	if !emailFound || !nameFound || !orgFound {
+		log.Warnf("Email, name and/or organization not found in access token claims: %v", claims)
 	} else {
 		session.Name = name
-	}
-	orgMap, ok := claims["organization"].(map[string]interface{})
-	if !ok {
-		log.Warnf("Organization map not found or not parseable in access token claims, value: %v", claims["organization"])
-	} else {
-		id, ok := orgMap["id"].(string)
-		if !ok {
-			log.Warnf("Organization ID is not a string: %v", orgMap["id"])
-		}
-		session.OrganizationId = id
+		session.Email = email
+		session.OrganizationId = orgId
 	}
 	return session
 }
