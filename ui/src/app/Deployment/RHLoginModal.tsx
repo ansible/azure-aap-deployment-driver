@@ -15,17 +15,17 @@ const DialogHeader = <Title headingLevel="h1" size={TitleSizes['2xl']}>
 export const RHLoginModal = ({isModalShown}: IRHLoginProps) => {
 	return (
 		<Modal
-				header={DialogHeader}
-        isOpen={isModalShown}
-        showClose={false}
-				variant={ModalVariant.medium}
-				actions={[
-					// TODO Set the URL in href below programmatically
-          <Button
-					key="login" variant="primary"
-					icon={<ExternalLinkSquareAltIcon />} iconPosition="right"
-					component="a" href="/sso" target="_self">Log in with Red Hat account</Button>,
-        ]}
+			header={DialogHeader}
+			isOpen={isModalShown}
+			showClose={false}
+			variant={ModalVariant.medium}
+			actions={[
+				// TODO Set the URL in href below programmatically
+				<Button
+				key="login" variant="primary"
+				icon={<ExternalLinkSquareAltIcon />} iconPosition="right"
+				component="a" href="/sso" target="_self">Log in with Red Hat account</Button>,
+			]}
       ><p>Your Ansible Automation Platform deployment is underway.</p>
 			<br /><p>To use Ansible Automation Platform on Azure, you MUST have a valid subscription for Ansible Automation Platform in your Red Hat account.</p>
 			<br />
