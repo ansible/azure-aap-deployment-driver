@@ -15,34 +15,44 @@ type Authenticator struct {
 	Config   oauth2.Config
 	provider *oidc.Provider
 	ctx      context.Context
+	Audience string
 }
 
-const ID_SCOPE string = "api.ansible_on_cloud"
+type AuthenticatorConfig struct {
+	Context      context.Context
+	SsoEndpoint  string
+	RedirecUrl   string
+	ClientId     string
+	ClientSecret string
+	Scopes       []string
+	Audience     string // Should contain expected audience based on scope list
+}
 
-func NewAuthenticator(ctx context.Context, ssoEndpoint string, redirectUrl string, clientId string, clientSecret string) (*Authenticator, error) {
-	provider, err := oidc.NewProvider(ctx, ssoEndpoint)
+func NewAuthenticator(authConfig AuthenticatorConfig) (*Authenticator, error) {
+	provider, err := oidc.NewProvider(authConfig.Context, authConfig.SsoEndpoint)
 	if err != nil {
 		return nil, fmt.Errorf("unable to instantiate new OIDC provider: %v", err)
 	}
 
 	oauth2Config := oauth2.Config{
-		ClientID:     clientId,
-		ClientSecret: clientSecret,
-		RedirectURL:  redirectUrl,
+		ClientID:     authConfig.ClientId,
+		ClientSecret: authConfig.ClientSecret,
+		RedirectURL:  authConfig.RedirecUrl,
 		Endpoint:     provider.Endpoint(),
-		Scopes:       []string{oidc.ScopeOpenID, ID_SCOPE, "profile", "email"}, // TODO Add scopes for needed data
+		Scopes:       authConfig.Scopes,
 	}
 	return &Authenticator{
 		Config:   oauth2Config,
 		provider: provider,
-		ctx:      ctx,
+		ctx:      authConfig.Context,
+		Audience: authConfig.Audience,
 	}, nil
 }
 
-func (a *Authenticator) VerifyToken(token *oauth2.Token, clientId string) (*oidc.IDToken, error) {
+func (a *Authenticator) VerifyToken(token *oauth2.Token) (*oidc.IDToken, error) {
 	// The returned token contains an access token and an ID token
 	// The access token is a JWT and contains the data we need
-	verifier := a.provider.VerifierContext(a.ctx, &oidc.Config{ClientID: ID_SCOPE})
+	verifier := a.provider.VerifierContext(a.ctx, &oidc.Config{ClientID: a.Audience})
 	accessToken, err := verifier.Verify(a.ctx, token.AccessToken)
 	if err != nil {
 		log.Errorf("Unable to verify SSO access token for user details: %v", err)
@@ -54,7 +64,11 @@ func (a *Authenticator) VerifyToken(token *oauth2.Token, clientId string) (*oidc
 func (a *Authenticator) ExtractUserInfo(accessToken *oidc.IDToken) *model.SsoSession {
 	session := &model.SsoSession{}
 	claims := jwt.MapClaims{}
-	accessToken.Claims(&claims)
+	err := accessToken.Claims(&claims)
+	if err != nil {
+		log.Errorf("Unable to extract claims (user info) from access token: %v", err)
+		return session // Empty, will still support storing login, just without user data
+	}
 	email, ok := claims["email"].(string)
 	if !ok {
 		log.Warnf("Email not found in access token claims, value: %v", claims["email"])
@@ -73,7 +87,7 @@ func (a *Authenticator) ExtractUserInfo(accessToken *oidc.IDToken) *model.SsoSes
 	} else {
 		id, ok := orgMap["id"].(string)
 		if !ok {
-			log.Warnf("Not a string: %v", orgMap["id"])
+			log.Warnf("Organization ID is not a string: %v", orgMap["id"])
 		}
 		session.OrganizationId = id
 	}

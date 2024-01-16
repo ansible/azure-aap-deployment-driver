@@ -17,9 +17,12 @@ import (
 	"server/test"
 	"testing"
 
+	"github.com/coreos/go-oidc/v3/oidc"
+
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/resources/armresources"
 	"github.com/oauth2-proxy/mockoidc"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"gorm.io/datatypes"
 )
 
@@ -190,7 +193,16 @@ func TestSsoHandler(t *testing.T) {
 		code = r.FormValue("code")
 	}))
 	// Create authenticator with redirect to above server
-	auth, err := handler.NewAuthenticator(context.Background(), ssoServer.Issuer(), redirServer.URL, ssoServer.ClientID, ssoServer.ClientSecret)
+	authCfg := handler.AuthenticatorConfig{
+		Context:      context.Background(),
+		SsoEndpoint:  ssoServer.Issuer(),
+		RedirecUrl:   redirServer.URL,
+		ClientId:     ssoServer.ClientID,
+		ClientSecret: ssoServer.ClientSecret,
+		Scopes:       []string{oidc.ScopeOpenID, "profile", "email"},
+		Audience:     ssoServer.ClientID,
+	}
+	auth, err := handler.NewAuthenticator(authCfg)
 	assert.Nil(t, err, "Error from authenticator initialization")
 
 	// Create login request
@@ -209,20 +221,26 @@ func TestSsoHandler(t *testing.T) {
 	redirect := rec.Header().Get("Location")
 	authUrl, _ := url.PathUnescape(redirect)
 	// Auth with fake server to intercept code
-	_, err = http.PostForm(authUrl, nil)
+	resp, err := http.PostForm(authUrl, nil)
 	assert.Nil(t, err, "Unable to post to auth URL")
-
+	require.Equal(t, 200, resp.StatusCode)
 	// Call our own SSO callback handler with intercepted code and proper state
 	callbackUrl := fmt.Sprintf("/ssocallback?code=%s&state=%s&session_state=unused", code, url.QueryEscape(ssoHandler.State))
 	req, _ = http.NewRequest(http.MethodGet, callbackUrl, nil)
 	rec = httptest.NewRecorder()
 	installer.GetRouter().ServeHTTP(rec, req)
+	var body []byte
+	n, err := rec.Result().Body.Read(body)
+	assert.Nil(t, err)
+	assert.Empty(t, string(body))
+	assert.Equal(t, 0, n)
 	assert.Equal(t, http.StatusTemporaryRedirect, rec.Result().StatusCode, "Expected callback to redirect")
 
 	redirUrl := rec.Header().Get("Location")
 	assert.Contains(t, redirUrl, "/")
 
 	// Test SSO session checker
+	require.NotEmpty(t, rec.Result().Cookies())
 	authCookie := rec.Result().Cookies()[0]
 	req, _ = http.NewRequest(http.MethodGet, "/authstatus", nil)
 	req.AddCookie(authCookie)

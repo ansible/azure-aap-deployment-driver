@@ -54,22 +54,14 @@ func (s *SsoHandler) SsoRedirect(db *gorm.DB, w http.ResponseWriter, r *http.Req
 		return
 	}
 	sessionState := r.URL.Query().Get("session_state")
-
 	log.Trace("Performing SSO exchange.")
 	oauth2Token, err := s.Auth.Config.Exchange(context.Background(), code)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
-	// Load SSO client credentials from db
-	ssoStore := model.GetSsoStore()
-	ssoCredentials, err := ssoStore.GetSsoClientCredentials()
-	if err != nil {
-		respondError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
 	log.Trace("Verifying SSO token/extracting access token.")
-	accessToken, err := s.Auth.VerifyToken(oauth2Token, ssoCredentials.ClientId)
+	accessToken, err := s.Auth.VerifyToken(oauth2Token)
 	if err != nil {
 		respondError(w, http.StatusInternalServerError, err.Error())
 		return
