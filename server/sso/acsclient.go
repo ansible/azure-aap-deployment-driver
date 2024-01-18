@@ -66,6 +66,7 @@ func GetAcsClient(ctx context.Context) *AcsClient {
 			ClientSecret: config.GetEnvironment().SSO_CLIENT_SECRET,
 			Context:      ctx,
 		}
+		log.Trace("Initialized new instance of SSO client.")
 	})
 	log.Trace("Getting SSO client API access token.")
 	token, err := acsClient.getToken()
@@ -74,7 +75,7 @@ func GetAcsClient(ctx context.Context) *AcsClient {
 		return nil
 	}
 	acsClient.Token = token
-	log.Trace("Initialized SSO client.")
+	log.Trace("Got SSO client.")
 	return acsClient
 }
 

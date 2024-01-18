@@ -21,7 +21,7 @@ type Authenticator struct {
 type AuthenticatorConfig struct {
 	Context      context.Context
 	SsoEndpoint  string
-	RedirecUrl   string
+	RedirectUrl  string
 	ClientId     string
 	ClientSecret string
 	Scopes       []string
@@ -37,7 +37,7 @@ func NewAuthenticator(authConfig AuthenticatorConfig) (*Authenticator, error) {
 	oauth2Config := oauth2.Config{
 		ClientID:     authConfig.ClientId,
 		ClientSecret: authConfig.ClientSecret,
-		RedirectURL:  authConfig.RedirecUrl,
+		RedirectURL:  authConfig.RedirectUrl,
 		Endpoint:     provider.Endpoint(),
 		Scopes:       authConfig.Scopes,
 	}

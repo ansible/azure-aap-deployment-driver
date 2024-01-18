@@ -76,7 +76,7 @@ func (s *SsoManager) initialize() error {
 		Scopes:       []string{oidc.ScopeOpenID, "profile", "email", ID_SCOPE},
 		ClientId:     credentials.ClientId,
 		ClientSecret: credentials.ClientSecret,
-		RedirecUrl:   handler.GetRedirectUrl(),
+		RedirectUrl:  handler.GetRedirectUrl(),
 		SsoEndpoint:  config.GetEnvironment().SSO_ENDPOINT,
 		Audience:     ID_SCOPE,
 	}
@@ -90,12 +90,12 @@ func (s *SsoManager) initialize() error {
 }
 
 func (s *SsoManager) DeleteAcsClient() {
-	log.Trace("Deleting SSO client.")
 	acsClient := GetAcsClient(s.Context)
 	credentials, _ := model.GetSsoStore().GetSsoClientCredentials()
+	log.Trace("Deleting SSO client.")
 	_, err := acsClient.DeleteACSClient(credentials.ClientId)
 	if err != nil {
-		log.Errorf("failure to delete ACS client: %v", err)
+		log.Errorf("failed to delete ACS client: %v", err)
 	}
 }
 
