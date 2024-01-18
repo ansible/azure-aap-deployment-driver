@@ -196,7 +196,7 @@ func TestSsoHandler(t *testing.T) {
 	authCfg := handler.AuthenticatorConfig{
 		Context:      context.Background(),
 		SsoEndpoint:  ssoServer.Issuer(),
-		RedirecUrl:   redirServer.URL,
+		RedirectUrl:  redirServer.URL,
 		ClientId:     ssoServer.ClientID,
 		ClientSecret: ssoServer.ClientSecret,
 		Scopes:       []string{oidc.ScopeOpenID, "profile", "email"},
