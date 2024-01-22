@@ -1,3 +1,3 @@
 h1.pf-c-title span.pf-c-icon {
-  margin-right: (--pf-c-modal-box__title-icon--MarginRight)
+  margin-right: var(--pf-c-modal-box__title-icon--MarginRight)
 }
