@@ -9,7 +9,8 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if err := sessionHelper.RemoveSession(r, w); err != nil {
-		respondError(w, http.StatusInternalServerError, "Could not remove session")
+		respondError(w, http.StatusInternalServerError, err.Error())
+		return
 	}
 	respondJSON(w, http.StatusOK, map[string]string{"status": "success"})
 }

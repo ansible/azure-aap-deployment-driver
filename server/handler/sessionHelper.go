@@ -116,6 +116,10 @@ func (s *SessionHelper) RemoveSession(r *http.Request, w http.ResponseWriter) er
 	if config.IsSsoEnabled() {
 		// Remove SSO session
 		state := aSession.Values["state"]
+		if state == nil {
+			log.Warnf("No state found in session, can't remove session.")
+			return nil
+		}
 		stateString, ok := state.(string)
 		if !ok {
 			return fmt.Errorf("unable to convert state from cookie to string: %v", state)
