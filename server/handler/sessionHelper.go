@@ -3,6 +3,7 @@ package handler
 import (
 	"crypto/rand"
 	"errors"
+	"fmt"
 	"net/http"
 	"server/config"
 	"server/model"
@@ -78,6 +79,7 @@ func (s *SessionHelper) ValidSession(r *http.Request) (bool, error) {
 	}
 	// For SSO, verify state
 	if config.IsSsoEnabled() {
+		log.Trace("SSO enabled, validating SSO session.")
 		state := aSession.Values["state"]
 		if !model.GetSsoStore().ValidSession(state.(string)) {
 			return false, nil
@@ -110,6 +112,16 @@ func (s *SessionHelper) RemoveSession(r *http.Request, w http.ResponseWriter) er
 	aSession.Options.MaxAge = -1
 	if err := aSession.Save(r, w); err != nil {
 		return err
+	}
+	if config.IsSsoEnabled() {
+		// Remove SSO session
+		state := aSession.Values["state"]
+		stateString, ok := state.(string)
+		if !ok {
+			return fmt.Errorf("unable to convert state from cookie to string: %v", state)
+		}
+		log.Trace("Removing SSO session.")
+		model.GetSsoStore().RemoveSession(stateString)
 	}
 	return nil
 }

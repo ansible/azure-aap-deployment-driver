@@ -2,7 +2,6 @@ package model
 
 import (
 	"fmt"
-	"server/util"
 	"sync"
 
 	log "github.com/sirupsen/logrus"
@@ -108,8 +107,7 @@ func (s ssoStore) ValidSession(sessionStateHash string) bool {
 	}
 
 	for _, sess := range sessions {
-		stateHash := util.HashThisString(sess.State)
-		if stateHash == sessionStateHash {
+		if sess.State == sessionStateHash {
 			log.Trace("Validated SSO session hash.")
 			return true
 		}

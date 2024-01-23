@@ -6,6 +6,7 @@ import (
 	"server/config"
 	"server/telemetry"
 
+	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -38,6 +39,7 @@ func (a CredentialsHandler) GetLoginHandler() HandleFuncWithDB {
 		}
 
 		if data.Username == userName && data.Password == userPassword {
+			log.Trace("Username and password validated.")
 			if err := sessionHelper.SetupSession(r, w, "credentials"); err != nil {
 				respondError(w, http.StatusInternalServerError, "Could not setup session")
 			}

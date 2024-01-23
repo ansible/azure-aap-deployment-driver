@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"server/config"
 	"server/model"
+	"server/util"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -68,7 +69,7 @@ func (s *SsoHandler) SsoRedirect(db *gorm.DB, w http.ResponseWriter, r *http.Req
 	}
 	ssoSession := s.Auth.ExtractUserInfo(accessToken)
 	ssoSession.Code = code
-	ssoSession.State = sessionState
+	ssoSession.State = util.HashThisString(sessionState)
 
 	sessionHelper, err := getSessionHelper()
 	if err != nil {
