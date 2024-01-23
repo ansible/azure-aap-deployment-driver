@@ -121,7 +121,10 @@ func (s *SessionHelper) RemoveSession(r *http.Request, w http.ResponseWriter) er
 			return fmt.Errorf("unable to convert state from cookie to string: %v", state)
 		}
 		log.Trace("Removing SSO session.")
-		model.GetSsoStore().RemoveSession(stateString)
+		err = model.GetSsoStore().RemoveSession(stateString)
+		if err != nil {
+			return fmt.Errorf("unable to remove SSO session from DB: %v", err)
+		}
 	}
 	return nil
 }
