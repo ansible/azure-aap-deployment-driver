@@ -15,7 +15,12 @@ export function FormLogin() {
   async function loginHandler(uid: string, pwd: string) {
     try {
       const response = await login({ uid: uid, pwd: pwd });
-      if ('error' in response && response.error) {
+      if ('unavailable' == response.status) {
+        setLoginMessage('Deployment Driver unavailable, please re-deploy.')
+        setIsValidPassword(false)
+        setShowHelperText(true)
+      }
+      else if ('error' in response && response.error) {
         setLoginMessage('Incorrect Password');
         setIsValidPassword(false)
         setShowHelperText(true);
