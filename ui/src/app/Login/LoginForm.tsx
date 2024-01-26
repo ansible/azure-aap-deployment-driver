@@ -15,7 +15,7 @@ export function FormLogin() {
   async function loginHandler(uid: string, pwd: string) {
     try {
       const response = await login({ uid: uid, pwd: pwd });
-      if ('unavailable' == response.status) {
+      if ('unavailable' === response.status) {
         setLoginMessage('Deployment Engine unavailable, please re-deploy.')
         setIsValidPassword(false)
         setShowHelperText(true)
