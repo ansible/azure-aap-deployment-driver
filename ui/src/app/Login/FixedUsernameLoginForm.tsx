@@ -32,6 +32,8 @@ export interface FixedUsernameLoginFormProps extends Omit<React.HTMLProps<HTMLFo
   usernameValue?: string;
   /** Lock username text input */
   usernameDisabled?: boolean;
+  /** Lock password text input */
+  passwordDisabled?: boolean;
   /** Function that handles the onChange event for the username */
   onChangeUsername?: (value: string, event: React.FormEvent<HTMLInputElement>) => void;
   /** Flag indicating if the username is valid */
@@ -73,6 +75,7 @@ export const FixedUsernameLoginForm: React.FunctionComponent<FixedUsernameLoginF
   usernameLabel = 'Username',
   usernameValue = '',
   usernameDisabled = false,
+  passwordDisabled = false,
   onChangeUsername = () => undefined as any,
   isValidUsername = true,
   passwordLabel = 'Password',
@@ -101,6 +104,7 @@ export const FixedUsernameLoginForm: React.FunctionComponent<FixedUsernameLoginF
       validated={isValidPassword ? ValidatedOptions.default : ValidatedOptions.error}
       value={passwordValue}
       onChange={onChangePassword}
+      isDisabled={passwordDisabled}
     />
   );
 

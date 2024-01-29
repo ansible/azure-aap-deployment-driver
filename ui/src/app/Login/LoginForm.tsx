@@ -16,9 +16,11 @@ export function FormLogin() {
     try {
       const response = await login({ uid: uid, pwd: pwd });
       if ('unavailable' === response.status) {
-        setLoginMessage('Deployment Engine unavailable, please re-deploy.')
+        setLoginMessage('Your deployment was not successful, please return to Microsoft Azure Portal and redeploy.')
         setIsValidPassword(false)
         setShowHelperText(true)
+        setIsLoginButtonDisabled(true)
+        setPasswordDisabled(true)
       }
       else if ('error' in response && response.error) {
         setLoginMessage('Incorrect Password');
@@ -42,6 +44,8 @@ export function FormLogin() {
   const [showHelperText, setShowHelperText] = React.useState(false);
   const [password, setPassword] = React.useState('');
   const [isValidPassword, setIsValidPassword] = React.useState(true);
+  const [isLoginButtonDisabled, setIsLoginButtonDisabled] = React.useState(false);
+  const [passwordDisabled, setPasswordDisabled] = React.useState(false);
 
   const handlePasswordChange = (value: string) => {
     setPassword(value);
@@ -67,6 +71,8 @@ export function FormLogin() {
       onLoginButtonClick={onLoginButtonClick}
       loginButtonLabel="Log in"
       usernameDisabled={true}
+      isLoginButtonDisabled={isLoginButtonDisabled}
+      passwordDisabled={passwordDisabled}
     />
   );
 }
