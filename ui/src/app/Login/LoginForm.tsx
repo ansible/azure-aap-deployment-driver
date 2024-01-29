@@ -17,7 +17,6 @@ export function FormLogin() {
       const response = await login({ uid: uid, pwd: pwd });
       if ('unavailable' === response.status) {
         setLoginMessage('Your deployment was not successful, please return to Microsoft Azure Portal and redeploy.')
-        setIsValidPassword(false)
         setShowHelperText(true)
         setIsLoginButtonDisabled(true)
         setPasswordDisabled(true)
