@@ -16,7 +16,7 @@ export function FormLogin() {
     try {
       const response = await login({ uid: uid, pwd: pwd });
       if ('unavailable' === response.status) {
-        setLoginMessage('Your deployment was not successful, please return to Microsoft Azure Portal and redeploy.')
+	setLoginMessage('Sorry, we are having trouble signing you in as your deployment may have failed. Please return to Microsoft Azure Portal and attempt to redeploy Ansible Automation Platform.')
         setShowHelperText(true)
         setIsLoginButtonDisabled(true)
         setPasswordDisabled(true)
