@@ -15,7 +15,13 @@ export function FormLogin() {
   async function loginHandler(uid: string, pwd: string) {
     try {
       const response = await login({ uid: uid, pwd: pwd });
-      if ('error' in response && response.error) {
+      if ('unavailable' === response.status) {
+	setLoginMessage('Sorry, we are having trouble signing you in as your deployment may have failed. Please return to Microsoft Azure Portal and attempt to redeploy Ansible Automation Platform.')
+        setShowHelperText(true)
+        setIsLoginButtonDisabled(true)
+        setPasswordDisabled(true)
+      }
+      else if ('error' in response && response.error) {
         setLoginMessage('Incorrect Password');
         setIsValidPassword(false)
         setShowHelperText(true);
@@ -37,6 +43,8 @@ export function FormLogin() {
   const [showHelperText, setShowHelperText] = React.useState(false);
   const [password, setPassword] = React.useState('');
   const [isValidPassword, setIsValidPassword] = React.useState(true);
+  const [isLoginButtonDisabled, setIsLoginButtonDisabled] = React.useState(false);
+  const [passwordDisabled, setPasswordDisabled] = React.useState(false);
 
   const handlePasswordChange = (value: string) => {
     setPassword(value);
@@ -62,6 +70,8 @@ export function FormLogin() {
       onLoginButtonClick={onLoginButtonClick}
       loginButtonLabel="Log in"
       usernameDisabled={true}
+      isLoginButtonDisabled={isLoginButtonDisabled}
+      passwordDisabled={passwordDisabled}
     />
   );
 }

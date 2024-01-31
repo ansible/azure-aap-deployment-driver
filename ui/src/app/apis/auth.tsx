@@ -15,6 +15,9 @@ export function login(loginData: ILoginData) :Promise<IAuthResponse>  {
 		else if (resp.status === 401){
 			return ({status:"", error:`Incorrect Password`} as IAuthResponse);
 		}
+		else if (resp.status === 502){
+			return ({status:"unavailable", error:`Deployment Driver server unavailable`} as IAuthResponse);
+		}
 		return ({status:"", error:`Unexpected response with status code: ${resp.status}`} as IAuthResponse);
 	}).catch((err) =>{
 		return ({status:"", error: err.message} as IAuthResponse);
