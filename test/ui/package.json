@@ -1,0 +1,11 @@
+{
+  "name": "azure-aap-deployment-driver-ui-testing",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "run-e2e": "$(cd ../.. && scripts/run-local.sh ui &) && cypress run"
+  },
+  "devDependencies": {
+    "cypress": "^13.6.6"
+  }
+}
