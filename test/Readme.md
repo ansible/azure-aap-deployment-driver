@@ -15,6 +15,8 @@ Requires deployment driver UI running and its URL needs to be passed to the test
 
 The web UI te needs to have a back-end running for fetching the data. Easiest is to use the python script in the UI folder.
 
+You may need to create a virtualenv and install the needed packages from ui/requirements.txt if you don't already have them.
+
 In one terminal, run following commands to get a fake back-end started:
 
 ```sh
@@ -22,7 +24,7 @@ cd ui
 ./run.py
 ```
 
-In another terminal, run following commands to get the web ui development web server started:
+In another terminal, run the following commands to get the web ui development web server started:
 
 ```sh
 cd ui
@@ -31,7 +33,7 @@ npm i
 BROWSER=none npm start
 ```
 
-And finally, in the another terminal, run following commands to get cypress run the tests:
+And finally, in the another terminal, run the following commands to get cypress run the tests:
 
 ```sh
 cd test/ui
