@@ -34,7 +34,7 @@ module.exports = function(app) {
     '/api',
     createProxyMiddleware({
       // port 55080 is used by python helper script, 9090 is the real back-end
-      target: 'http://127.0.0.1:9090',
+      target: 'http://127.0.0.1:55080',
       changeOrigin: true,
       onProxyReq: fixRequestBody,
 			pathRewrite: {
