@@ -17,6 +17,13 @@ The web UI te needs to have a back-end running for fetching the data. Easiest is
 
 You may need to create a virtualenv and install the needed packages from ui/requirements.txt if you don't already have them.
 
+```sh
+cd ui
+virtualenv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
 In one terminal, run following commands to get a fake back-end started:
 
 ```sh
