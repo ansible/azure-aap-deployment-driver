@@ -31,7 +31,7 @@ Cypress is being used for both end-to-end tests and component tests.
     pip install -r requirements.txt
     ```
 
-2. Configure tests input.
+2. Configure environment variables for Cypress automation to run.
 
    Option 1: Set environment variables at OS level
    ```shell
