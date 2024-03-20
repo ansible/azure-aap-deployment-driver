@@ -13,16 +13,20 @@ Cypress is being used for both end-to-end tests and component tests.
    You may need to create a virtualenv and install the needed packages from ui/requirements.txt if you don't already have them.
 
     ```shell
-    cd <repo>/ui
-    virtualenv venv
-    source venv/bin/activate
-    pip install -r requirements.txt
+    cd <repo>/test/ui
+    python -m venv venv
+    source venv/bin/activate    
 
     # Clean install a project
     npm ci
 
     # Verify Cypress installation
     npx cypress verify
+
+    # Install the following dependencies to see useful messages when the engine is dead.
+    # This is optional, not manadatory.
+    cd <repo>/ui
+    pip install -r requirements.txt
     ```
 
 2. Configure tests input.
@@ -58,6 +62,8 @@ Cypress is being used for both end-to-end tests and component tests.
 3. Run Cypress tests.
 
    ```shell
+   cd <repo>/test/ui
+   
    Option 1: Run tests from all the specs under `cypress/e2e`
    npx cypress run
 
