@@ -13,6 +13,8 @@ Cypress is being used for both end-to-end tests and component tests.
    You may need to create a virtualenv and install the needed packages from ui/requirements.txt if you don't already have them.
 
     ```shell
+    # Create a python venv to install dependencies within an venv. 
+    # You can skip it if you want to install dependencies at the OS level.
     cd <repo>/test/ui
     python -m venv venv
     source venv/bin/activate    
@@ -39,24 +41,18 @@ Cypress is being used for both end-to-end tests and component tests.
    export CYPRESS_RH_ACCOUNT_USERNAME=<User to login https://sso.redhat.com>
    export CYPRESS_RH_ACCOUNT_PASSWORD=<Password to login https://sso.redhat.com>
    ```
-   Option 2: Set environment variables in ui/cypress.config.ts
+   Option 2: Set environment variables in `test/ui/cypress.env.json
    ```shell
-   import { defineConfig } from "cypress";
-
-   export default defineConfig({
-     e2e: {
-       setupNodeEvents(on, config) {
-         // implement node event listeners here
-       },
-     },
-     env: {
-       baseUrl: 'Deployment Engine UI Url',
-       'DEPLOYMENT_ENGINE_UI_PASSWORD': 'Admin password to login Deployment Engine UI',
-       'RH_SSO_URL': 'https://sso.redhat.com',
-       'RH_ACCOUNT_USERNAME': 'User to login https://sso.redhat.com',
-       'RH_ACCOUNT_PASSWORD': 'Password to login https://sso.redhat.com',
-     }
-   });
+   cd <repo>/test/ui
+   
+   Refer to the following example cypress.env.json to create your cypress.env.json file. 
+   {
+    "baseUrl": "Deployment Engine UI Url",
+    "DEPLOYMENT_ENGINE_UI_PASSWORD": "Admin password to login Deployment Engine UI",
+    "RH_SSO_URL": "https://sso.redhat.com",
+    "RH_ACCOUNT_USERNAME": "User to login https://sso.redhat.com",
+    "RH_ACCOUNT_PASSWORD": "Password to login https://sso.redhat.com"
+   }
    ```
 
 3. Run Cypress tests.

@@ -1,15 +1,10 @@
 import { verifyRequiredEnvVariables } from './environment_helpers'
 
+/// <reference types="cypress" />
+
 describe('Deployment driver web UI', () => {
-  let deploymentDriverUrl, username, password
-
-  before(() => {
-    ({deploymentDriverUrl, username, password} = verifyRequiredEnvVariables())
-  })
-
   beforeEach(() => {
-    cy.viewport(1920,1080)
-    cy.visit(deploymentDriverUrl)
+    cy.loginWithRHAccount()
   })
 
   it('main view contains label, steps and status area with cancel button', () => {
@@ -29,13 +24,13 @@ describe('Deployment driver web UI', () => {
 
   it('list of deployment steps contains expected steps', () => {
     cy.get('div.deploy-step>ul').as('steps')
-    cy.get('@steps').contains('VNET and_Subnets')
+    cy.get('@steps').contains('VNET and Subnets')
     cy.get('@steps').contains('Private DNS')
     cy.get('@steps').contains('AAP Repository')
     cy.get('@steps').contains('Database Server and Databases')
     cy.get('@steps').contains('AKS Cluster')
     cy.get('@steps').contains('AAP Operators')
-    cy.get('@steps').contains('AAP_Applications')
+    cy.get('@steps').contains('AAP Applications')
     cy.get('@steps').contains('Application Ingress')
     cy.get('@steps').contains('Seeded Content')
     cy.get('@steps').contains('Billing')
