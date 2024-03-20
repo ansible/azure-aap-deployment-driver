@@ -1,0 +1,21 @@
+# dependencies
+node_modules
+
+# generated files 
+/screenshots
+/videos
+/downloads
+
+# python venv
+venv
+.venv
+
+# Visual Studio Code
+.vscode
+.vscode/*
+
+# environment settings
+env/
+.env
+
+
