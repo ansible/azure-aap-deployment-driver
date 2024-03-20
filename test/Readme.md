@@ -57,10 +57,4 @@ npx cypress open --e2e
 
 #### 2. Running E2E for UI on a URL
 
-**WARNING:** The tests wont work just yet in this scenario because the deployment driver forces users to log-in with Red Hat SSO and the dialog that does that prevents any other testing/verification until user has logged in. In the near future we will have a way to disable SSO login requirement for testing.
-
-To run the E2E tests against a deployment driver running on another URL, all you need to do is run:
-
-```sh
-CYPRESS_DEPLOYMENT_DRIVER_URL=https://somehost.somewhere.com npx cypress run
-```
+This [guide](./ui/cypress/CYPRESS.md) will show you how to configure environment variables or configure cypress configure file to run E2E test scenarios for Deployment Engine UI with its URL. 
