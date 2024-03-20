@@ -2,9 +2,9 @@
 node_modules
 
 # generated files 
-/screenshots
-/videos
-/downloads
+/cypress/screenshots
+/cypress/videos
+/cypress/downloads
 
 # python venv
 venv
