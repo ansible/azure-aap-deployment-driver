@@ -6,7 +6,6 @@
     "run-e2e": "$(cd ../.. && scripts/run-local.sh ui &) && cypress run"
   },
   "devDependencies": {
-    "cypress": "^13.6.6",
-    "typescript": "^5.4.2"
+    "cypress": "^13.6.6"
   }
 }
