@@ -55,7 +55,7 @@ The last command above will run the tests in a headless mode with "electron" bro
 npx cypress open --e2e
 ```
 
-#### 2. Running UI E2E with a being deployed AAP instance on Azure
+#### 2. Running UI E2E with an AAP instance on Azure
 
 ##### Prerequisites
 
@@ -75,9 +75,6 @@ source venv/bin/activate
 
 # Clean install the project
 npm ci
-
-# Verify Cypress installation
-npx cypress verify
 ```
 
 2. You are encouraged to install the packages from `<repo>/ui/requirements.txt` if you want to see useful messages when the deployment engine is dead.
