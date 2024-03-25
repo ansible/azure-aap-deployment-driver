@@ -88,7 +88,7 @@ pip install -r requirements.txt
 
    Option 1: Set environment variables at OS level
    ```shell
-   export CYPRESS_baseUrl=<Deployment Engine UI Url>
+   export CYPRESS_DEPLOYMENT_DRIVER_URL=<Deployment Engine UI Url>
    export CYPRESS_DEPLOYMENT_ENGINE_UI_PASSWORD=<Admin password to login Deployment Engine UI>
    export CYPRESS_RH_SSO_URL=https://sso.redhat.com
    export CYPRESS_RH_ACCOUNT_USERNAME=<User to login https://sso.redhat.com>
@@ -101,7 +101,7 @@ pip install -r requirements.txt
    
    Refer to the following example to create your cypress.env.json file if you don't have it.
    {
-    "baseUrl": "Deployment Engine UI Url",
+    "DEPLOYMENT_DRIVER_URL": "Deployment Engine UI Url",
     "DEPLOYMENT_ENGINE_UI_PASSWORD": "Admin password to login Deployment Engine UI",
     "RH_SSO_URL": "https://sso.redhat.com",
     "RH_ACCOUNT_USERNAME": "User to login https://sso.redhat.com",
