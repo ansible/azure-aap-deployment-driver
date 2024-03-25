@@ -2,9 +2,12 @@
 node_modules
 
 # generated files 
-/cypress/screenshots
-/cypress/videos
-/cypress/downloads
+cypress/screenshots/
+cypress/videos/
+cypress/downloads/
+
+# Cypress auto-generated support folder
+cypress/support/cypress
 
 # python venv
 venv
