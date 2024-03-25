@@ -52,10 +52,11 @@ type Execution struct {
 
 type Status struct {
 	BaseModel
-	TemplatesLoaded   bool
-	MainOutputsLoaded bool
-	IsFatalState      bool
-	FirstStart        time.Time
+	TemplatesLoaded     bool
+	MainOutputsLoaded   bool
+	IsFatalState        bool
+	FirstStart          time.Time
+	DeploymentSucceeded bool
 }
 
 type EngineConfiguration struct {
