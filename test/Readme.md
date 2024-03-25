@@ -11,7 +11,7 @@ This folder contains end-to-end tests for deployment driver engine (at this time
 
 Requires deployment driver UI running and its URL needs to be passed to the test.
 
-#### 1. Running UI E2E for locally running UI with a mocker server
+#### 1. Running UI E2E for locally running UI with development backend
 
 The web UI te needs to have a back-end running for fetching the data. Easiest is to use the python script in the UI folder.
 
