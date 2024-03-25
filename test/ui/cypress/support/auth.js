@@ -1,21 +1,9 @@
-Cypress.Commands.add('requiredVariablesAreSet', (requiredVariables: string[]) => {
-    requiredVariables.forEach((variable) => {
-      if (!Cypress.env(variable)) {
-        throw new Error(`Missing required environment variable: ${variable}`);
-      }
-    });
-});
+import { verifyRequiredEnvVariables } from './../e2e/environment_helpers'
 
 Cypress.Commands.add('loginWithRHAccount', () => {
-    cy.requiredVariablesAreSet([
-        'baseUrl',
-        'DEPLOYMENT_ENGINE_UI_PASSWORD',
-        'RH_SSO_URL',
-        'RH_ACCOUNT_USERNAME',
-        'RH_ACCOUNT_PASSWORD'
-    ]);
+   verifyRequiredEnvVariables()
 
-    cy.visit(Cypress.env("baseUrl"), {
+    cy.visit(Cypress.env("DEPLOYMENT_DRIVER_URL"), {
           retryOnStatusCodeFailure: true,
           retryOnNetworkFailure: true,
           timeout: 5000,
