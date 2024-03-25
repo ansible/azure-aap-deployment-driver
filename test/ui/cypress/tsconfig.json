@@ -1,8 +1,0 @@
-{
-    "compilerOptions": {
-      "target": "es5",
-      "lib": ["es5", "dom"],
-      "types": ["cypress", "node"]
-    },
-    "include": ["**/*.ts", "e2e/deployment_driver.cy.js", "e2e/deployment_engine_UI.cy.js", "e2e/documentation_navigation.cy.js", "e2e/login_with_RH_account.cy.js", "support/auth.js", "support/commands.js", "support/e2e.js", "support/logout.js"]
-}
