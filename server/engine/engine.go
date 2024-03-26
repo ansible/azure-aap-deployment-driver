@@ -39,7 +39,7 @@ func (engine *Engine) Run() {
 
 func (engine *Engine) startDeploymentExecutions() {
 	log.Println("Starting main engine loop...")
-
+	engine.status.DeploymentSucceeded = true // Will remain true unless failed or canceled
 	var executionWaitGroup sync.WaitGroup
 
 	// Find lowest priority step(s) without successful execution and run
@@ -117,6 +117,7 @@ func (engine *Engine) startDeploymentExecutions() {
 			}
 			if terminateMainLoop {
 				log.Info("Will terminate main loop because steps can't be restarted or deployment is being cancelled.")
+				engine.status.DeploymentSucceeded = false
 				break
 			}
 			// check all executions for those can be restarted
@@ -143,6 +144,7 @@ func (engine *Engine) startDeploymentExecutions() {
 				}
 				if restartTimedOut {
 					log.Info("Will terminate main loop because at least one deployment step was not restarted.")
+					engine.status.DeploymentSucceeded = false
 					break
 				}
 			}
@@ -164,7 +166,12 @@ func (engine *Engine) waitBeforeEnding() {
 
 	// if the context is not yet cancelled, check for failed executions
 	if engine.context.Err() == nil {
-		waitTime := time.Duration(config.GetEnvironment().ENGINE_END_WAIT) * time.Second
+		waitTimeSecs := config.GetEnvironment().ENGINE_END_WAIT
+		if !engine.status.DeploymentSucceeded {
+			// Failed, wait up to full 2 hours before stopping to ensure message is received
+			waitTimeSecs = config.GetEnvironment().ENGINE_MAX_RUNTIME
+		}
+		waitTime := time.Duration(waitTimeSecs) * time.Second
 		log.Infof("Engine will wait %s before terminating...", waitTime)
 		// wait for either either the timer to end or context being cancelled
 		select {
