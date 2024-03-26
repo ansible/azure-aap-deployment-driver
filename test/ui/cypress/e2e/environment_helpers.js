@@ -1,10 +1,8 @@
 export function verifyRequiredEnvVariables() {
-	let deploymentDriverUrl = Cypress.env('DEPLOYMENT_DRIVER_URL')
-  let username = Cypress.env('USERNAME')
-  let password = Cypress.env('PASSWORD')
-  expect(deploymentDriverUrl).not.to.be.undefined
-  // uncomment following when we implement SSO login
-  //expect(username).not.to.be.undefined
-  //expect(password).not.to.be.undefined
-	return { deploymentDriverUrl, username, password }
+  expect(Cypress.env('DEPLOYMENT_DRIVER_URL')).not.to.be.undefined
+  expect(Cypress.env('DEPLOYMENT_ENGINE_UI_PASSWORD')).not.to.be.undefined
+  expect(Cypress.env('RH_SSO_URL')).not.to.be.undefined
+  expect(Cypress.env('RH_ACCOUNT_USERNAME')).not.to.be.undefined
+  expect(Cypress.env('RH_ACCOUNT_PASSWORD')).not.to.be.undefined
+  return 
 }

@@ -11,9 +11,9 @@ This folder contains end-to-end tests for deployment driver engine (at this time
 
 Requires deployment driver UI running and its URL needs to be passed to the test.
 
-#### 1. Running UI E2E for locally running UI
+#### 1. Running UI E2E for locally running UI with development backend
 
-The web UI te needs to have a back-end running for fetching the data. Easiest is to use the python script in the UI folder.
+The web UI needs to have a back-end running for fetching the data. Easiest is to use the python script in the UI folder.
 
 You may need to create a virtualenv and install the needed packages from ui/requirements.txt if you don't already have them.
 
@@ -55,12 +55,59 @@ The last command above will run the tests in a headless mode with "electron" bro
 npx cypress open --e2e
 ```
 
-#### 2. Running E2E for UI on a URL
+#### 2. Running UI E2E with an AAP instance on Azure
 
-**WARNING:** The tests wont work just yet in this scenario because the deployment driver forces users to log-in with Red Hat SSO and the dialog that does that prevents any other testing/verification until user has logged in. In the near future we will have a way to disable SSO login requirement for testing.
+##### Prerequisites
 
-To run the E2E tests against a deployment driver running on another URL, all you need to do is run:
+1. You have an AAP instance is being deployed on Azure.
+2. The Deployment Engine UI is accessible.
 
-```sh
-CYPRESS_DEPLOYMENT_DRIVER_URL=https://somehost.somewhere.com npx cypress run
+##### Run
+
+1. Clone the project and do a clean installation
+
+```shell
+# Clone the repo
+git clone git@github.com:ansible/azure-aap-deployment-driver.git
+
+# Clean install the project
+cd <repo>/test/ui
+npm ci
 ```
+
+2. Configure environment variables for Cypress automation to run.
+
+   Option 1: Set environment variables at OS level
+   ```shell
+   export CYPRESS_DEPLOYMENT_DRIVER_URL=<Deployment Engine UI Url>
+   export CYPRESS_DEPLOYMENT_ENGINE_UI_PASSWORD=<Admin password to login Deployment Engine UI>
+   export CYPRESS_RH_SSO_URL=https://sso.redhat.com
+   export CYPRESS_RH_ACCOUNT_USERNAME=<User to login https://sso.redhat.com>
+   export CYPRESS_RH_ACCOUNT_PASSWORD=<Password to login https://sso.redhat.com>
+   ```
+   Option 2: Set environment variables in `test/ui/cypress.env.json`
+
+   ```shell
+   cd <repo>/test/ui
+   
+   Refer to the following example to create your cypress.env.json file if you don't have it.
+   {
+    "DEPLOYMENT_DRIVER_URL": "Deployment Engine UI Url",
+    "DEPLOYMENT_ENGINE_UI_PASSWORD": "Admin password to login Deployment Engine UI",
+    "RH_SSO_URL": "https://sso.redhat.com",
+    "RH_ACCOUNT_USERNAME": "User to login https://sso.redhat.com",
+    "RH_ACCOUNT_PASSWORD": "Password to login https://sso.redhat.com"
+   }
+   ```
+
+3. Run Cypress tests.
+
+   ```shell
+   cd <repo>/test/ui
+   
+   Option 1: Run tests from all the specs under `cypress/e2e`
+   npx cypress run
+
+   Option 2: Launch Cypress UI to run tests from a specific spec under `cypress/e2e`
+   npx cypress open
+   ```
