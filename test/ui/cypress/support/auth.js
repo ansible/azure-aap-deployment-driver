@@ -1,8 +1,6 @@
 import { verifyRequiredEnvVariables } from './../e2e/environment_helpers'
 
 Cypress.Commands.add('loginWithRHAccount', () => {
-   verifyRequiredEnvVariables()
-
     cy.visit(Cypress.env("DEPLOYMENT_DRIVER_URL"), {
           retryOnStatusCodeFailure: true,
           retryOnNetworkFailure: true,

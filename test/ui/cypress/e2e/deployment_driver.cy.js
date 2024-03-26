@@ -1,6 +1,10 @@
 /// <reference types="cypress" />
 
 describe('Deployment driver web UI', () => {
+  before(() => {
+    verifyRequiredEnvVariables()
+  })
+  
   beforeEach(() => {
     cy.viewport(1920, 1080)
     cy.loginWithRHAccount()
