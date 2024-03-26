@@ -13,7 +13,7 @@ Requires deployment driver UI running and its URL needs to be passed to the test
 
 #### 1. Running UI E2E for locally running UI with development backend
 
-The web UI te needs to have a back-end running for fetching the data. Easiest is to use the python script in the UI folder.
+The web UI needs to have a back-end running for fetching the data. Easiest is to use the python script in the UI folder.
 
 You may need to create a virtualenv and install the needed packages from ui/requirements.txt if you don't already have them.
 
@@ -64,27 +64,18 @@ npx cypress open --e2e
 
 ##### Run
 
-1. You may need to create a virtualenv and install the needed packages if you don't want to install them at OS level.
+1. Clone the project and do a clean installation
 
 ```shell
-cd <repo>/test/ui
-
-# Create a virtualenv and activate it
-virtualenv venv
-source venv/bin/activate
+# Clone the repo
+git clone git@github.com:ansible/azure-aap-deployment-driver.git
 
 # Clean install the project
+cd <repo>/test/ui
 npm ci
 ```
 
-2. You are encouraged to install the packages from `<repo>/ui/requirements.txt` if you want to see useful messages when the deployment engine is dead.
-
-```shell
-cd <repo>/ui
-pip install -r requirements.txt
-```
-
-3. Configure environment variables for Cypress automation to run.
+2. Configure environment variables for Cypress automation to run.
 
    Option 1: Set environment variables at OS level
    ```shell
@@ -109,7 +100,7 @@ pip install -r requirements.txt
    }
    ```
 
-4. Run Cypress tests.
+3. Run Cypress tests.
 
    ```shell
    cd <repo>/test/ui
