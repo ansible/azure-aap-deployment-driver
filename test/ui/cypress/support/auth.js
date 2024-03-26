@@ -1,5 +1,3 @@
-import { verifyRequiredEnvVariables } from './../e2e/environment_helpers'
-
 Cypress.Commands.add('loginWithRHAccount', () => {
     //cy.get('#pf-login-username-id').type('admin') - hardcoded by Deployment Engine UI
     // Enter the admin password for Deployment Engine UI login

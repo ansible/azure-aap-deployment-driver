@@ -1,4 +1,5 @@
 /// <reference types="cypress" />
+import { verifyRequiredEnvVariables } from './environment_helpers'
 
 describe('Deployment driver web UI', () => {
   before(() => {
@@ -39,7 +40,7 @@ describe('Deployment driver web UI', () => {
   })
 
   it('left navigation has expected navigation links', () => {
-    cy.get('#nav-toggle').click()
+    cy.get('#nav-toggle')
     cy.get('div#page-sidebar').as('navigation')
 
     cy.get('@navigation').contains('Deployment')
@@ -62,13 +63,13 @@ describe('Deployment driver web UI', () => {
     
     // Check the detailed deployment step's names in the Deployment Steps panel
     cy.get('div.deploy-step>ul').as('steps')
-    cy.get('@steps').contains('VNET and_Subnets')
+    cy.get('@steps').contains('VNET and Subnets')
     cy.get('@steps').contains('Private DNS')
     cy.get('@steps').contains('AAP Repository')
     cy.get('@steps').contains('Database Server and Databases')
     cy.get('@steps').contains('AKS Cluster')
     cy.get('@steps').contains('AAP Operators')
-    cy.get('@steps').contains('AAP_Applications')
+    cy.get('@steps').contains('AAP Applications')
     cy.get('@steps').contains('Application Ingress')
     cy.get('@steps').contains('Seeded Content')
     cy.get('@steps').contains('Billing')
@@ -94,7 +95,7 @@ describe('Deployment driver web UI', () => {
 
   it('Checking the Deployment Engine UI logout', () => {
     // Select the Logout from the navigation menu  
-  cy.get('#nav-toggle').click()
+  cy.get('#nav-toggle')
   cy.get('#Logout-2').click()
 
   //Check the messages on the popped up Logout screen
