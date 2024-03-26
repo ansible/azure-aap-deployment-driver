@@ -2,6 +2,7 @@
 
 describe('Deployment driver web UI', () => {
   beforeEach(() => {
+    cy.viewport(1920, 1080)
     cy.loginWithRHAccount()
   })
 
@@ -47,27 +48,23 @@ describe('Deployment driver web UI', () => {
     cy.get('.pf-c-title')
       .contains('Deployment Steps')
       .should('be.visible')
-
-    // Check the title of Deployment Steps
-    cy.get('.pf-c-title')
-      .contains('Deployment Steps')
-      .should('be.visible')
     
     // Check the detailed deployment step's names in the Deployment Steps panel
-    cy.fixture('deployment_steps.json').then((deploymentStepsData) => {
-      let total_steps = deploymentStepsData.steps.length
-      cy.log('Total Deployment Steps: '+total_steps)
-      
-      cy.get('div.deploy-step>ul').as('steps')
-      for (let i=0; i<total_steps; i++) {
-        cy.log('Deployment Step '+ deploymentStepsData.steps[i].stepNo +": " + deploymentStepsData.steps[i].Name)
-        
-        cy.get('@steps')
-          .contains(`${deploymentStepsData.steps[`${i}`].Name}`)
-      }
-    })
+    cy.get('div.deploy-step>ul').as('steps')
+    cy.get('@steps').contains('VNET and_Subnets')
+    cy.get('@steps').contains('Private DNS')
+    cy.get('@steps').contains('AAP Repository')
+    cy.get('@steps').contains('Database Server and Databases')
+    cy.get('@steps').contains('AKS Cluster')
+    cy.get('@steps').contains('AAP Operators')
+    cy.get('@steps').contains('AAP_Applications')
+    cy.get('@steps').contains('Application Ingress')
+    cy.get('@steps').contains('Seeded Content')
+    cy.get('@steps').contains('Billing')
+    cy.get('@steps').contains('Deployment Cleanup')
 
   })
+
 
   it('clicking cancel button brings up a dialog that can be closed', () => {
     // Check the Cancel Deployment button on the main screen
