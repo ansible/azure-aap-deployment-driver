@@ -4,9 +4,16 @@ describe('Deployment driver web UI', () => {
   before(() => {
     verifyRequiredEnvVariables()
   })
-  
+
   beforeEach(() => {
     cy.viewport(1920, 1080)
+
+    cy.visit(Cypress.env("DEPLOYMENT_DRIVER_URL"), {
+      retryOnStatusCodeFailure: true,
+      retryOnNetworkFailure: true,
+      timeout: 5000,
+    })
+
     cy.loginWithRHAccount()
   })
 

@@ -1,12 +1,6 @@
 import { verifyRequiredEnvVariables } from './../e2e/environment_helpers'
 
 Cypress.Commands.add('loginWithRHAccount', () => {
-    cy.visit(Cypress.env("DEPLOYMENT_DRIVER_URL"), {
-          retryOnStatusCodeFailure: true,
-          retryOnNetworkFailure: true,
-          timeout: 5000,
-    })
-
     //cy.get('#pf-login-username-id').type('admin') - hardcoded by Deployment Engine UI
     // Enter the admin password for Deployment Engine UI login
     cy.get('#pf-login-password-id').type(Cypress.env('DEPLOYMENT_ENGINE_UI_PASSWORD'))
