@@ -3,10 +3,10 @@ import { DeploymentSteps } from './DeploymentSteps/Steps';
 import { DeploymentProgress } from './DeploymentProgress/DeploymentProgress';
 import { getSteps } from '../apis/deployment';
 import { getEntitlementsCount } from '../apis/entitlements';
-import { DeploymentStepData, DeploymentProgressData, EntitlementsCount } from '../apis/types';
+import { getEngineConfiguration } from '../apis/engine';
+import { DeploymentStepData, DeploymentProgressData, EntitlementsCount, EngineConfiguration } from '../apis/types';
 import { RHLoginModal } from './RHLoginModal';
 import { EntitlementsInfo } from './EntitlementsInfo';
-
 
 interface IDeploymentProps {
   showLoginDialog: boolean
@@ -17,6 +17,7 @@ export const Deployment = ({showLoginDialog}:IDeploymentProps) => {
   const [stepsData, setStepsData] = useState<DeploymentStepData[]>()
   const [progressData, setProgressData] = useState<DeploymentProgressData>()
   const [entitlementsCount, setEntitlementsCount] = useState<EntitlementsCount>()
+  const [engineConfig, setEngineConfig] = useState<EngineConfiguration>()
 
   const fetchData = () => {
     // intentionally wrapped inside IIFE to make fetchData function have "void" return
@@ -41,6 +42,15 @@ export const Deployment = ({showLoginDialog}:IDeploymentProps) => {
     }
   }
 
+  const fetchEngineConfigData = async () => {
+    try {
+      const engineConfig = await getEngineConfiguration()
+      setEngineConfig(engineConfig)
+    } catch (error) {
+      console.log("Could not fetch engine configuration.", error)
+    }
+  }
+
   useEffect(() => {
     fetchData()
     const intervalId = setInterval(fetchData, 3000)
@@ -54,15 +64,17 @@ export const Deployment = ({showLoginDialog}:IDeploymentProps) => {
     fetchEntitlementsData()
   },[])
 
+  useEffect(()=>{
+    fetchEngineConfigData()
+  },[])
+
   return (
     <>
       { <RHLoginModal isModalShown={showLoginDialog}/> }
       {/* TODO Add some place holder for case when data is not available */}
-
       {entitlementsCount && <EntitlementsInfo entitlementsCount={entitlementsCount}></EntitlementsInfo> }
-
-      {stepsData &&<DeploymentSteps stepsData={stepsData}></DeploymentSteps>}
-      {progressData  && <DeploymentProgress progressData={progressData}></DeploymentProgress>}
+      {stepsData && <DeploymentSteps stepsData={stepsData} ></DeploymentSteps>}
+      {progressData  && <DeploymentProgress progressData={progressData} engineConfig={engineConfig}></DeploymentProgress>}
     </>
   )
 }

@@ -141,3 +141,34 @@ export class EntitlementsCount {
 		}
 	}
 }
+
+export class EngineConfiguration {
+	stepRestartTimeout:number = 0
+	overallTimeout:number = 0
+	engineExitDelay:number = 0
+	autoRetryDelay:number = 0
+	stepDeploymentTimeout:number = 0
+	stepMaxRetries:number = 0
+	constructor(config) {
+		if (config) {
+			if ('stepRestartTimeoutSec' in config && typeof config.stepRestartTimeoutSec === 'number') {
+				this.stepRestartTimeout = config.stepRestartTimeoutSec
+			}
+			if ('overallTimeoutSec' in config && typeof config.overallTimeoutSec === 'number') {
+				this.overallTimeout = config.overallTimeoutSec
+			}
+			if ('engineExitDelaySec' in config && typeof config.engineExitDelaySec === 'number') {
+				this.engineExitDelay = config.engineExitDelaySec
+			}
+			if ('autoRetryDelaySec' in config && typeof config.autoRetryDelaySec === 'number') {
+				this.autoRetryDelay = config.autoRetryDelaySec
+			}
+			if ('stepDeploymentTimeoutSec' in config && typeof config.stepDeploymentTimeoutSec === 'number') {
+				this.stepDeploymentTimeout = config.stepDeploymentTimeoutSec
+			}
+			if ('stepMaxRetries' in config && typeof config.stepMaxRetries === 'number') {
+				this.stepMaxRetries = config.stepMaxRetries
+			}
+		}
+	}
+}
