@@ -22,7 +22,7 @@ describe('Deployment driver web UI', () => {
     cy.get('main#primary-app-container').as('main')
     cy.get('@main').contains('Ansible Automation Platform Deployment Engine')
     cy.get('@main').contains('Deployment Steps')
-    cy.get('@main').get('div.deployProgress').as('statusArea')
+    cy.get('@main').get('div.deploymentProgressContainer').as('statusArea')
     cy.get('@statusArea').get('button.cancelButton').contains('Cancel Deployment')
 
     cy.get('.pf-c-brand').should('be.visible')
@@ -36,7 +36,7 @@ describe('Deployment driver web UI', () => {
     // Check the H1 title
     cy.get('h1')
       .contains('Ansible Automation Platform Deployment Engine')
-      .should('be.visible') 
+      .should('be.visible')
   })
 
   it('left navigation has expected navigation links', () => {
@@ -52,7 +52,7 @@ describe('Deployment driver web UI', () => {
       .should('have.attr','href').and('include', '/documentation')
 
     cy.get('@navigation').contains('Logout')
-      .should('be.visible')    
+      .should('be.visible')
   })
 
   it('list of deployment steps contains expected steps', () => {
@@ -60,7 +60,7 @@ describe('Deployment driver web UI', () => {
     cy.get('.pf-c-title')
       .contains('Deployment Steps')
       .should('be.visible')
-    
+
     // Check the detailed deployment step's names in the Deployment Steps panel
     cy.get('div.deploy-step>ul').as('steps')
     cy.get('@steps').contains('VNET and Subnets')
@@ -80,21 +80,22 @@ describe('Deployment driver web UI', () => {
 
   it('clicking cancel button brings up a dialog that can be closed', () => {
     // Check the Cancel Deployment button on the main screen
-    cy.get('div.deployProgress').as('statusArea')
-    cy.get('@statusArea').get('button.cancelButton').click()
+    cy.get('div.deploymentProgressContainer').as('statusArea')
+    cy.get('@statusArea').contains('Cancel Deployment').click()
 
-    // Check the UI elements on the pupped up dialog after clicking the Cancel Deployment button from the main screen
-    cy.get('div[role="dialog"]').as('dialog')
-    cy.get('@dialog', {timeout: 4000}).contains('Cancel Deployment')
-    cy.get('@dialog').get('button.pf-m-primary').contains('Confirm')
-    cy.get('@dialog').get('button.pf-m-link').as('closeButton')
-    cy.get('@closeButton').contains('No').should('not.be.selected')
+    // Check the UI elements on the dialog after clicking the Cancel Deployment button from the main screen
+    cy.get('div[role="dialog"]',{timeout: 4000}).as('dialog')
+    cy.get('@dialog').get('footer').children().as('dialogFooterButtons')
+    cy.get('@dialogFooterButtons').first().contains('Cancel deployment').as('cancelButton')
+    cy.get('@cancelButton').should('be.disabled')
+    cy.get('@dialogFooterButtons').next().contains('Cancel').as('closeButton')
+    cy.get('@closeButton').should('not.be.disabled')
     cy.get('@closeButton').click()
-    cy.get('@dialog').should('not.exist')   
+    cy.get('@dialog').should('not.exist')
   })
 
   it('Checking the Deployment Engine UI logout', () => {
-    // Select the Logout from the navigation menu  
+    // Select the Logout from the navigation menu
   cy.get('#nav-toggle')
   cy.get('#Logout-2').click()
 
@@ -105,13 +106,13 @@ describe('Deployment driver web UI', () => {
   cy.get('#pf-modal-part-3')
     .contains('Are you sure you want Logout?')
     .should('be.visible')
- 
+
   // Check the 'Cancel' button is unselected
   cy.get('.pf-c-modal-box__footer > .pf-m-link')
     .contains('Cancel')
     .should('not.be.selected')
 
-  //Check the 'Confirm' button is selected 
+  //Check the 'Confirm' button is selected
   cy.get('button#primary-loading-button.pf-c-button.pf-m-primary.pf-m-progress', {timeout: 4000})
     .contains('Confirm')
     .should('be.visible')
