@@ -1,12 +1,20 @@
-.deployProgress {
+.deploymentProgressContainer {
+    width: 75%;
+    margin-top: 5px;
+}
+
+.deploymentProgress {
     border-style: solid;
     border-width: 1px;
     padding: 5px 5px 5px 5px;
-    margin-top: 5px;
+    margin-top: 30px;
     background-color: white;
-    width: 75%;
 }
 
-.deployProgress h1 {
+.deploymentProgress h1 {
     text-align: left;
+}
+
+div.pf-c-helper-text {
+    font-size: var(--pf-global--FontSize--md);
 }

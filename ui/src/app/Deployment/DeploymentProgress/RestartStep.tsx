@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bullseye, Button, StackItem } from '@patternfly/react-core';
+import { Button, } from '@patternfly/react-core';
 import { restartStep } from '../../apis/deployment';
 
 interface IRestartDeploymentProps {
@@ -34,11 +34,8 @@ export const RestartStep = ({ stepExId }: IRestartDeploymentProps) => {
   }
 
   return (
-    <StackItem>
-      <Bullseye>
-        <Button className='retryButton' id="primary-loading-button" variant="primary" onClick={handleRestart} {...primaryLoadingProps}>
-          {isPrimaryLoading ? 'Restarting Step' : 'Restart Step'}</Button>
-      </Bullseye>
-    </StackItem>
-  );
-};
+    <Button className='retryButton' id="primary-loading-button" variant="primary" onClick={handleRestart} {...primaryLoadingProps}>
+      {isPrimaryLoading ? 'Restarting Step' : 'Restart Step'}
+    </Button>
+  )
+}

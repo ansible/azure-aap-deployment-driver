@@ -155,6 +155,17 @@ entitlementCount = """
 }
 """
 
+engineConfig = """
+{
+    "stepRestartTimeoutSec":1800,
+	"overallTimeoutSec":7200,
+	"engineExitDelaySec":900,
+	"autoRetryDelaySec":60,
+	"stepDeploymentTimeoutSec":1800,
+	"stepMaxRetries":10
+}
+"""
+
 api = flask.Flask('installer')
 
 CORS(api)
@@ -171,5 +182,10 @@ def postExecution(id):
 @api.route('/azmarketplaceentitlementscount', methods=['GET'])
 def getEntitlementsCount():
     return entitlementCount, 200, {'Content-Type': 'application/json'}
+
+# engineconfiguration
+@api.route('/engineconfiguration', methods=['GET'])
+def getEngineConfiguration():
+    return engineConfig, 200, {'Content-Type': 'application/json'}
 
 api.run(host='0.0.0.0', port='55080')
