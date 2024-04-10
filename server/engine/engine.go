@@ -157,12 +157,26 @@ func (engine *Engine) startDeploymentExecutions() {
 	}
 }
 
+func (engine *Engine) entitleCustomer() {
+	// Fetch SSO details
+	ssoStore := model.GetSsoStore()
+	session, err := ssoStore.GetSession()
+	if err != nil {
+		log.Warnf("Unable to entitle customer, can't fetch SSO session details: %v", err)
+		return
+	}
+	engine.entitlementsController.CreateEntitlement(session.OrganizationId)
+}
+
 func (engine *Engine) waitBeforeEnding() {
 	log.Info("Sending telemetry for this deployment to Segment")
 	_, err := engine.telemetryHandler.FinalizeAndPublish()
 	if err != nil {
 		log.Warnf("Unable to publish telemetry: %v", err)
 	}
+
+	log.Info("Creating customer entitlement for AAP")
+	engine.entitleCustomer()
 
 	// if the context is not yet cancelled, check for failed executions
 	if engine.context.Err() == nil {

@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"fmt"
 	"sync"
 
@@ -16,6 +17,7 @@ type SsoStore interface {
 	CreateSession(*SsoSession) error
 	RemoveSession(string) error
 	ValidSession(string) bool
+	GetSession() (*SsoSession, error)
 }
 
 var once sync.Once
@@ -97,6 +99,20 @@ func (s ssoStore) RemoveSession(sessionState string) error {
 		return err
 	}
 	return nil
+}
+
+func (s ssoStore) GetSession() (*SsoSession, error) {
+	session := &SsoSession{}
+	tx := s.db.First(session)
+	if tx.RowsAffected == 0 {
+		log.Warnf("Unable to load SSO session, user has not logged in.")
+		return nil, errors.New("User has not logged in via SSO.")
+	}
+	if tx.Error != nil {
+		log.Errorf("Unable to load SSO session from DB: %v", tx.Error)
+		return nil, tx.Error
+	}
+	return session, nil
 }
 
 func (s ssoStore) ValidSession(sessionStateHash string) bool {

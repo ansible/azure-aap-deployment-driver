@@ -2,6 +2,7 @@ package engine
 
 import (
 	"context"
+	"server/controllers/entitlement"
 	"server/model"
 	"server/persistence"
 	"server/telemetry"
@@ -10,13 +11,14 @@ import (
 )
 
 type Engine struct {
-	context              context.Context
-	database             *persistence.Database
-	resolver             *Resolver
-	mainOutputs          *model.Output
-	done                 chan struct{}
-	status               *model.Status
-	maxExecutionRestarts int
-	deploymentsClient    *armresources.DeploymentsClient
-	telemetryHandler     *telemetry.TelemetryHandler
+	context                context.Context
+	database               *persistence.Database
+	resolver               *Resolver
+	mainOutputs            *model.Output
+	done                   chan struct{}
+	status                 *model.Status
+	maxExecutionRestarts   int
+	deploymentsClient      *armresources.DeploymentsClient
+	telemetryHandler       *telemetry.TelemetryHandler
+	entitlementsController *entitlement.EntitlementAPIController
 }
