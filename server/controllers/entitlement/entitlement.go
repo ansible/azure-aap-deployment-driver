@@ -95,7 +95,7 @@ func NewEntitlementController(context context.Context, db *persistence.Database)
 	return entitlementCtrlInstance
 }
 
-func (controller *EntitlementAPIController) CreateEntitlement(orgId string) {
+func (controller *EntitlementAPIController) RequestEntitlementCreation(orgId string) {
 	if controller.httpRequester != nil {
 		req := APIEntitlementRequest{
 			AccountId:           orgId,

@@ -165,7 +165,7 @@ func (engine *Engine) entitleCustomer() {
 		log.Warnf("Unable to entitle customer, can't fetch SSO session details: %v", err)
 		return
 	}
-	engine.entitlementsController.CreateEntitlement(session.OrganizationId)
+	engine.entitlementsController.RequestEntitlementCreation(session.OrganizationId)
 }
 
 func (engine *Engine) waitBeforeEnding() {
