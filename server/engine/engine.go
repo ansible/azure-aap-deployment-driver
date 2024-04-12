@@ -175,13 +175,16 @@ func (engine *Engine) waitBeforeEnding() {
 		log.Warnf("Unable to publish telemetry: %v", err)
 	}
 
-	log.Info("Creating customer entitlement for AAP")
-	engine.entitleCustomer()
-
 	// if the context is not yet cancelled, check for failed executions
 	if engine.context.Err() == nil {
+		// Default wait time for successful deployments
 		waitTimeSecs := config.GetEnvironment().ENGINE_END_WAIT
-		if !engine.status.DeploymentSucceeded {
+
+		if engine.status.DeploymentSucceeded {
+			log.Info("Creating customer entitlement for AAP")
+			engine.entitleCustomer()
+		} else {
+			log.Warn("Skipping customer AAP entitlement creation due to failed deployment.")
 			// Failed, wait up to full 2 hours before stopping to ensure message is received
 			waitTimeSecs = config.GetEnvironment().ENGINE_MAX_RUNTIME
 		}
