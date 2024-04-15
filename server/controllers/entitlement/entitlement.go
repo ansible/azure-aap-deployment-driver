@@ -109,6 +109,7 @@ func (controller *EntitlementAPIController) RequestEntitlementCreation(orgId str
 			storeError(controller.database, err)
 			return
 		}
+		log.Infof("Requesting AAP entitlement creation for org ID %s", orgId)
 		log.Tracef("Calling create entitlement API at URL %s with content %+v", endpoint, req)
 
 		resp, err := controller.httpRequester.MakeRequestWithJSONBody(

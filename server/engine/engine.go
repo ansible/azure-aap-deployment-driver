@@ -160,12 +160,19 @@ func (engine *Engine) startDeploymentExecutions() {
 func (engine *Engine) entitleCustomer() {
 	// Fetch SSO details
 	ssoStore := model.GetSsoStore()
-	session, err := ssoStore.GetSession()
+	sessions, err := ssoStore.GetSessions()
 	if err != nil {
-		log.Warnf("Unable to entitle customer, can't fetch SSO session details: %v", err)
+		log.Errorf("Unable to entitle customer, can't fetch SSO session details: %v", err)
 		return
 	}
-	engine.entitlementsController.RequestEntitlementCreation(session.OrganizationId)
+	if len(sessions) == 0 {
+		log.Errorf("Unable to entitle customer, user has not logged in.")
+		return
+	}
+	if len(sessions) > 1 {
+		log.Warnf("Multiple SSO sessions found, entitling the first one.")
+	}
+	engine.entitlementsController.RequestEntitlementCreation(sessions[0].OrganizationId)
 }
 
 func (engine *Engine) waitBeforeEnding() {
