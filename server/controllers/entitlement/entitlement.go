@@ -133,8 +133,10 @@ func (controller *EntitlementAPIController) RequestEntitlementCreation(orgId str
 		log.Tracef("Create entitlement API returned: %+v", response)
 		if response.AccountId == "" {
 			log.Warn("AAP entitlement creation API returned no entitled account ID.")
-		} else {
+		} else if response.AccountId == orgId {
 			log.Infof("AAP entitlement created for account: %s", response.AccountId)
+		} else {
+			log.Infof("AAP entitlement for this tenant/subscription already bound to org ID: %s", response.AccountId)
 		}
 		return
 	}
