@@ -176,7 +176,7 @@ func (controller *EntitlementAPIController) FetchSubscriptions() {
 				storeError(controller.database, err)
 				return
 			}
-
+			log.Tracef("Entitlements check response: %+v", response)
 			storeEntitlements(controller.database, &response)
 
 			return
@@ -196,6 +196,7 @@ func storeError(db *persistence.Database, err error) {
 
 func storeEntitlements(db *persistence.Database, data *APIResponse) {
 	if len(data.Content) == 0 {
+		log.Info("No entitlements found.  Empty response.")
 		return
 	}
 
@@ -218,19 +219,26 @@ func storeEntitlements(db *persistence.Database, data *APIResponse) {
 				RedHatAccountId:     c.RhAccountId,
 				Status:              c.Status,
 			}
-			for _, rhe := range c.RhEntitlements {
-				var sku, subNum string
-				var skuExists, subNumExists bool
-				sku, skuExists = rhe["sku"]
-				subNum, subNumExists = rhe["subscriptionNumber"]
-				if skuExists && subNumExists {
-					entitlement.RHEntitlements = append(entitlement.RHEntitlements, model.RedHatEntitlements{
-						Sku:                sku,
-						SubscriptionNumber: subNum,
-					})
+			if len(c.RhEntitlements) == 0 {
+				log.Info("No Red Hat entitlements found for this Azure tenant/subscription.")
+			} else {
+				log.Info("Red Hat entitlement(s) found.")
+				for _, rhe := range c.RhEntitlements {
+					var sku, subNum string
+					var skuExists, subNumExists bool
+					sku, skuExists = rhe["sku"]
+					subNum, subNumExists = rhe["subscriptionNumber"]
+					if skuExists && subNumExists {
+						entitlement.RHEntitlements = append(entitlement.RHEntitlements, model.RedHatEntitlements{
+							Sku:                sku,
+							SubscriptionNumber: subNum,
+						})
+					}
 				}
+				persistRecord(db, &entitlement)
 			}
-			persistRecord(db, &entitlement)
+		} else {
+			log.Info("No azure_marketplace entitlements found.")
 		}
 	}
 }

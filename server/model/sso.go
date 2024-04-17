@@ -102,7 +102,7 @@ func (s ssoStore) RemoveSession(sessionState string) error {
 
 func (s ssoStore) GetSessions() ([]SsoSession, error) {
 	sessions := []SsoSession{}
-	tx := s.db.Find(sessions)
+	tx := s.db.Find(&sessions)
 	if tx.Error != nil {
 		log.Errorf("Unable to load SSO sessions from DB: %v", tx.Error)
 		return nil, tx.Error
