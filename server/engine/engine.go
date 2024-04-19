@@ -148,6 +148,8 @@ func (engine *Engine) startDeploymentExecutions() {
 					break
 				}
 			}
+		} else {
+			engine.status.DeploymentSucceeded = false
 		}
 
 		// if no executions need to be restarted, increment priority level to move to next level
@@ -381,6 +383,7 @@ func (engine *Engine) runStep(step model.Step, execution *model.Execution, waitG
 			execution.Error = "Timeout"
 			execution.ErrorDetails = "Azure deployment step did not complete within the maximum allowed time, please re-deploy."
 			engine.database.Instance.Save(&execution)
+			engine.status.DeploymentSucceeded = false
 			return
 		}
 		log.Printf("Deployment of step [%s] failed: %v", step.Name, err)
