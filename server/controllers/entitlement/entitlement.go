@@ -7,6 +7,7 @@ import (
 	"server/config"
 	"server/model"
 	"server/persistence"
+	"server/telemetry"
 	"server/util"
 	"sync"
 
@@ -137,6 +138,10 @@ func (controller *EntitlementAPIController) RequestEntitlementCreation(orgId str
 			log.Infof("AAP entitlement created or already existed for account: %s", response.AccountId)
 		} else {
 			log.Infof("AAP entitlement for this tenant/subscription already bound to org ID: %s", response.AccountId)
+		}
+		err = telemetry.SendEntitlementResult(orgId, response.AccountId)
+		if err != nil {
+			log.Errorf("Unable to send entitlement result to segment: %v", err)
 		}
 		return
 	}
