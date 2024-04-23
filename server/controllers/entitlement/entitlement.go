@@ -3,6 +3,9 @@ package entitlement
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"fmt"
+	"net/http"
 	"net/url"
 	"server/config"
 	"server/model"
@@ -125,6 +128,12 @@ func (controller *EntitlementAPIController) RequestEntitlementCreation(orgId str
 			storeError(controller.database, err)
 			return
 		}
+		if resp.StatusCode != http.StatusOK {
+			errStr := fmt.Sprintf("Entitlements API returned error status code %d - content %v", resp.StatusCode, string(resp.Body[:]))
+			log.Error(errStr)
+			storeError(controller.database, errors.New(errStr))
+			return
+		}
 		response := APIEntitlementResponse{}
 		if err := json.Unmarshal(resp.Body, &response); err != nil {
 			log.Warnf("Couldn't unmarshal JSON response. %v", err)
@@ -175,6 +184,13 @@ func (controller *EntitlementAPIController) FetchSubscriptions() {
 			if err != nil {
 				log.Warnf("Failed to get response from subscription API: %v", err)
 				storeError(controller.database, err)
+				return
+			}
+
+			if resp.StatusCode != http.StatusOK {
+				errStr := fmt.Sprintf("Subscription API returned error status code %d - content %v", resp.StatusCode, string(resp.Body[:]))
+				log.Error(errStr)
+				storeError(controller.database, errors.New(errStr))
 				return
 			}
 
@@ -230,13 +246,13 @@ func storeEntitlements(db *persistence.Database, data *APIResponse) {
 			if len(c.RhEntitlements) == 0 {
 				log.Info("No Red Hat entitlements found for this Azure tenant/subscription.")
 			} else {
-				log.Info("Red Hat entitlement(s) found.")
 				for _, rhe := range c.RhEntitlements {
 					var sku, subNum string
 					var skuExists, subNumExists bool
 					sku, skuExists = rhe["sku"]
 					subNum, subNumExists = rhe["subscriptionNumber"]
 					if skuExists && subNumExists {
+						log.Tracef("Red Hat entitlement found: %s", subNum)
 						entitlement.RHEntitlements = append(entitlement.RHEntitlements, model.RedHatEntitlements{
 							Sku:                sku,
 							SubscriptionNumber: subNum,
