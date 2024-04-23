@@ -110,8 +110,8 @@ func (controller *EntitlementAPIController) RequestEntitlementCreation(orgId str
 			storeError(controller.database, err)
 			return
 		}
-		log.Infof("Requesting AAP entitlement creation for org ID %s", orgId)
-		log.Tracef("Calling create entitlement API at URL %s with content %+v", endpoint, req)
+		// TODO Change this to trace in the future, adding as info to collect data
+		log.Infof("Calling create entitlement API at URL %s with content %+v", endpoint, req)
 
 		resp, err := controller.httpRequester.MakeRequestWithJSONBody(
 			controller.ctx,
@@ -131,7 +131,8 @@ func (controller *EntitlementAPIController) RequestEntitlementCreation(orgId str
 			storeError(controller.database, err)
 			return
 		}
-		log.Tracef("Create entitlement API returned: %+v", response)
+		// TODO Change this to trace in the future, adding as info to collect data
+		log.Infof("Create entitlement API returned: %+v", response)
 		if response.AccountId == "" {
 			log.Warn("AAP entitlement creation API returned no entitled account ID.")
 		} else if response.AccountId == orgId {
