@@ -33,7 +33,7 @@ func main() {
 	// Fallback in case SSO setup fails
 	var loginManager handler.LoginManager = handler.CredentialsHandler{}
 
-	engine := engine.NewEngine(exit.Context(), db, deploymentsClient)
+	engine := engine.NewEngine(exit.Context(), db, deploymentsClient, entitlement)
 
 	// Set up SSO (if configured)
 	sso.NewSsoManager(db, &loginManager)

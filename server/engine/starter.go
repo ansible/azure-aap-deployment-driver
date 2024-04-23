@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"server/config"
+	"server/controllers/entitlement"
 	"server/model"
 	"server/persistence"
 	"server/telemetry"
@@ -15,15 +16,16 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func NewEngine(ctx context.Context, db *persistence.Database, client *armresources.DeploymentsClient) *Engine {
+func NewEngine(ctx context.Context, db *persistence.Database, client *armresources.DeploymentsClient, entitlement *entitlement.EntitlementAPIController) *Engine {
 	engine := &Engine{
-		context:              ctx,
-		database:             db,
-		resolver:             NewResolver(config.GetEnvironment().SUBSCRIPTION, config.GetEnvironment().RESOURCE_GROUP_NAME),
-		done:                 make(chan struct{}),
-		status:               &model.Status{},
-		maxExecutionRestarts: config.GetEnvironment().EXECUTION_MAX_RETRY,
-		deploymentsClient:    client,
+		context:                ctx,
+		database:               db,
+		resolver:               NewResolver(config.GetEnvironment().SUBSCRIPTION, config.GetEnvironment().RESOURCE_GROUP_NAME),
+		done:                   make(chan struct{}),
+		status:                 &model.Status{},
+		maxExecutionRestarts:   config.GetEnvironment().EXECUTION_MAX_RETRY,
+		deploymentsClient:      client,
+		entitlementsController: entitlement,
 	}
 	engine.initialize()
 	return engine

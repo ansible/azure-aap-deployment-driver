@@ -148,6 +148,8 @@ func (engine *Engine) startDeploymentExecutions() {
 					break
 				}
 			}
+		} else {
+			engine.status.DeploymentSucceeded = false
 		}
 
 		// if no executions need to be restarted, increment priority level to move to next level
@@ -155,6 +157,24 @@ func (engine *Engine) startDeploymentExecutions() {
 			p++
 		}
 	}
+}
+
+func (engine *Engine) entitleCustomer() {
+	// Fetch SSO details
+	ssoStore := model.GetSsoStore()
+	sessions, err := ssoStore.GetSessions()
+	if err != nil {
+		log.Errorf("Unable to entitle customer, can't fetch SSO session details: %v", err)
+		return
+	}
+	if len(sessions) == 0 {
+		log.Errorf("Unable to entitle customer, user has not logged in.")
+		return
+	}
+	if len(sessions) > 1 {
+		log.Warnf("Multiple SSO sessions found, entitling the first one.")
+	}
+	engine.entitlementsController.RequestEntitlementCreation(sessions[0].OrganizationId)
 }
 
 func (engine *Engine) waitBeforeEnding() {
@@ -166,8 +186,14 @@ func (engine *Engine) waitBeforeEnding() {
 
 	// if the context is not yet cancelled, check for failed executions
 	if engine.context.Err() == nil {
+		// Default wait time for successful deployments
 		waitTimeSecs := config.GetEnvironment().ENGINE_END_WAIT
-		if !engine.status.DeploymentSucceeded {
+
+		if engine.status.DeploymentSucceeded {
+			log.Info("Creating customer entitlement for AAP")
+			engine.entitleCustomer()
+		} else {
+			log.Warn("Skipping customer AAP entitlement creation due to failed deployment.")
 			// Failed, wait up to full 2 hours before stopping to ensure message is received
 			waitTimeSecs = config.GetEnvironment().ENGINE_MAX_RUNTIME
 		}
@@ -357,6 +383,7 @@ func (engine *Engine) runStep(step model.Step, execution *model.Execution, waitG
 			execution.Error = "Timeout"
 			execution.ErrorDetails = "Azure deployment step did not complete within the maximum allowed time, please re-deploy."
 			engine.database.Instance.Save(&execution)
+			engine.status.DeploymentSucceeded = false
 			return
 		}
 		log.Printf("Deployment of step [%s] failed: %v", step.Name, err)

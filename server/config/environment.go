@@ -88,7 +88,7 @@ func GetEnvironment() envVars {
 	environment.AZURE_LOGIN_RETRIES = 10
 	environment.SW_SUB_API_CERTIFICATE = ""
 	environment.SW_SUB_API_PRIVATEKEY = ""
-	environment.SW_SUB_API_URL = "https://ibm-entitlement-gateway.api.redhat.com/v1/partnerSubscriptions"
+	environment.SW_SUB_API_URL = "https://ibm-entitlement-gateway.api.redhat.com/v1/"
 	environment.SW_SUB_VENDOR_PRODUCT_CODE = "rhaapomsa"
 	environment.SSO_ENDPOINT = "https://sso.redhat.com/auth/realms/redhat-external"
 	environment.DYNAMIC_CLIENT_REG_ENDPOINT = environment.SSO_ENDPOINT // Normal case, only change for unit tests

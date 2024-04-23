@@ -16,6 +16,7 @@ type SsoStore interface {
 	CreateSession(*SsoSession) error
 	RemoveSession(string) error
 	ValidSession(string) bool
+	GetSessions() ([]SsoSession, error)
 }
 
 var once sync.Once
@@ -97,6 +98,16 @@ func (s ssoStore) RemoveSession(sessionState string) error {
 		return err
 	}
 	return nil
+}
+
+func (s ssoStore) GetSessions() ([]SsoSession, error) {
+	sessions := []SsoSession{}
+	tx := s.db.Find(&sessions)
+	if tx.Error != nil {
+		log.Errorf("Unable to load SSO sessions from DB: %v", tx.Error)
+		return nil, tx.Error
+	}
+	return sessions, nil
 }
 
 func (s ssoStore) ValidSession(sessionStateHash string) bool {
