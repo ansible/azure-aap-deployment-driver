@@ -27,7 +27,6 @@ type EntitlementAPIController struct {
 type APIFilter struct {
 	VendorProductCode   string `json:"vendorProductCode,omitempty"`
 	AzureSubscriptionId string `json:"azureSubscriptionId,omitempty"`
-	AzureTenantId       string `json:"azureTenantId,omitempty"`
 	PartnerCode         string `json:"partnerCode"`
 }
 
@@ -169,7 +168,6 @@ func (controller *EntitlementAPIController) FetchSubscriptions() {
 				APIFilter{
 					VendorProductCode:   controller.productCode,
 					AzureSubscriptionId: controller.subscriptionId,
-					AzureTenantId:       controller.tenantId,
 					PartnerCode:         PARTNER_TYPE_CODE,
 				},
 			)
