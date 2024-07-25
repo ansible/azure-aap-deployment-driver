@@ -67,4 +67,4 @@ For more details on working with development containers, please see [https://cod
 ## SonarQube
 
 Sonar analysis is performed by Github Actions on the code repository for this
-project.  Results available at [sonarcloud.io](https://sonarcloud.io/project/overview?id=aoc-aap-test-installer)
+project.  Results available at [sonarcloud.io](https://sonarcloud.io/project/overview?id=ansible_azure-aap-deployment-driver) (server) and [sonarcloud.io](https://sonarcloud.io/project/overview?id=aoc-aap-installer-ui) (UI)
