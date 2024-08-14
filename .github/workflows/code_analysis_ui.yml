@@ -11,6 +11,7 @@ on:
       - main
     paths: # Only applicable if any UI code was changed
       - 'ui/**'
+  workflow_dispatch:
 jobs:
   Build-Test-and-Analyze-UI:
     runs-on: ubuntu-latest
