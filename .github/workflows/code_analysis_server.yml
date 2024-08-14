@@ -12,6 +12,7 @@ on:
     paths: # Only applicable if any go code was changed
       - 'server/**/*.go'
       - 'server/*.go'
+  workflow_dispatch:
 jobs:
   Build-Test-and-Analyze-Server:
     runs-on: ubuntu-latest
