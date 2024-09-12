@@ -27,7 +27,7 @@ func DeleteContainer(db *gorm.DB, w http.ResponseWriter, r *http.Request) {
 	err = azure.DeleteContainer(config.GetEnvironment().RESOURCE_GROUP_NAME, config.GetEnvironment().CONTAINER_GROUP_NAME)
 	if err != nil {
 		msg := fmt.Sprintf("Failed to delete container: %v", err)
-		log.Printf(msg)
+		log.Printf("Failed to delete container: %v", err)
 		respondError(w, http.StatusInternalServerError, msg)
 	}
 	respondOk(w)
