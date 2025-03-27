@@ -21,9 +21,6 @@ export const StepStatus = ({ stepStatusData }: IStepStatusProps) => {
   return (
     <Flex align={{ default: 'alignRight' }} className='deployment-info'>
       <FlexItem>
-        { (hasSucceeded || hasFailed) && <Text className='timeTaken' component={TextVariants.h5}>({stepStatusData.duration})</Text> }
-      </FlexItem>
-      <FlexItem>
         { (hasFailed || hasRestartPending) && <Text className='attempt' component={TextVariants.h5}>({stepStatusData.attempts} { stepStatusData.attempts === 1 ? 'attempt' : 'attempts' })</Text> }
       </FlexItem>
       <FlexItem className="statusTooltip" align={{ default: 'alignRight' }}>
