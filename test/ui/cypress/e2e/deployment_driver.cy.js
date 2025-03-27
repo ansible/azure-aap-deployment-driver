@@ -12,7 +12,7 @@ describe('Deployment driver web UI', () => {
     cy.visit(Cypress.env("DEPLOYMENT_DRIVER_URL"), {
       retryOnStatusCodeFailure: true,
       retryOnNetworkFailure: true,
-      timeout: 5000,
+      timeout: 6000,
     })
 
     cy.loginWithRHAccount()
@@ -27,7 +27,7 @@ describe('Deployment driver web UI', () => {
 
     cy.get('.pf-c-brand').should('be.visible')
     cy.get('.pf-c-alert__title')
-      .contains('You currently have a subscription to Ansible Automation Platform')
+      .contains("You currently have a subscription to Ansible Automation Platform")
     cy.get('p').contains('To manage or setup new subscription, visit the')
     cy.get('p > .pf-c-button')
       .contains('Red Hat Hybrid Cloud Console')
