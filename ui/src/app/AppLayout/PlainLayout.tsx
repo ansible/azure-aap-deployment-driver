@@ -1,7 +1,7 @@
 import React from 'react';
 import { Brand, Page, PageHeader } from '@patternfly/react-core';
 import logo from '../bgimages/Technology_icon-Red_Hat-Ansible_Automation_Platform-Standard-RGB.svg';
-import { Outlet } from 'react-router-dom';
+import { Outlet } from 'react-router';
 
 const PlainLayout = () => {
   return (
