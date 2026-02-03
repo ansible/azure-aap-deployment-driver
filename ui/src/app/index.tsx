@@ -1,5 +1,5 @@
 import React from 'react';
-import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import { RouterProvider, createBrowserRouter } from "react-router";
 import '@patternfly/react-core/dist/styles/base.css';
 import appRoutes from './app.routes';
 import './app.css'
