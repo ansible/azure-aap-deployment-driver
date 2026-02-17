@@ -1,6 +1,6 @@
 module server
 
-go 1.19
+go 1.26
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.14.0
