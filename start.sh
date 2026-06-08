@@ -74,6 +74,11 @@ test -f /etc/nginx/sites-enabled/aapinstaller.http_and_https.conf.disabled && \
 log "Starting nginx..."
 nginx
 
+# Start the server immediately so /api/status is reachable over HTTP during cert setup
+export SESSION_COOKIE_DOMAIN=${INSTALLER_DOMAIN_NAME}
+./server &
+SERVER_PID=$!
+
 # start generating dhparam file if not generated yet and let it run in background
 DHPARAM_PID=""
 if [ ! -f /installerstore/nginx/dhparam.pem ]; then
@@ -175,12 +180,6 @@ else
   log "Nginx already configured for HTTPS."
 fi
 
-# configure session domain to match installer domain
-export SESSION_COOKIE_DOMAIN=${INSTALLER_DOMAIN_NAME}
-
-./server &
-
-SERVER_PID=$!
 NGINX_PID=$(cat /var/run/nginx.pid)
 
 log "Start-up done, will wait here while nginx is running."
