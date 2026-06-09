@@ -86,9 +86,11 @@ func StartDeployARMTemplate(ctx context.Context, client *armresources.Deployment
 
 	opts := armresources.DeploymentsClientBeginCreateOrUpdateOptions{}
 
-	// Restart of interrupted deployment
 	if resumeToken != "" {
+		log.Infof("Resuming interrupted deployment for step [%s]", name)
 		opts.ResumeToken = resumeToken
+	} else {
+		log.Infof("Starting new deployment for step [%s]", name)
 	}
 	deploy, err := client.BeginCreateOrUpdate(
 		ctx,
@@ -104,22 +106,25 @@ func StartDeployARMTemplate(ctx context.Context, client *armresources.Deployment
 		&opts,
 	)
 	if err != nil {
+		log.Errorf("Failed to begin ARM deployment for step [%s]: %v", name, err)
 		return nil, err
 	}
-	log.Tracef("Triggered deployment for [%s] (resume token present: %v)", name, resumeToken != "")
+	log.Infof("ARM deployment started for step [%s]", name)
 	return deploy, err
 }
 
 // Pass the deployment poller from StartDeployARMTemplate to await its completion and result
 // Returns model.DeploymentResult and error if any
 func WaitForDeployARMTemplate(ctx context.Context, name string, deployment *runtime.Poller[armresources.DeploymentsClientCreateOrUpdateResponse]) (*model.DeploymentResult, error) {
-	log.Tracef("Starting polling until deployment of [%s] is done...", name)
+	log.Infof("Waiting for ARM deployment [%s] to complete...", name)
 	resp, err := deployment.PollUntilDone(ctx, &runtime.PollUntilDoneOptions{Frequency: time.Duration(config.GetEnvironment().AZURE_POLLING_FREQ_SECONDS) * time.Second})
 	if err != nil {
+		log.Errorf("ARM deployment [%s] finished with error: %v", name, err)
 		return nil, err
 	}
-	log.Tracef("Finished polling, deployment of [%s] is done.", name)
-	return model.NewDeploymentResult(resp.DeploymentExtended), nil
+	result := model.NewDeploymentResult(resp.DeploymentExtended)
+	log.Infof("ARM deployment [%s] completed with provisioning state: %s", name, result.ProvisioningState)
+	return result, nil
 }
 
 func GetDeployment(ctx context.Context, client *armresources.DeploymentsClient, name string) (*model.DeploymentResult, error) {
@@ -138,10 +143,13 @@ func GetDeployment(ctx context.Context, client *armresources.DeploymentsClient, 
 }
 
 func CancelDeployment(ctx context.Context, client *armresources.DeploymentsClient, name string) error {
+	log.Infof("Issuing cancel request for ARM deployment [%s]", name)
 	_, err := client.Cancel(ctx, config.GetEnvironment().RESOURCE_GROUP_NAME, name, &armresources.DeploymentsClientCancelOptions{})
 	if err != nil {
+		log.Errorf("Cancel request for ARM deployment [%s] failed: %v", name, err)
 		return err
 	}
+	log.Infof("Cancel request for ARM deployment [%s] accepted by Azure", name)
 	return nil
 }
 
