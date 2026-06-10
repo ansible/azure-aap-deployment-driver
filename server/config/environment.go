@@ -67,13 +67,13 @@ func GetEnvironment() envVars {
 	// setting defaults here
 	environment.ENGINE_END_WAIT = 900     // 15 minutes wait before server exits after its done
 	environment.ENGINE_RETRY_WAIT = 1800  // 30 minutes wait for a step to be restarted
-	environment.ENGINE_MAX_RUNTIME = 7200 // 2 hours max run time for everything (including restarts)
+	environment.ENGINE_MAX_RUNTIME = 10800 // 3 hours max run time for everything (including restarts)
 	environment.EXECUTION_MAX_RETRY = 10  // 10 executions in total allowed
 	environment.BASE_PATH = "/installerstore"
 	environment.DB_REL_PATH = "installer.db"    // on top of BASE_PATH
 	environment.TEMPLATE_REL_PATH = "templates" // on top of BASE_PATH
 	environment.AZURE_POLLING_FREQ_SECONDS = 5
-	environment.AZURE_DEPLOYMENT_STEP_TIMEOUT = 1800 // 30 min timeout for any one azure deployment
+	environment.AZURE_DEPLOYMENT_STEP_TIMEOUT = 3000 // 50 min timeout for any one azure deployment
 	environment.AUTO_RETRY = false
 	environment.AUTO_RETRY_DELAY = 60 // Retry after 60 seconds if AUTO_RETRY set
 	environment.SESSION_COOKIE_NAME = "madd_session"

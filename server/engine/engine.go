@@ -261,13 +261,13 @@ func (engine *Engine) startWaitingForRestart(execution *model.Execution, waitGro
 
 func (engine *Engine) restartStepAfterDelay(delay time.Duration, execution *model.Execution) *time.Timer {
 	if config.GetEnvironment().AUTO_RETRY {
-		log.Tracef("Starting a timer to automatically restart step after: %s", delay)
+		log.Infof("AUTO_RETRY enabled — scheduling automatic restart of step in %s", delay)
 		return time.AfterFunc(delay, func() {
 			storedExecution := model.Execution{}
 			engine.database.Instance.Last(&storedExecution, model.Execution{StepID: execution.StepID})
 			storedExecution.Status = model.Restart
 			engine.database.Instance.Save(&storedExecution)
-			log.Trace("Automatically marked execution for restart.")
+			log.Infof("Automatically marked step (execution ID %d) for restart", storedExecution.ID)
 		})
 	}
 	return nil
@@ -361,21 +361,30 @@ func (engine *Engine) runStep(step model.Step, execution *model.Execution, waitG
 		log.Printf("Failed to update execution in DB with resume token: %v", err)
 	}
 
-	// Finish deployment and wait for result (with timeout)
+	// Finish deployment and wait for result (with timeout).
+	// Derive from a deadline-free context so each retry gets the full timeout window,
+	// not just whatever remains on ENGINE_MAX_RUNTIME.
 	timeout := time.Duration(config.GetEnvironment().AZURE_DEPLOYMENT_STEP_TIMEOUT) * time.Second
-	ctxWithTimeout, cancel := context.WithTimeout(engine.context, timeout)
+	log.Infof("Waiting for step [%s] with timeout of %d minutes", step.Name, int(timeout.Minutes()))
+	stepCtx := context.WithoutCancel(engine.context)
+	ctxWithTimeout, cancel := context.WithTimeout(stepCtx, timeout)
 	defer cancel()
+	go func() {
+		select {
+		case <-engine.context.Done():
+			cancel()
+		case <-ctxWithTimeout.Done():
+		}
+	}()
 
 	deployResponse, err := azure.WaitForDeployARMTemplate(ctxWithTimeout, step.Name, deployment)
 	if err != nil {
 		if errors.Is(err, context.Canceled) {
-			// Parent context canceled, shutdown
-			log.Printf("Completion of step [%s] deployment interrupted by shutdown.", step.Name)
+			log.Infof("Step [%s] interrupted by engine shutdown", step.Name)
 			return
 		}
 		if errors.Is(err, context.DeadlineExceeded) {
-			// Child context timed out
-			log.Errorf("Max step execution time reached for step [%s], Canceling.", step.Name)
+			log.Errorf("Step [%s] exceeded maximum allowed time of %d minutes — canceling running and future steps", step.Name, int(timeout.Minutes()))
 			engine.CancelFutureSteps()
 			engine.CancelRunningStep()
 			execution.Status = model.PermanentlyFailed
@@ -386,10 +395,13 @@ func (engine *Engine) runStep(step model.Step, execution *model.Execution, waitG
 			engine.status.DeploymentSucceeded = false
 			return
 		}
-		log.Printf("Deployment of step [%s] failed: %v", step.Name, err)
+		log.Errorf("Step [%s] failed: %v", step.Name, err)
+		log.Errorf("Step [%s] Azure error details: %s", step.Name, model.GetAzureErrorJSONString(err))
 		failedDeploymentResponse, getDeploymentErr := azure.GetDeployment(engine.context, engine.deploymentsClient, step.Name)
 		if getDeploymentErr != nil {
-			log.Tracef("Unable to get failed deployment details: %v", getDeploymentErr)
+			log.Errorf("Unable to fetch failed deployment details for step [%s]: %v", step.Name, getDeploymentErr)
+		} else if failedDeploymentResponse != nil {
+			log.Infof("Step [%s] provisioning state at failure: %s", step.Name, failedDeploymentResponse.ProvisioningState)
 		}
 		model.UpdateExecution(execution, failedDeploymentResponse, model.GetAzureErrorJSONString(err))
 		engine.database.Instance.Save(&execution)
@@ -407,9 +419,9 @@ func (engine *Engine) runStep(step model.Step, execution *model.Execution, waitG
 func (engine *Engine) CancelFutureSteps() {
 	steps := []model.Step{}
 	engine.database.Instance.Model(&model.Step{}).Preload("Executions").Find(&steps)
-	// first mark all non executing steps as cancelled
 	for _, aStep := range steps {
 		if len(aStep.Executions) == 0 {
+			log.Infof("Marking future step [%s] as canceled (will not run)", aStep.Name)
 			engine.database.Instance.Save(&model.Execution{
 				Status: model.Canceled,
 				StepID: aStep.ID,
@@ -420,13 +432,13 @@ func (engine *Engine) CancelFutureSteps() {
 
 func (engine *Engine) CancelRunningStep() {
 	steps := []model.Step{}
-	engine.database.Instance.Model(&model.Step{}).Preload("Executions").Find(&steps) // find currently running steps and cancel them
+	engine.database.Instance.Model(&model.Step{}).Preload("Executions").Find(&steps)
 	for _, aStep := range steps {
-		// check status of last one, there should not be any steps with no executions
 		if engine.GetLatestExecution(aStep).Status == model.Started {
+			log.Infof("Canceling currently running step [%s]", aStep.Name)
 			err := azure.CancelDeployment(engine.context, engine.deploymentsClient, aStep.Name)
 			if err != nil {
-				log.Errorf("Couldn't cancel deployment: %v", err)
+				log.Errorf("Failed to cancel running step [%s]: %v", aStep.Name, err)
 			}
 		}
 	}
