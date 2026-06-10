@@ -361,11 +361,21 @@ func (engine *Engine) runStep(step model.Step, execution *model.Execution, waitG
 		log.Printf("Failed to update execution in DB with resume token: %v", err)
 	}
 
-	// Finish deployment and wait for result (with timeout)
+	// Finish deployment and wait for result (with timeout).
+	// Derive from a deadline-free context so each retry gets the full timeout window,
+	// not just whatever remains on ENGINE_MAX_RUNTIME.
 	timeout := time.Duration(config.GetEnvironment().AZURE_DEPLOYMENT_STEP_TIMEOUT) * time.Second
 	log.Infof("Waiting for step [%s] with timeout of %d minutes", step.Name, int(timeout.Minutes()))
-	ctxWithTimeout, cancel := context.WithTimeout(engine.context, timeout)
+	stepCtx := context.WithoutCancel(engine.context)
+	ctxWithTimeout, cancel := context.WithTimeout(stepCtx, timeout)
 	defer cancel()
+	go func() {
+		select {
+		case <-engine.context.Done():
+			cancel()
+		case <-ctxWithTimeout.Done():
+		}
+	}()
 
 	deployResponse, err := azure.WaitForDeployARMTemplate(ctxWithTimeout, step.Name, deployment)
 	if err != nil {
