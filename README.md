@@ -11,6 +11,10 @@ The Deployment Driver consists of following components:
 - The web UI providing the user a way to interact with the deployment engine/server
 - Nginx web server and reverse proxy serving the installer web UI and proxy-ing API requests to installer engine
 
+## Release notes
+
+Follow the SOP at https://github.com/ansible-automation-platform/ansible-azure-sre/blob/main/sops/konflux.md#aoc-azure-installer-container
+
 ## Local Development
 
 ### Setup
