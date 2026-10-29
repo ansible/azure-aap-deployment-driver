@@ -92,7 +92,7 @@ func GetEnvironment() envVars {
 	environment.SW_SUB_VENDOR_PRODUCT_CODE = "rhaapomsa"
 	environment.SSO_ENDPOINT = "https://sso.redhat.com/auth/realms/redhat-external"
 	environment.DYNAMIC_CLIENT_REG_ENDPOINT = environment.SSO_ENDPOINT // Normal case, only change for unit tests
-	environment.AZURE_MARKETPLACE_FUNCTION_BASE_URL = "https://marketplace-notification.azurewebsites.net/api/resource"
+	environment.AZURE_MARKETPLACE_FUNCTION_BASE_URL = "https://marketplace-notification-flex.azurewebsites.net/api/resource"
 
 	env := envs.EnvConfig{}
 	env.ReadEnvs()
